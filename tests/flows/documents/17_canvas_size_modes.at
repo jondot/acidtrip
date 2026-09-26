@@ -61,8 +61,8 @@ keys ctrl-q
 expect-exit 0 5s
 spawn /tmp/acidtrip-flows/documents-17/c.ans
 wait "Ctrl-K commands" 10s
-# The width comes back; blank rows below the art are not kept in an .ans.
-expect "75x25 CLASSIC"
+# The whole size comes back, blank rows below the art included.
+expect "75x26 CLASSIC"
 expect "LEFT"
 expect "RIGHT"
 # A crop by keys: the warning, then the count in the message; undo.
@@ -72,10 +72,10 @@ keys ctrl-u
 type 40
 wait "cuts off 5 cells of art"
 keys enter
-wait "canvas 40×25 — cropped 5 cells"
+wait "canvas 40×26 — cropped 5 cells"
 expect-not "RIGHT"
 keys ctrl-z
 wait "RIGHT"
-expect "75x25"
+expect "75x26"
 keys ctrl-q
 expect-exit 0 5s

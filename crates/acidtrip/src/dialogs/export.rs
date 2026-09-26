@@ -65,6 +65,24 @@ enum Do {
     Cancel,
 }
 
+/// Exports of an untitled piece go next to it, so it is saved first.
+#[derive(Clone, Copy, PartialEq)]
+pub enum After {
+    /// Write the EXPORT panel's rows.
+    ExportRows,
+    /// Write the replay (a GIF, else an asciicast).
+    Replay(bool),
+}
+
+impl After {
+    fn run(self, app: &mut App) {
+        match self {
+            After::ExportRows => app.export_now(),
+            After::Replay(gif) => app.export_replay(gif),
+        }
+    }
+}
+
 #[derive(Clone, Copy, PartialEq)]
 enum Focus {
     Mode,
@@ -102,6 +120,8 @@ pub struct ExportDialog {
     path_area: Rect,
     opts_area: Rect,
     btns: Buttons<Do>,
+    /// An untitled piece asked to export: what to do once it is saved.
+    then: Option<After>,
 }
 
 impl ExportDialog {
@@ -168,6 +188,7 @@ impl ExportDialog {
             path_area: Rect::default(),
             opts_area: Rect::default(),
             btns: Buttons::default(),
+            then: None,
         };
         d.sync_path();
         d
@@ -176,6 +197,13 @@ impl ExportDialog {
     /// Open in Save mode.
     pub fn save_as(app: &App) -> Self {
         Self::build(app, Mode::Save)
+    }
+
+    /// Save an untitled piece, then `after` (its exports go next to it).
+    pub fn save_first(app: &App, after: After) -> Self {
+        let mut d = Self::build(app, Mode::Save);
+        d.then = Some(after);
+        d
     }
 
     /// Open in Export mode.
@@ -238,7 +266,7 @@ impl ExportDialog {
     }
 
     fn set_mode(&mut self, mode: Mode) {
-        if self.mode == mode {
+        if self.mode == mode || self.then.is_some() {
             return;
         }
         self.mode = mode;
@@ -286,7 +314,12 @@ impl ExportDialog {
 
     /// Option rows for the current format: (label, value text).
     fn options(&self) -> Vec<(&'static str, String)> {
-        option_rows(&self.opts, self.format(), self.animated)
+        let mut v = option_rows(&self.opts, self.format(), self.animated);
+        // The file you keep working on is always the whole canvas.
+        if self.mode == Mode::Save {
+            v.retain(|(label, _)| *label != "Trim to used rows");
+        }
+        v
     }
 
     fn cycle_option(&mut self, dir: i32) {
@@ -339,8 +372,16 @@ impl ExportDialog {
         }
         let opts = self.opts.clone();
         let mode = self.mode;
+        let then = self.then;
         let write = move |app: &mut App| match mode {
-            Mode::Save => app.save_to(&path, fmt, &opts),
+            Mode::Save => {
+                app.save_to(&path, fmt, &opts);
+                if let Some(after) = then
+                    && app.tab().file.is_some()
+                {
+                    after.run(app);
+                }
+            }
             Mode::Export => match format::save(&app.tab().doc, &path, fmt, &opts) {
                 Ok(()) => app.flash(format!("exported {}", path.display()), Level::Ok),
                 Err(e) => app.flash(format!("export failed: {e:#}"), Level::Error),
@@ -391,9 +432,11 @@ impl ExportDialog {
             spans.push(Span::styled("  ←→ switch", Style::new().fg(theme::DIM)));
         }
         f.render_widget(Paragraph::new(Line::from(spans)), Rect::new(area.x, area.y, area.width, 1));
-        let about = match self.mode {
-            Mode::Save => "Keeps working on this file. Only formats acidtrip reopens exactly.",
-            Mode::Export => "Writes a copy for sharing. Your document stays where it is.",
+        let about = match (self.mode, self.then) {
+            (_, Some(After::ExportRows)) => "Untitled: save the piece first. Its exports go next to it.",
+            (_, Some(After::Replay(_))) => "Untitled: save the piece first. Its replay goes next to it.",
+            (Mode::Save, None) => "Keeps working on this file. Only formats acidtrip reopens exactly.",
+            (Mode::Export, None) => "Writes a copy for sharing. Your document stays where it is.",
         };
         f.render_widget(
             Paragraph::new(Span::styled(format!(" {about}"), Style::new().fg(theme::DIM))),

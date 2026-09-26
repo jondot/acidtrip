@@ -68,7 +68,7 @@ acidtrip fonts install FILE         # add a .tdf, .flf or .zip
 ## versions, paths and keys
 
 - `acidtrip versions FILE` lists a document's saved versions. `--restore HASH --out OUT` restores one into a file; a hash prefix is enough.
-- `acidtrip paths` prints where the config, fonts, stencils, versions, recovery files and sockets live.
+- `acidtrip paths` prints where the config, fonts, stencils, versions, kept export rows, recovery files and sockets live.
 - `acidtrip keys` lists every action id with its title and keys, for [keymap overrides](/docs/keymaps-config/).
 
 The `ACIDTRIP_RUN` environment variable takes a comma-separated list of action ids to run at startup.

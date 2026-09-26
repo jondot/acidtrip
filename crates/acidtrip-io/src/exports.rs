@@ -11,6 +11,7 @@ use std::path::{Path, PathBuf};
 
 use acidtrip_core::tools::Rect;
 use acidtrip_core::{Canvas, Document, ExportPreset, ExportSettings, Layer};
+use serde::{Deserialize, Serialize};
 
 use crate::format::{self, Format, GifMode, SaveOptions};
 
@@ -311,6 +312,51 @@ pub fn crop(c: &Canvas, r: Rect) -> Canvas {
     }
 }
 
+// Rows for art files. A .acid keeps its rows inside; .ans, .xb and the other
+// art formats have no room for them, so they are kept in the data folder
+// (`exports/<id>.json`), known by the file's path the way its versions are.
+
+#[derive(Serialize, Deserialize)]
+struct Kept {
+    /// The art file, for anyone looking in the folder.
+    file: String,
+    exports: ExportSettings,
+}
+
+fn kept_path(dir: &Path, file: &Path) -> PathBuf {
+    dir.join(format!("{}.json", crate::versions::file_doc_id(file)))
+}
+
+/// Keep `file`'s rows in `dir`. No rows (the default one PNG) forgets them.
+pub fn remember(dir: &Path, file: &Path, s: &ExportSettings) -> anyhow::Result<()> {
+    let path = kept_path(dir, file);
+    if s.is_empty() {
+        return match std::fs::remove_file(&path) {
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => Err(e.into()),
+            _ => Ok(()),
+        };
+    }
+    let kept = Kept { file: file.display().to_string(), exports: s.clone() };
+    crate::library::write_atomic(&path, &serde_json::to_vec_pretty(&kept)?)
+}
+
+/// The rows kept for `file`, or none.
+pub fn recall(dir: &Path, file: &Path) -> ExportSettings {
+    std::fs::read(kept_path(dir, file))
+        .ok()
+        .and_then(|b| serde_json::from_slice::<Kept>(&b).ok())
+        .map(|k| k.exports)
+        .unwrap_or_default()
+}
+
+/// A document just loaded from `file` gets the rows kept for it, unless the
+/// file held its own (a .acid).
+pub fn adopt(dir: &Path, file: &Path, doc: &mut Document) {
+    if doc.meta.exports.is_empty() && Format::from_path(file) != Some(Format::Acid) {
+        doc.meta.exports = recall(dir, file);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -465,6 +511,32 @@ mod tests {
         assert_eq!((s.width(), s.height()), (3, 3));
         assert_eq!(s.frame_canvas(1).width, 3);
         assert_eq!(s.canvas.layers[0].cells[0].unwrap().ch, 'X');
+    }
+
+    #[test]
+    fn art_files_keep_their_rows_outside() {
+        let home = tempfile::tempdir().unwrap();
+        let dir = home.path().join("exports");
+        let art = home.path().join("a.ans");
+        let s = ExportSettings {
+            presets: vec![ExportPreset { scale: 2, name: auto_name(2), ..ExportPreset::default() }],
+            folder: Some("out".into()),
+        };
+        remember(&dir, &art, &s).unwrap();
+        // Reopened (and saved over) the .ans keeps them; another file doesn't get them.
+        let mut doc = Document::new(DocKind::Classic, 80, 25);
+        adopt(&dir, &art, &mut doc);
+        assert_eq!(doc.meta.exports, s);
+        assert!(recall(&dir, &home.path().join("b.ans")).is_empty());
+        // A .acid keeps what's inside it.
+        let mut acid = Document::new(DocKind::Classic, 80, 25);
+        adopt(&dir, &home.path().join("a.acid"), &mut acid);
+        assert!(acid.meta.exports.is_empty());
+        // Back to the default row: nothing is kept.
+        remember(&dir, &art, &ExportSettings::default()).unwrap();
+        assert!(recall(&dir, &art).is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 0);
+        remember(&dir, &art, &ExportSettings::default()).unwrap();
     }
 
     #[test]

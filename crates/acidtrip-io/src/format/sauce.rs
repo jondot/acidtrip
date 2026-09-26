@@ -8,6 +8,7 @@ use icy_sauce::{SauceDataType, SauceDate, SauceRecord, SauceRecordBuilder, Strip
 /// SAUCE Character file types.
 pub const CHAR_ASCII: u8 = 0;
 pub const CHAR_ANSI: u8 = 1;
+pub const CHAR_ANSIMATION: u8 = 2;
 pub const CHAR_PCBOARD: u8 = 4;
 pub const CHAR_AVATAR: u8 = 5;
 pub const CHAR_TUNDRA: u8 = 8;
@@ -67,6 +68,31 @@ pub fn width(rec: Option<&SauceRecord>) -> Option<usize> {
         _ => 0,
     };
     (w > 0).then_some(w)
+}
+
+/// Canvas height (in rows) the record declares, if any: TInfo2 of text
+/// character files and XBin. RIPscript and the like keep pixels there.
+pub fn height(rec: Option<&SauceRecord>) -> Option<usize> {
+    let h = rec?.header();
+    let rows = match h.data_type {
+        SauceDataType::Character
+            if matches!(
+                h.file_type,
+                CHAR_ASCII | CHAR_ANSI | CHAR_ANSIMATION | CHAR_PCBOARD | CHAR_AVATAR | CHAR_TUNDRA
+            ) =>
+        {
+            h.t_info2 as usize
+        }
+        SauceDataType::XBin => h.t_info2 as usize,
+        _ => 0,
+    };
+    (rows > 0).then_some(rows)
+}
+
+/// Rows a loaded text screen has at least: the height the record declares
+/// (so blank rows at the bottom come back), else one 25-line screen.
+pub fn min_rows(rec: Option<&SauceRecord>) -> usize {
+    height(rec).unwrap_or(25).min(20_000)
 }
 
 #[derive(Clone, Copy)]
@@ -145,6 +171,7 @@ mod tests {
         assert_eq!(body, b"hi");
         let rec = rec.unwrap();
         assert_eq!(width(Some(&rec)), Some(132));
+        assert_eq!(height(Some(&rec)), Some(50));
         let mut m = DocMeta { ice: false, ..DocMeta::default() };
         apply(&rec, &mut m);
         assert_eq!(m.sauce.title, "Test ░");

@@ -1,0 +1,63 @@
+# Exporting an untitled piece asks where it goes instead of writing into
+# whatever folder acidtrip was started from. Alt-Shift-E opens Save as…
+# (Esc: nothing written); saving writes the piece and its exports next to
+# it. The replay's GIF asks the same way for another untitled piece.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-27/home
+write-file /tmp/acidtrip-flows/documents-27/home/config/config.toml "autosave_seconds = 0\n"
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type NO NAME YET
+keys esc
+wait idle
+keys ctrl-e
+wait "EXPORT 1"
+expect "to where you save it"
+keys alt-shift-e
+wait "Untitled: save the piece first. Its exports go next to it."
+shot asks
+# Export can't be picked here: this saves the piece.
+keys ctrl-e
+wait idle
+expect "Untitled: save the piece first"
+keys esc
+wait idle
+expect-not "Save / Export"
+expect "● untitled"
+expect-no-file untitled.png
+keys alt-shift-e
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-27/named.ans
+keys enter
+wait "exported named.png → /tmp/acidtrip-flows/documents-27"
+expect-file /tmp/acidtrip-flows/documents-27/named.ans /tmp/acidtrip-flows/documents-27/named.png
+expect "named.ans"
+expect-not "● named.ans"
+expect-no-file untitled.png
+# A new untitled piece: the replay's GIF asks too.
+keys ctrl-n
+wait "New document"
+keys enter
+wait "new 80x25"
+keys t
+type DRAWN
+keys esc
+wait idle
+click-text "► replay"
+wait "REPLAY"
+click-text "↓ GIF"
+wait "Untitled: save the piece first. Its replay goes next to it."
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-27/drawn.acid
+keys enter
+wait "wrote /tmp/acidtrip-flows/documents-27/drawn-replay.gif"
+expect-file /tmp/acidtrip-flows/documents-27/drawn.acid /tmp/acidtrip-flows/documents-27/drawn-replay.gif
+expect-no-file untitled-replay.gif
+expect "REPLAY"
+keys esc
+wait "replay off"
+keys ctrl-q
+expect-exit 0 5s

@@ -1,0 +1,59 @@
+# A crash after autosave, then restore: the piece comes back with its
+# edit history, so replay starts from the blank canvas and steps through
+# what was drawn before the crash. Saved as .acid, the history is kept.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-28/home
+write-file /tmp/acidtrip-flows/documents-28/home/config/config.toml "autosave_seconds = 1\n"
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type FIRST
+keys esc
+keys t
+keys down
+type SECOND
+keys esc
+wait "SECOND"
+wait 1500ms
+kill
+spawn
+wait "Recover unsaved work" 10s
+keys enter
+wait "recovered — save it to keep it"
+expect "FIRST"
+expect "SECOND"
+click-text "► replay"
+wait "REPLAY"
+expect-not "no edit history"
+keys home
+wait idle
+expect "step 0/"
+expect-not "FIRST"
+expect-not "SECOND"
+shot replay_start
+keys end
+wait idle
+expect "FIRST"
+expect "SECOND"
+keys esc
+wait "back to the live piece"
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-28/saved.acid
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-28/saved.acid"
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-flows/documents-28/saved.acid
+wait "SECOND" 10s
+click-text "► replay"
+wait "REPLAY"
+keys home
+wait idle
+expect-not "SECOND"
+keys esc
+wait idle
+keys ctrl-q
+expect-exit 0 5s

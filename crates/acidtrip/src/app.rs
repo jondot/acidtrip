@@ -15,7 +15,7 @@ use acidtrip_io::fonts::FontLibrary;
 use acidtrip_io::format::{self, Format, SaveOptions};
 use acidtrip_io::library::Paths;
 use acidtrip_io::stencils::StencilLibrary;
-use acidtrip_io::{backup, recovery, versions};
+use acidtrip_io::{backup, exports, recovery, versions};
 use crossterm::event::{
     self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
 };
@@ -222,7 +222,10 @@ impl App {
         }
         if let Some(f) = files.first() {
             match format::load_with_log(f) {
-                Ok((doc, log)) => app.tabs.push(Tab::new(doc, Some(f.clone())).with_log(log)),
+                Ok((mut doc, log)) => {
+                    exports::adopt(&app.paths.exports_dir(), f, &mut doc);
+                    app.tabs.push(Tab::new(doc, Some(f.clone())).with_log(log));
+                }
                 Err(_) if !f.exists() => {
                     // A new file name: start a doc that saves there.
                     let mut t = Tab::new(app.new_doc(), Some(f.clone()));
@@ -2310,11 +2313,12 @@ impl App {
     // ------------------------------------------------------------- files
 
     /// Open a document already read from `p` (asking first about unsaved work).
-    pub fn open_loaded(&mut self, p: &Path, doc: Document, log: Option<acidtrip_core::replay::EditLog>) {
+    pub fn open_loaded(&mut self, p: &Path, mut doc: Document, log: Option<acidtrip_core::replay::EditLog>) {
         if self.tab().file.as_deref() == Some(p) {
             self.flash(format!("{} is already open", p.display()), Level::Info);
             return;
         }
+        exports::adopt(&self.paths.exports_dir(), p, &mut doc);
         let (w, h) = (doc.width(), doc.height());
         let msg = format!("opened {} ({w}x{h})", p.display());
         self.replace_doc(Tab::new(doc, Some(p.to_path_buf())).with_log(log), msg);
@@ -2372,10 +2376,20 @@ impl App {
         if doc.meta.sauce.date.is_empty() {
             doc.meta.sauce.date = chrono::Local::now().format("%Y%m%d").to_string();
         }
+        // A file you keep working on reopens at the canvas's own size, blank
+        // rows at the bottom and all.
+        let is_doc_format = fmt.reopens();
+        let opts = &SaveOptions { trim_height: opts.trim_height && !is_doc_format, ..opts.clone() };
         match format::save_with_log(&doc, Some(self.tab().history.log()), path, fmt, opts) {
             Ok(()) => {
+                // .ans, .xb … have no room for the EXPORT panel's rows: they
+                // are kept for the file in the data folder.
+                let rows_kept = if is_doc_format && fmt != Format::Acid {
+                    exports::remember(&self.paths.exports_dir(), path, &doc.meta.exports)
+                } else {
+                    Ok(())
+                };
                 let t = self.tab_mut();
-                let is_doc_format = fmt.reopens();
                 if is_doc_format {
                     t.file = Some(path.to_path_buf());
                     t.format = Some(fmt);
@@ -2387,7 +2401,12 @@ impl App {
                     recovery::clear(&self.paths.recovery_dir(), id);
                 }
                 self.snapshot("save");
-                self.flash(format!("saved {}", path.display()), Level::Ok);
+                match rows_kept {
+                    Ok(()) => self.flash(format!("saved {}", path.display()), Level::Ok),
+                    Err(e) => {
+                        self.flash(format!("saved {}, but not its export rows: {e:#}", path.display()), Level::Warn)
+                    }
+                }
             }
             Err(e) => self.flash(format!("save failed: {e:#}"), Level::Error),
         }
@@ -2704,7 +2723,7 @@ impl App {
                     t.recovery_written = false;
                 }
             } else if (force || t.history.revision() != t.autosaved_rev)
-                && recovery::write(&dir, &t.doc, t.file.as_deref()).is_ok()
+                && recovery::write(&dir, &t.doc, t.file.as_deref(), Some(t.history.log())).is_ok()
             {
                 t.autosaved_rev = t.history.revision();
                 t.recovery_written = true;

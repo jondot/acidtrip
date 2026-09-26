@@ -290,7 +290,7 @@ pub fn load(data: &[u8], utf8: Option<bool>) -> anyhow::Result<Document> {
     let hint = film.scr.ice_hint;
     let shots = film.frames();
     if shots.len() < 2 {
-        return Ok(finish(film.scr.into_grid(25), rec.as_ref(), None, utf8, hint));
+        return Ok(finish(film.scr.into_grid(sauce::min_rows(rec.as_ref())), rec.as_ref(), None, utf8, hint));
     }
     // One grid, frames stacked, so colors are settled the same way for all.
     let h = shots.iter().map(|(g, _)| g.height).max().unwrap_or(1).max(1);
@@ -501,6 +501,13 @@ pub fn encode(doc: &Document, opts: &SaveOptions) -> Vec<u8> {
     out.extend(b"\x1b[0m");
     let mut pen = RESET;
     body(&g, &mut out, &mut pen, opts.line_length.filter(|&n| n > 0), false);
+    // Blank rows at the bottom write nothing, so a reader would stop at the
+    // last row with art. Keeping the whole canvas: a blank on the last row
+    // makes it (and every row above) come back.
+    if !opts.trim_height && g.height > 0 && g.row(g.height - 1).iter().all(skippable) {
+        pen.to(&Cell::BLANK, &mut out);
+        out.push(b' ');
+    }
     out.extend(b"\x1b[0m");
     out
 }
@@ -588,7 +595,9 @@ pub fn save(doc: &Document, opts: &SaveOptions) -> anyhow::Result<Vec<u8>> {
     } else {
         super::export_rows(doc, opts)
     };
-    if want_sauce(doc, opts, doc.width() != 80) {
+    // Without SAUCE a reader opens at least 25 rows: a shorter canvas needs it.
+    let short = !opts.trim_height && rows < 25;
+    if want_sauce(doc, opts, doc.width() != 80 || short) {
         sauce::append(&mut out, doc, sauce::Kind::Character(CHAR_ANSI), doc.width(), rows)?;
     } else if opts.eof_char {
         out.push(0x1A);
@@ -716,6 +725,25 @@ mod tests {
         d.canvas.layers[0].cells[10] = Some(Cell::new('B', Color::Pal(4), Color::Pal(9)));
         let out = encode(&d, &SaveOptions::default());
         assert_eq!(String::from_utf8_lossy(&out), "\x1b[0m\x1b[1;31mAA\x1b[8C\x1b[0;5;31;44mB\x1b[0m");
+    }
+
+    #[test]
+    fn keeps_blank_rows_at_the_bottom() {
+        let keep = SaveOptions { trim_height: false, ..SaveOptions::default() };
+        for (h, attach) in [(40, false), (40, true), (10, false), (10, true)] {
+            let mut d = Document::new(DocKind::Classic, 80, h);
+            d.meta.sauce.attach = attach;
+            d.canvas.layers[0].cells[0] = Some(Cell::new('A', Color::Pal(12), Color::Pal(1)));
+            let back = load(&save(&d, &keep).unwrap(), None).unwrap();
+            assert_eq!(back.height(), h, "{h} rows, SAUCE {attach}");
+            assert_eq!(back.flatten().row(0)[0], d.flatten().row(0)[0]);
+            assert!(back.flatten().row(h - 1).iter().all(Cell::is_blank));
+        }
+        // Trimmed (an export), the file says it's the rows with art.
+        let mut d = Document::new(DocKind::Classic, 80, 40);
+        d.meta.sauce.attach = true;
+        d.canvas.layers[0].cells[0] = Some(Cell::new('A', Color::LIGHT_GRAY, Color::BLACK));
+        assert_eq!(load(&save(&d, &SaveOptions::default()).unwrap(), None).unwrap().height(), 1);
     }
 
     #[test]

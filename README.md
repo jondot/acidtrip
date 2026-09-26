@@ -111,6 +111,8 @@ Documents also support layers, including reference layers: imported images shown
 | GIF (still, BBS "modem reveal", layers as frames), SVG (text or pixel-exact) | | ✓ |
 | HTML page, React `.tsx` component, C/Pascal/ASM arrays, mIRC, asciinema cast | | ✓ |
 
+Saving keeps the whole canvas, blank rows at the bottom included, so a piece reopens at its own size. `.ans` files shorter than 25 rows get a SAUCE record that says how tall they are.
+
 ```
 acidtrip convert art.ans art.svg --pixel-exact
 acidtrip convert art.ans art.gif --gif reveal --baud 9600
@@ -127,7 +129,7 @@ acidtrip render art.xb art.png --scale 2
 - **Folder:** next to the file unless you click it and pick another.
 - **↓ Export:** writes every row, replacing old files, and lists what it wrote. `Alt-Shift-E` does the same from anywhere.
 
-The rows and folder are saved with the piece in `.acid` files. *Export as…* (the panel's `as…`, or the palette) is still there for a single file.
+The rows and folder are saved with the piece in `.acid` files. Formats with no room for them (`.ans`, `.xb` and the other art files) keep them in acidtrip's data folder, by file, so they come back when you reopen it. An untitled piece has nowhere to export to yet: Export opens *Save as…* first and the files go next to it. *Export as…* (the panel's `as…`, or the palette) is still there for a single file.
 
 ## Sharing
 
@@ -159,9 +161,9 @@ Watch a piece being drawn again, speed-paint style. Click **► replay** in the 
 - **skip idle** cuts long pauses down to a second. **hide undone** plays only the work that survived.
 - `Space` plays and pauses, and so does a click on the canvas. `← →` step, `Home`/`End` jump to either end, and `Esc` goes back to drawing.
 - Replay never touches the piece: leaving shows the live document again, and any edit leaves replay first.
-- **↓ GIF** and **↓ .cast** save the replay next to the file as an animated GIF or an asciinema recording.
+- **↓ GIF** and **↓ .cast** save the replay next to the file as an animated GIF or an asciinema recording. An untitled piece is saved first: *Save as…* asks where.
 
-Every edit, undo and redo is logged with its time and saved zstd-compressed inside `.acid` files, so the history travels with the piece. Other formats don't keep it, and neither do recovery snapshots or versions. A piece without history plays the modem reveal instead.
+Every edit, undo and redo is logged with its time and saved zstd-compressed inside `.acid` files, so the history travels with the piece. Recovery snapshots keep it too, so a piece restored after a crash still replays. Other formats and versions don't keep it. A piece without history plays the modem reveal instead.
 
 ```
 acidtrip replay art.acid art.gif              # fit into 30 s
@@ -190,7 +192,7 @@ acidtrip convert walk.ans walk.cast
 ## Never lose work
 
 - **Undo:** every edit is undoable. A brush stroke is one step, and an AI run is one step.
-- **Recovery:** unsaved documents are autosaved every 20 seconds. After a crash, the next start offers to restore them.
+- **Recovery:** unsaved documents are autosaved every 20 seconds, edit history included. After a crash, the next start offers to restore them.
 - **Versions:** a version is saved on every save and every 5 minutes of editing. `Alt-V` browses them with a live preview; restore one, or open it in a new tab.
 - **Backups:** saving over a file keeps a `.bak` copy, or numbered `.001`–`.999` copies like ACiDDraw.
 

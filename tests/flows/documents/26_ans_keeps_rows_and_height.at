@@ -1,0 +1,48 @@
+# A piece kept as .ans: one line of art on an 80x25 canvas, two export
+# rows. The .ans has no room for the rows and used to be cut to the one
+# line; now it reopens 80x25 with both rows and exports from there.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-26/home
+write-file /tmp/acidtrip-flows/documents-26/home/config/config.toml "autosave_seconds = 0\n"
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type TOP LINE ONLY
+keys esc
+wait idle
+keys ctrl-s
+wait "Save / Export"
+expect-not "Trim to used rows"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-26/tall.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-26/tall.ans"
+# A second export row: 2x beside the 1x.
+keys ctrl-e
+wait "EXPORT 1"
+click 95 29
+wait "EXPORT 2"
+expect "tall@2x"
+expect "● tall.ans"
+keys ctrl-s
+wait idle
+expect-not "● tall.ans"
+keys ctrl-q
+expect-exit 0 5s
+expect-file-contains /tmp/acidtrip-flows/documents-26/tall.ans "TOP LINE ONLY"
+# Reopened: the whole canvas and both rows.
+spawn /tmp/acidtrip-flows/documents-26/tall.ans
+wait "TOP LINE ONLY" 10s
+keys esc
+expect "80x25"
+expect-not "● tall.ans"
+keys ctrl-e
+wait "EXPORT 2"
+expect "Export 2 files"
+shot reopened_panel
+keys alt-shift-e
+wait "exported"
+expect-file /tmp/acidtrip-flows/documents-26/tall.png /tmp/acidtrip-flows/documents-26/tall@2x.png
+keys ctrl-q
+expect-exit 0 5s

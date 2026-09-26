@@ -1822,7 +1822,12 @@ fn export_panel(p: &mut Painter, v: &SidebarView) {
     p.button_at(Rect::new(p.x0, p.y, 14, 1), " + add export ", st, hit);
     p.y += 1;
     let hit = Hit::Export(ExportHit::Folder);
-    let dir = exporter::pretty(&exporter::folder(tab));
+    // Untitled: Export asks where to save the piece first.
+    let dir = if exporter::needs_saving(tab) {
+        "where you save it".to_string()
+    } else {
+        exporter::pretty(&exporter::folder(tab))
+    };
     let room = INNER as usize - 3;
     let n = dir.chars().count();
     let dir = if n > room { format!("…{}", dir.chars().skip(n + 1 - room).collect::<String>()) } else { dir };
@@ -2048,8 +2053,12 @@ pub fn tip(hit: Hit, ts: &ToolState, keymap: &Keymap, slot: Slot) -> String {
             },
             ReplayHit::SkipIdle => "cut long pauses down to a second".into(),
             ReplayHit::HideUndone => "show only the work that survived (skip what was undone)".into(),
-            ReplayHit::Export(true) => "save the replay as an animated GIF beside the piece".into(),
-            ReplayHit::Export(false) => "save the replay as an asciinema .cast beside the piece".into(),
+            ReplayHit::Export(true) => {
+                "save the replay as an animated GIF beside the piece (asks where if untitled)".into()
+            }
+            ReplayHit::Export(false) => {
+                "save the replay as an asciinema .cast beside the piece (asks where if untitled)".into()
+            }
         },
         Hit::Color(_) => match slot {
             Slot::Fg => "set the foreground · Alt-click sets the background".into(),

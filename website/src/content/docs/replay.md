@@ -32,7 +32,7 @@ Replay never touches the piece: leaving shows the live document again, and any e
 
 ## Saving a replay
 
-**↓ GIF** and **↓ .cast** save the replay next to the file as an animated GIF or an asciinema recording. From the command line:
+**↓ GIF** and **↓ .cast** save the replay next to the file as an animated GIF or an asciinema recording. An untitled piece is saved first: *Save as…* asks where, and the replay goes next to it. From the command line:
 
 ```sh
 acidtrip replay art.acid art.gif              # fit into 30 s
@@ -41,4 +41,4 @@ acidtrip replay art.acid art.cast --speed 4 --hide-undone
 
 ## Where the history lives
 
-Every edit, undo and redo is logged with its time and saved zstd-compressed inside `.acid` files, so the history travels with the piece. Other formats don't keep it, and neither do recovery snapshots or versions. A piece without history plays the modem reveal instead.
+Every edit, undo and redo is logged with its time and saved zstd-compressed inside `.acid` files, so the history travels with the piece. Recovery snapshots keep it too, so a piece restored after a crash still replays. Other formats and versions don't keep it. A piece without history plays the modem reveal instead.

@@ -46,6 +46,8 @@ So `{name}@2x` and `{name}-{frame}` both work. The editor also lists every forma
 - **Folder:** next to the file unless you click it and pick another. Right-click puts it back next to the piece.
 - **↓ Export N files** writes every row, replacing old files, and lists what it wrote. <kbd>Alt-Shift-E</kbd> (palette › *Export: write every row now*) does the same from anywhere.
 
-The rows and folder are saved with the piece in `.acid` files. For a single file, *Export as…* is still there: the panel's `as…` button, or the palette.
+The rows and folder are saved with the piece in `.acid` files. Formats with no room for them (`.ans`, `.xb` and the other art files) keep them in acidtrip's data folder, by file, so they are back when you reopen it. For a single file, *Export as…* is still there: the panel's `as…` button, or the palette.
+
+An untitled piece has nowhere to export to yet, so the folder reads *where you save it*. Export opens *Save as…* first, and the files go next to the piece you save. Pick a folder first to export without saving.
 
 See [Formats](/docs/formats/) for what each format writes.

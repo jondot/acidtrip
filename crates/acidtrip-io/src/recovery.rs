@@ -4,6 +4,7 @@
 use std::path::{Path, PathBuf};
 
 use acidtrip_core::Document;
+use acidtrip_core::replay::EditLog;
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
@@ -18,10 +19,11 @@ pub struct RecoveryEntry {
     pub path: PathBuf,
 }
 
-pub fn write(recovery_dir: &Path, doc: &Document, file: Option<&Path>) -> anyhow::Result<()> {
+/// Keep `doc` and its edit log (so replay survives a crash).
+pub fn write(recovery_dir: &Path, doc: &Document, file: Option<&Path>, log: Option<&EditLog>) -> anyhow::Result<()> {
     let id = doc.meta.id;
     let path = recovery_dir.join(format!("{id}.acid"));
-    write_atomic(&path, &crate::native::to_bytes(doc)?)?;
+    write_atomic(&path, &crate::format::native::save(doc, log)?)?;
     let entry = RecoveryEntry {
         doc_id: id,
         file: file.map(Path::to_path_buf),
@@ -48,8 +50,13 @@ pub fn list(recovery_dir: &Path) -> Vec<RecoveryEntry> {
 }
 
 pub fn load(entry: &RecoveryEntry) -> anyhow::Result<Document> {
+    Ok(load_with_log(entry)?.0)
+}
+
+/// The document and the edit log kept with it (none in older recovery files).
+pub fn load_with_log(entry: &RecoveryEntry) -> anyhow::Result<(Document, Option<EditLog>)> {
     let bytes = std::fs::read(&entry.path).with_context(|| format!("reading {}", entry.path.display()))?;
-    crate::native::from_bytes(&bytes)
+    crate::format::native::load_with_log(&bytes)
 }
 
 /// Remove after a clean save/close.

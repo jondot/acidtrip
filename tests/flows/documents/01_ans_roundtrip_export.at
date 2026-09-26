@@ -1,7 +1,9 @@
 # A piece's life: draw, save as .ans, quit, reopen from the command line,
 # edit, undo back past the reopen point, save as .xb, then export a 2x PNG
-# through the EXPORT panel. Both files exist and the .xb reopens.
+# through the EXPORT panel. Both files exist and the .xb reopens at full
+# height with its export row.
 size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-01/home
 spawn
 wait "Ctrl-K commands" 10s
 keys esc
@@ -83,11 +85,11 @@ spawn /tmp/acidtrip-flows/documents-01/life.xb
 wait "EDITED" 10s
 expect "LIFE OF A PIECE"
 expect "life.xb"
-# XBin keeps the art (trimmed to the used rows) but not the export rows:
-# only .acid keeps those, so the panel is back to one 1x PNG.
-expect "80x3"
+# XBin keeps the whole canvas, blank rows too. It has no room for the
+# export rows: acidtrip keeps them for the file, so the 2x row is back.
+expect "80x25"
 keys esc
 keys ctrl-e
 wait "EXPORT"
-expect "1x  life "
+expect "2x  life@2x"
 shot reopened_panel

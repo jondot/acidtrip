@@ -56,9 +56,10 @@ impl RecoveryDialog {
 
 /// One document at a time: restore the chosen one; others stay recoverable.
 fn restore(e: RecoveryEntry) -> Outcome {
-    Outcome::Then(Box::new(move |app: &mut App| match recovery::load(&e) {
-        Ok(doc) => {
-            let mut t = Tab::new(doc, e.file.clone());
+    Outcome::Then(Box::new(move |app: &mut App| match recovery::load_with_log(&e) {
+        Ok((doc, log)) => {
+            // The edit log comes back too, so replay still has the whole piece.
+            let mut t = Tab::new(doc, e.file.clone()).with_log(log);
             // Keep it dirty so the user saves it.
             t.history.mark_saved();
             t.edit("Recovered", |b| b.replace_meta(|_| {}));

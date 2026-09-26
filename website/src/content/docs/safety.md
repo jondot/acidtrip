@@ -12,7 +12,7 @@ Every edit is undoable, with unlimited history. A brush stroke is one step, and 
 
 ## Recovery
 
-Unsaved documents are autosaved every 20 seconds. After a crash, the next start offers to restore them: <kbd>Enter</kbd> restores, <kbd>D</kbd> discards them all, and <kbd>Esc</kbd> asks again later.
+Unsaved documents are autosaved every 20 seconds, with their edit history, so a restored piece still [replays](/docs/replay/). After a crash, the next start offers to restore them: <kbd>Enter</kbd> restores, <kbd>D</kbd> discards them all, and <kbd>Esc</kbd> asks again later.
 
 ## Versions
 

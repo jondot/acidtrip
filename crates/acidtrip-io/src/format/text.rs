@@ -20,7 +20,7 @@ pub fn load_pcb(data: &[u8]) -> anyhow::Result<Document> {
     let body = &body[..body.iter().position(|&b| b == 0x1A).unwrap_or(body.len())];
     let mut scr = Screen::new(sauce::width(rec.as_ref()).unwrap_or(80), false);
     PcBoardParser::new().parse(body, &mut scr);
-    Ok(finish(scr.into_grid(25), rec.as_ref(), None, false, false))
+    Ok(finish(scr.into_grid(sauce::min_rows(rec.as_ref())), rec.as_ref(), None, false, false))
 }
 
 pub fn save_pcb(doc: &Document, opts: &SaveOptions) -> anyhow::Result<Vec<u8>> {
@@ -143,7 +143,7 @@ pub fn load_avt(data: &[u8]) -> anyhow::Result<Document> {
         start = i.min(b.len());
     }
     ansi.parse(&b[start.min(b.len())..], &mut scr);
-    Ok(finish(scr.into_grid(25), rec.as_ref(), None, false, false))
+    Ok(finish(scr.into_grid(sauce::min_rows(rec.as_ref())), rec.as_ref(), None, false, false))
 }
 
 pub fn save_avt(doc: &Document, opts: &SaveOptions) -> anyhow::Result<Vec<u8>> {
@@ -224,7 +224,7 @@ pub fn load_ascii(data: &[u8]) -> anyhow::Result<Document> {
         .collect();
     let lines = &lines[..lines.iter().rposition(|l| !l.is_empty()).map_or(0, |i| i + 1)];
     let w = lines.iter().map(Vec::len).max().unwrap_or(0).max(sauce::width(rec.as_ref()).unwrap_or(80));
-    let mut g = Grid::new(w, lines.len().max(25));
+    let mut g = Grid::new(w, lines.len().max(sauce::min_rows(rec.as_ref())));
     for (y, l) in lines.iter().enumerate() {
         for (x, &ch) in l.iter().enumerate() {
             g.set(x, y, Cell { ch, ..Cell::BLANK });

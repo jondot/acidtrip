@@ -3,7 +3,7 @@
 
 mod ansi;
 mod binary;
-mod native;
+pub(crate) mod native;
 mod raster;
 mod replay;
 mod sauce;

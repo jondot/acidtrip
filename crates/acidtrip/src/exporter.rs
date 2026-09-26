@@ -26,6 +26,12 @@ pub fn base_dir(tab: &Tab) -> PathBuf {
     }
 }
 
+/// An untitled piece whose rows have no folder of their own picked: its
+/// exports would land wherever acidtrip was started.
+pub fn needs_saving(tab: &Tab) -> bool {
+    tab.file.is_none() && !tab.doc.meta.exports.folder.as_deref().is_some_and(|f| Path::new(f.trim()).is_absolute())
+}
+
 /// Where the files go.
 pub fn folder(tab: &Tab) -> PathBuf {
     exports::folder(&tab.doc.meta.exports, &base_dir(tab))
@@ -105,8 +111,14 @@ impl App {
         t.export_panel = !t.export_panel;
     }
 
-    /// Write every row. Existing files are replaced without asking.
+    /// Write every row. Existing files are replaced without asking. An
+    /// untitled piece has nowhere to put them yet: Save as… asks first.
     pub fn export_now(&mut self) {
+        if needs_saving(self.tab()) {
+            let d = dialogs::export::ExportDialog::save_first(self, dialogs::export::After::ExportRows);
+            self.dialogs.push(Box::new(d));
+            return;
+        }
         let tab = self.tab();
         let jobs = match plan(tab) {
             Ok(jobs) => jobs,
@@ -197,7 +209,11 @@ impl App {
     /// Remember the export folder with the piece (None: next to it).
     fn set_export_folder(&mut self, chosen: Option<PathBuf>) {
         let base = base_dir(self.tab());
-        let stored = chosen.and_then(|p| exports::store_folder(&p, &base));
+        // An untitled piece has no folder yet: keep the one picked as it is.
+        let stored = match self.tab().file {
+            None => chosen.map(|p| p.display().to_string()),
+            Some(_) => chosen.and_then(|p| exports::store_folder(&p, &base)),
+        };
         if stored != self.tab().doc.meta.exports.folder {
             self.tab_mut().edit("Export folder", |b| b.replace_meta(|m| m.exports.folder = stored));
         }
@@ -234,11 +250,17 @@ pub fn tip(app: &App, h: ExportHit) -> String {
         },
         ExportHit::Remove(_) => "remove this export".into(),
         ExportHit::Add => "add an export: another format or size".into(),
+        ExportHit::Folder if needs_saving(tab) => {
+            "untitled: files go next to the piece once it is saved — click to pick a folder".into()
+        }
         ExportHit::Folder => {
             format!("files go to {} — click to change, right-click: next to the piece", pretty(&folder(tab)))
         }
         ExportHit::Run => {
             let key = app.keymap.key_for(Action::ExportNow).map(|k| format!("  [{k}]")).unwrap_or_default();
+            if needs_saving(tab) {
+                return format!("untitled: asks where to save the piece, then writes its exports next to it{key}");
+            }
             match plan(tab) {
                 Ok(jobs) => {
                     let names: Vec<String> = jobs
@@ -274,5 +296,19 @@ mod tests {
         assert_eq!((name(&tab), size(&tab)), ("art-selection".to_string(), (10, 5)));
         tab.export_whole = true;
         assert_eq!(name(&tab), "art");
+    }
+
+    #[test]
+    fn untitled_pieces_ask_where_first() {
+        let mut tab = Tab::new(Document::new(acidtrip_core::DocKind::Classic, 80, 25), None);
+        assert!(needs_saving(&tab));
+        // A folder relative to wherever acidtrip was started is no answer.
+        tab.doc.meta.exports.folder = Some("out".into());
+        assert!(needs_saving(&tab));
+        tab.doc.meta.exports.folder = Some("/tmp/out".into());
+        assert!(!needs_saving(&tab));
+        tab.doc.meta.exports.folder = None;
+        tab.file = Some("/x/art.ans".into());
+        assert!(!needs_saving(&tab));
     }
 }

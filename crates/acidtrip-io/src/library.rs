@@ -52,6 +52,7 @@ impl Paths {
             self.brushes_dir(),
             self.patterns_dir(),
             self.versions_dir(),
+            self.exports_dir(),
             self.recovery_dir(),
             self.sockets_dir(),
         ] {
@@ -96,6 +97,11 @@ impl Paths {
 
     pub fn versions_dir(&self) -> PathBuf {
         self.data_dir.join("versions")
+    }
+
+    /// The EXPORT panel's rows for art files that can't hold them (.ans, .xb …).
+    pub fn exports_dir(&self) -> PathBuf {
+        self.data_dir.join("exports")
     }
 
     pub fn recovery_dir(&self) -> PathBuf {

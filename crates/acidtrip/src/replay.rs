@@ -210,22 +210,28 @@ impl App {
     }
 
     /// Where an export of this replay goes: beside the file.
-    fn replay_path(&self, ext: &str) -> PathBuf {
-        match &self.tab().file {
-            Some(p) => {
-                let stem = p.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
-                p.with_file_name(format!("{stem}-replay.{ext}"))
-            }
-            None => PathBuf::from(format!("untitled-replay.{ext}")),
-        }
+    fn replay_path(&self, ext: &str) -> Option<PathBuf> {
+        let p = self.tab().file.as_ref()?;
+        let stem = p.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
+        Some(p.with_file_name(format!("{stem}-replay.{ext}")))
     }
 
+    /// Write the replay beside the piece. An untitled piece is saved first
+    /// (Save as… asks where), so the replay doesn't land wherever acidtrip
+    /// was started.
     pub fn export_replay(&mut self, gif: bool) {
+        if self.replay.is_none() {
+            return;
+        }
+        let Some(path) = self.replay_path(if gif { "gif" } else { "cast" }) else {
+            let d = crate::dialogs::export::ExportDialog::save_first(self, crate::dialogs::export::After::Replay(gif));
+            self.dialogs.push(Box::new(d));
+            return;
+        };
         let Some(r) = &self.replay else { return };
         let o = ReplayExport { timeline: r.tl.options(), speed: SPEEDS[r.speed].1, scale: 1 };
         let log = self.tab().history.log();
         let bytes = if gif { format::replay_gif(log, &o) } else { format::replay_cast(log, &o) };
-        let path = self.replay_path(if gif { "gif" } else { "cast" });
         match bytes.and_then(|b| acidtrip_io::library::write_atomic(&path, &b)) {
             Ok(()) => self.flash(format!("wrote {}", path.display()), Level::Ok),
             Err(e) => self.flash(format!("replay export failed: {e:#}"), Level::Error),

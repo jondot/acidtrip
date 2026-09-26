@@ -446,6 +446,17 @@ mod tests {
     }
 
     #[test]
+    fn untrimmed_saves_keep_the_canvas_height() {
+        let keep = SaveOptions { trim_height: false, ..SaveOptions::default() };
+        let mut d = Document::new(acidtrip_core::DocKind::Classic, 80, 40);
+        d.canvas.layers[0].cells[0] = Some(Cell::new('A', Color::Pal(12), Color::Pal(1)));
+        assert_eq!(load_xbin(&save_xbin(&d, &keep).unwrap()).unwrap().height(), 40);
+        assert_eq!(load_xbin(&save_xbin(&d, &SaveOptions::default()).unwrap()).unwrap().height(), 1);
+        let bin = SaveOptions { sauce: Some(true), ..keep };
+        assert_eq!(load_bin(&save_bin(&d, &bin).unwrap()).unwrap().height(), 40);
+    }
+
+    #[test]
     fn ega_palette_has_vga_colors_in_slots() {
         let e = ega64();
         for (i, &s) in EGA_SLOTS.iter().enumerate() {

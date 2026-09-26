@@ -245,6 +245,7 @@ pub fn paths() -> anyhow::Result<()> {
     println!("fonts     {}", p.fonts_dir().display());
     println!("stencils  {}", p.stencils_dir().display());
     println!("versions  {}", p.versions_dir().display());
+    println!("exports   {}", p.exports_dir().display());
     println!("recovery  {}", p.recovery_dir().display());
     println!("sockets   {}", p.sockets_dir().display());
     Ok(())

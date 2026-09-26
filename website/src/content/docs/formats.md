@@ -20,6 +20,8 @@ glyph: "▣"
 
 Classic documents save losslessly to `.ans`, `.xb` and `.bin`. `.acid` keeps everything: layers, frames, export rows, and the edit history that [Replay](/docs/replay/) plays.
 
+Saving keeps the whole canvas, blank rows at the bottom included, so a piece reopens at its own size. `.ans` files shorter than 25 rows get a SAUCE record that says how tall they are, and acidtrip reads that height back from any file that has one. Other formats keep the [export rows](/docs/export/) for the file in acidtrip's data folder instead.
+
 ## From the command line
 
 ```sh
