@@ -27,7 +27,7 @@ wait "offline: no downloads"
 # The Font dialog; a filter that matches nothing.
 keys f
 wait "Font text"
-keys /
+keys tab
 type zzzq
 wait "no font matches “zzzq”"
 expect-not "No fonts."
@@ -50,7 +50,7 @@ wait "done stamping"
 # F again, with the Font tool on: the chooser again. FIGlet, keyboard only.
 keys f
 wait "Font text"
-keys /
+keys tab
 type banner
 keys enter
 wait "FIGlet"

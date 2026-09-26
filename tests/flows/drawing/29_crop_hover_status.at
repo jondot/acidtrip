@@ -1,0 +1,38 @@
+# After a crop the mouse can be past the new canvas edge: the status bar
+# shows the cursor then, never a cell that no longer exists, and follows
+# the mouse again once it is back over the art
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+click 10 3
+type "AB"
+keys esc
+wait idle
+keys v
+drag 5 2 40 12
+wait "selected 36x11"
+expect "  40,11 "
+keys enter
+wait "Block 36x11"
+keys k
+wait "cropped to 36x11"
+expect "36x11 CLASSIC"
+# the mouse is still at 40,11, past the right edge
+expect-not "40,11"
+expect "   5,1  "
+shot cropped
+# back over the art: the read-out follows it
+mouse move 20 6
+wait idle
+expect "  20,5  "
+# off the art again, next to it: back to the cursor
+mouse move 45 6
+wait idle
+expect-not "45,5"
+expect "   5,1  "
+keys ctrl-z
+wait "undo: Crop"
+expect "80x25 CLASSIC"

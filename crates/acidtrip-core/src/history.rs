@@ -20,6 +20,9 @@ pub struct History {
     /// While a group is open, commits merge into the top undo entry.
     group_open: bool,
     group_started: bool,
+    /// The redo steps (and saved-state flag) the open group's first commit
+    /// set aside: a group that ends up changing nothing gives them back.
+    group_redo: Option<(Vec<Transaction>, bool)>,
     capacity: usize,
     /// Bumped on every change (commit, undo, redo).
     revision: u64,
@@ -48,6 +51,9 @@ impl History {
         doc.apply(&tx);
         if let Some(out) = &mut self.changes {
             out.push(tx.clone());
+        }
+        if self.group_open && !self.group_started && self.group_redo.is_none() {
+            self.group_redo = Some((std::mem::take(&mut self.redo), self.saved_lost));
         }
         // Dropping redo steps drops the saved state if it was among them.
         if self.undo.len() < self.saved_depth {
@@ -81,14 +87,21 @@ impl History {
     pub fn begin_group(&mut self) {
         self.group_open = true;
         self.group_started = false;
+        self.group_redo = None;
     }
 
     /// Close the group. A group that ended up changing nothing (a block
-    /// lifted and put back where it was) leaves no undo step behind.
+    /// lifted and put back where it was) leaves no undo step behind, and
+    /// the redo steps it set aside come back.
     pub fn end_group(&mut self) {
         let noop = |tx: &Transaction| tx.doc.is_empty() && tx.cells.iter().all(|c| c.before == c.after);
+        let stashed = self.group_redo.take();
         if self.group_started && self.undo.last().is_some_and(noop) {
             self.undo.pop();
+            if let Some((redo, lost)) = stashed {
+                self.redo = redo;
+                self.saved_lost = lost;
+            }
         }
         self.group_open = false;
         self.group_started = false;
@@ -408,6 +421,41 @@ mod tests {
         assert_eq!(h.len(), 1, "lifting and putting back is not a step");
         assert_eq!(h.undo_label(), Some("put"));
         assert_eq!(d.canvas.composite(0, 0).ch, 'A');
+    }
+
+    #[test]
+    fn a_group_that_changes_nothing_keeps_redo() {
+        let mut d = Document::new(DocKind::Classic, 5, 1);
+        let mut h = History::new();
+        let t = put(&d, 0, 'A');
+        h.commit(&mut d, t);
+        let t = put(&d, 1, 'B');
+        h.commit(&mut d, t);
+        h.mark_saved();
+        h.undo(&mut d);
+        assert!(h.is_dirty());
+        // A block lifted and put back where it was.
+        h.begin_group();
+        let mut b = TxBuilder::new(&d, "Move");
+        b.set(0, 0, 0, None);
+        let t = b.finish();
+        h.commit(&mut d, t);
+        let t = put(&d, 0, 'A');
+        h.commit(&mut d, t);
+        h.end_group();
+        assert_eq!(h.len(), 1);
+        assert_eq!(h.redo_label(), Some("put"), "a no-op move keeps the redo step");
+        h.redo(&mut d);
+        assert_eq!(d.canvas.composite(1, 0).ch, 'B');
+        assert!(!h.is_dirty(), "redoing back to the save is clean");
+        // A group that does change something drops redo, as any edit does.
+        h.undo(&mut d);
+        h.begin_group();
+        let t = put(&d, 3, 'C');
+        h.commit(&mut d, t);
+        h.end_group();
+        assert!(!h.can_redo());
+        assert!(h.is_dirty());
     }
 
     #[test]

@@ -518,14 +518,27 @@ impl App {
         true
     }
 
-    /// Whether any layer has art in `cells` (what an insert pushes off the edge).
+    /// Whether any unlocked layer has art in `cells` (what an insert pushes
+    /// off the edge; locked layers don't move).
     fn has_art(&self, mut cells: impl Iterator<Item = (usize, usize)>) -> bool {
         let c = &self.tab().doc.canvas;
-        cells.any(|(x, y)| (0..c.layers.len()).any(|l| c.get(l, x, y).is_some_and(|cell| !cell.is_blank())))
+        cells.any(|(x, y)| {
+            (0..c.layers.len()).any(|l| !c.layers[l].locked && c.get(l, x, y).is_some_and(|cell| !cell.is_blank()))
+        })
     }
 
-    /// After an insert: what happened, and a warning when art fell off `edge`.
-    fn edge_note(&mut self, done: String, edge: Option<&str>) {
+    /// Insert or delete a line or column: every unlocked layer shifts,
+    /// locked ones stay put (as they do for every other edit). Says what
+    /// happened, and warns when art fell off `edge`.
+    fn shift_edit(&mut self, label: &str, f: impl FnOnce(&mut TxBuilder), done: String, edge: Option<&str>) {
+        let layers = &self.tab().doc.canvas.layers;
+        if layers.iter().all(|l| l.locked) {
+            self.flash("every layer is locked: unlock one in LAYERS (≡ panel) to shift it", Level::Warn);
+            return;
+        }
+        let kept = layers.iter().any(|l| l.locked);
+        self.tab_mut().edit(label, f);
+        let done = if kept { format!("{done} (locked layers stay put)") } else { done };
         match edge {
             Some(edge) => self.flash(format!("{done}: {edge} fell off the canvas (undo brings it back)"), Level::Warn),
             None => self.flash(done, Level::Info),
@@ -1416,7 +1429,7 @@ impl App {
     /// Erase the cell at the cursor, like the eraser (the cursor stays).
     fn art_erase(&mut self) {
         if !self.key_cursor
-            && let Some(h) = self.hover
+            && let Some(h) = self.canvas_hover()
         {
             self.tab_mut().cursor = h;
         }
@@ -1449,7 +1462,7 @@ impl App {
         // ACiDDraw: the glyph lands at the cursor and the cursor advances. When
         // you've been using the mouse, "the cursor" is where the mouse is.
         if !self.key_cursor
-            && let Some(h) = self.hover
+            && let Some(h) = self.canvas_hover()
         {
             self.tab_mut().cursor = h;
         }
@@ -1491,8 +1504,16 @@ impl App {
         self.dialogs.push(Box::new(dialogs::library::LibraryDialog::studio(self, Some(studio))));
     }
 
+    /// The canvas cell under the mouse, if it's still on the canvas. `hover`
+    /// is set when the mouse moves, so after a crop, resize or undo it can
+    /// point past the edge until the mouse moves again.
+    pub fn canvas_hover(&self) -> Option<(usize, usize)> {
+        let (w, h) = (self.tab().doc.width(), self.tab().doc.height());
+        self.hover.filter(|&(x, y)| x < w && y < h)
+    }
+
     pub fn float(&mut self, clip: Clip, source: FloatSource) {
-        let (x, y) = self.hover.unwrap_or(self.tab().cursor);
+        let (x, y) = self.canvas_hover().unwrap_or(self.tab().cursor);
         if !matches!(self.tools.tool, Tool::Select | Tool::Font | Tool::Stencil) {
             let t = match source {
                 FloatSource::Font => Tool::Font,
@@ -1501,7 +1522,7 @@ impl App {
             };
             self.tools.set_tool(t);
         }
-        self.tools.floating = Some(Floating { clip, x, y, source });
+        self.tools.floating = Some(Floating { clip, x, y, source, lift: None });
         self.flash("click or Space to stamp · Tab: stamp mode · Esc: done", Level::Info);
     }
 
@@ -1551,6 +1572,7 @@ impl App {
                 self.flash(r.map(|l| format!("redo: {l}")).unwrap_or_else(|| "nothing to redo".into()), Level::Info);
             }
             Copy | Cut | CopyAnsi => self.copy(a),
+            MoveSelection => self.lift_selection(),
             Paste => self.paste(),
             SelectAll => {
                 self.tools.set_tool(Tool::Select);
@@ -1560,8 +1582,14 @@ impl App {
                 // Esc first stops a playing animation: it's what's moving.
                 if self.tab_mut().playing.take().is_some() {
                     self.flash("stopped playing", Level::Info);
-                } else if self.tools.floating.take().is_some() {
-                    self.flash("done stamping", Level::Info);
+                } else if let Some(f) = self.tools.floating.take() {
+                    match f.lift {
+                        Some(l) => {
+                            self.tab_mut().selection = Some(l.rect);
+                            self.flash("move cancelled: the block stays where it was", Level::Info);
+                        }
+                        None => self.flash("done stamping", Level::Info),
+                    }
                 } else if self.tools.anchor.take().is_some() {
                     self.flash(format!("{} cancelled", self.tools.tool.name()), Level::Info);
                 } else if self.tools.tool == Tool::Filters
@@ -1605,9 +1633,9 @@ impl App {
                     self.select_tool(Tool::Text);
                 }
             }
-            FlipX => self.transform_selection("Flip X", |c| tools::flip_x(c, true)),
-            FlipY => self.transform_selection("Flip Y", |c| tools::flip_y(c, true)),
-            Rotate180 => self.transform_selection("Rotate", tools::rotate_180),
+            FlipX => self.transform_selection("Flip X", "flipped {block} left to right", |c| tools::flip_x(c, true)),
+            FlipY => self.transform_selection("Flip Y", "flipped {block} upside down", |c| tools::flip_y(c, true)),
+            Rotate180 => self.transform_selection("Rotate", "rotated {block} 180°", tools::rotate_180),
             FillSelection => {
                 let ctx = self.tools.ctx(self.tab(), Button::Left);
                 self.with_selection("Fill", |b, _, r| tools::fill_rect(b, &ctx, r, tools::FillWhat::All));
@@ -1645,24 +1673,23 @@ impl App {
             InsertLine => {
                 let y = self.tab().cursor.1;
                 let lost = self.has_art((0..w).map(|x| (x, h - 1)));
-                self.tab_mut().edit("Insert line", |b| tools::insert_line(b, y));
-                self.edge_note(format!("inserted a line at row {y}"), lost.then_some("the bottom row"));
+                let done = format!("inserted a line at row {y}");
+                self.shift_edit("Insert line", |b| tools::insert_line(b, y), done, lost.then_some("the bottom row"));
             }
             DeleteLine => {
                 let y = self.tab().cursor.1;
-                self.tab_mut().edit("Delete line", |b| tools::delete_line(b, y));
-                self.flash(format!("deleted row {y}"), Level::Info);
+                self.shift_edit("Delete line", |b| tools::delete_line(b, y), format!("deleted row {y}"), None);
             }
             InsertColumn => {
                 let x = self.tab().cursor.0;
                 let lost = self.has_art((0..h).map(|y| (w - 1, y)));
-                self.tab_mut().edit("Insert column", |b| tools::insert_column(b, x));
-                self.edge_note(format!("inserted a column at {x}"), lost.then_some("the right column"));
+                let done = format!("inserted a column at {x}");
+                let edge = lost.then_some("the right column");
+                self.shift_edit("Insert column", |b| tools::insert_column(b, x), done, edge);
             }
             DeleteColumn => {
                 let x = self.tab().cursor.0;
-                self.tab_mut().edit("Delete column", |b| tools::delete_column(b, x));
-                self.flash(format!("deleted column {x}"), Level::Info);
+                self.shift_edit("Delete column", |b| tools::delete_column(b, x), format!("deleted column {x}"), None);
             }
             ClearCanvas => {
                 self.dialogs.push(Box::new(dialogs::prompt::ConfirmDialog::new(
@@ -2161,7 +2188,8 @@ impl App {
         t.edit(label, |b| f(b, layer, r));
     }
 
-    fn transform_selection(&mut self, label: &str, f: impl FnOnce(&Clip) -> Clip) {
+    /// Flip or rotate the selected block in place, and say so.
+    fn transform_selection(&mut self, label: &str, done: &str, f: impl FnOnce(&Clip) -> Clip) {
         let Some(r) = self.tab().selection else {
             self.flash("select an area first (V, drag)", Level::Warn);
             return;
@@ -2177,6 +2205,8 @@ impl App {
             tools::erase(b, layer, r);
             tools::stamp(b, layer, &out, r.x, r.y, tools::StampMode::Opaque);
         });
+        let block = format!("the {}x{} block", r.w, r.h);
+        self.flash(format!("{} (Ctrl-Z to undo)", done.replace("{block}", &block)), Level::Info);
     }
 
     fn copy(&mut self, a: Action) {
@@ -2222,6 +2252,31 @@ impl App {
             Ok(()) => self.flash(format!("{did} {}x{} {what}", r.w, r.h), Level::Ok),
             Err(e) => self.flash(format!("{did} internally (system clipboard: {e})"), Level::Warn),
         }
+    }
+
+    /// Pick the selection up to carry it. Nothing changes until it's put
+    /// down: then the erase and the stamp are one "Move" step, and Esc
+    /// leaves the block where it was.
+    fn lift_selection(&mut self) {
+        let Some(r) = self.tab().selection else {
+            self.flash("select an area first (V, drag)", Level::Warn);
+            return;
+        };
+        if self.layer_blocked() {
+            return;
+        }
+        let (doc, layer) = (self.tab().doc.meta.id, self.tab().layer);
+        let clip = crate::tools_ctl::copy_clip(self.tab(), Some(layer), r);
+        if !matches!(self.tools.tool, Tool::Select | Tool::Font | Tool::Stencil) {
+            self.tools.set_tool(Tool::Select);
+        }
+        let lift = Some(crate::tools_ctl::Lift { doc, layer, rect: r });
+        self.tools.floating = Some(Floating { clip, x: r.x, y: r.y, source: FloatSource::Move, lift });
+        self.tab_mut().selection = None;
+        self.flash(
+            format!("carrying the {}x{} block: click or Space to put it down · Esc: leave it", r.w, r.h),
+            Level::Info,
+        );
     }
 
     fn paste(&mut self) {

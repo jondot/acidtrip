@@ -28,6 +28,8 @@ pub struct FontDialog {
     preview: Option<Result<Clip, String>>,
     preview_key: (usize, String, usize),
     list_area: Rect,
+    filter_area: Rect,
+    text_area: Rect,
     preview_area: Rect,
     /// No TheDraw fonts installed yet (only the bundled FIGlet ones): offer
     /// the download under the preview.
@@ -56,6 +58,8 @@ impl FontDialog {
             preview: None,
             preview_key: (usize::MAX, String::new(), 0),
             list_area: Rect::default(),
+            filter_area: Rect::default(),
+            text_area: Rect::default(),
             preview_area: Rect::default(),
             offer_download,
             btns: Buttons::default(),
@@ -173,10 +177,11 @@ impl Dialog for FontDialog {
             f,
             r,
             "Font text",
-            "type text · ↑↓ font · / filter · ←→ outline style · Enter or click the preview: stamp · Esc",
+            "type text · ↑↓ font · Tab: filter · ←→ outline style · Enter or click the preview: stamp · Esc",
         );
         let [left, right] = Layout::horizontal([Constraint::Length(34), Constraint::Min(20)]).areas(inner);
-        self.filter.render(f, Rect::new(left.x, left.y, left.width, 1), "/ ", self.filter_focus);
+        self.filter_area = Rect::new(left.x, left.y, left.width, 1);
+        self.filter.render(f, self.filter_area, "Find ", self.filter_focus);
         let lr = Rect::new(left.x, left.y + 1, left.width.saturating_sub(1), left.height.saturating_sub(1));
         self.list_area = lr;
         let range = self.list.visible(self.filtered.len(), lr.height as usize);
@@ -188,12 +193,8 @@ impl Dialog for FontDialog {
             .collect();
         f.render_widget(Paragraph::new(lines), lr);
 
-        self.text.render(
-            f,
-            Rect::new(right.x + 1, right.y, right.width.saturating_sub(2), 1),
-            "Text ",
-            !self.filter_focus,
-        );
+        self.text_area = Rect::new(right.x + 1, right.y, right.width.saturating_sub(2), 1);
+        self.text.render(f, self.text_area, "Text ", !self.filter_focus);
         let mut info = format!("{} fonts", self.fonts.len());
         let mut info_style = Style::new().fg(theme::DIM);
         let gaps = self.current().filter(|fi| !fi.charset.is_empty()).map(|fi| missing(&fi.charset, self.shown_text()));
@@ -250,7 +251,7 @@ impl Dialog for FontDialog {
                 let msg = if self.fonts.is_empty() {
                     "No fonts yet — Get TheDraw fonts below".to_string()
                 } else {
-                    format!("no font matches \u{201c}{}\u{201d} — / to change the filter", self.filter.text)
+                    format!("no font matches \u{201c}{}\u{201d} — Tab to change the filter", self.filter.text)
                 };
                 f.render_widget(Paragraph::new(Span::styled(msg, Style::new().fg(theme::DIM))), pr)
             }
@@ -265,8 +266,9 @@ impl Dialog for FontDialog {
                 Outcome::Keep
             }
             KeyCode::Esc => Outcome::Close,
-            KeyCode::Char('/') if !self.filter_focus => {
-                self.filter_focus = true;
+            // '/' is text like any other key: Tab (or a click) gets to the filter.
+            KeyCode::Tab | KeyCode::BackTab => {
+                self.filter_focus = !self.filter_focus;
                 Outcome::Keep
             }
             KeyCode::Enter if self.filter_focus => {
@@ -329,6 +331,8 @@ impl Dialog for FontDialog {
                 }
             }
             MouseEventKind::Down(_) if inside(self.preview_area) => return self.stamp(app),
+            MouseEventKind::Down(_) if inside(self.filter_area) => self.filter_focus = true,
+            MouseEventKind::Down(_) if inside(self.text_area) => self.filter_focus = false,
             MouseEventKind::ScrollDown => {
                 self.list.selected = (self.list.selected + 1).min(self.filtered.len().saturating_sub(1))
             }

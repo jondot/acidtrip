@@ -89,7 +89,7 @@ expect-not "libraries reloaded"
 # The Font tool doesn't list a font from DRM-TUTO.
 keys f
 wait "Font text"
-keys /
+keys tab
 type dream
 wait idle
 expect-not "cut from art"

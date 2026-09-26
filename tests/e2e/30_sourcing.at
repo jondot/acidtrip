@@ -55,7 +55,7 @@ wait idle
 # The new font is in the library after closing the studio: type with it.
 keys f
 wait "Font text"
-keys /
+keys tab
 type dream
 keys enter ctrl-u
 type dr

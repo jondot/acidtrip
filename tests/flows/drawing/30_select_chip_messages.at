@@ -1,0 +1,35 @@
+# The Select tool's ⇆ ⇅ ↻ chips say what they did in the status bar, like
+# the rest of the block operations, and each is one undo step
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+click 10 3
+type "abd"
+click 10 4
+type "XY"
+keys esc
+wait idle
+keys v
+drag 10 3 12 4
+wait "selected 3x2"
+click 97 8
+wait "flipped the 3x2 block left to right (Ctrl-Z to undo)"
+expect-cell 10 3 "b"
+expect-cell 12 3 "a"
+click 100 8
+wait "flipped the 3x2 block upside down (Ctrl-Z to undo)"
+click 103 8
+wait "rotated the 3x2 block 180° (Ctrl-Z to undo)"
+shot chips
+keys ctrl-z
+wait "undo: Rotate"
+keys ctrl-z
+wait "undo: Flip"
+keys ctrl-z
+wait "undo: Flip"
+expect-cell 10 3 "a"
+expect-cell 12 3 "d"
+expect-cell 11 4 "Y"

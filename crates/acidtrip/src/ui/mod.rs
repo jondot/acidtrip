@@ -66,7 +66,7 @@ fn draw_frame(f: &mut Frame, app: &mut App) {
         && app.mouse_idle()
         && matches!(app.tools.tool, Tool::Brush | Tool::Fill)
         && app.tools.opts.brush_mode == acidtrip_core::tools::PaintMode::Char
-        && let Some((hx, hy)) = app.hover
+        && let Some((hx, hy)) = app.canvas_hover()
     {
         overlay.push((hx, hy, app.tab().doc.conform(app.tools.brush.cell())));
     }
@@ -295,7 +295,7 @@ fn draw_status(f: &mut Frame, area: Rect, app: &App, hits: &mut Vec<(Rect, Hit)>
     } else {
         tool.name()
     };
-    let pos = app.hover.filter(|_| tool != Tool::Text).unwrap_or(t.cursor);
+    let pos = app.canvas_hover().filter(|_| tool != Tool::Text).unwrap_or(t.cursor);
     let kind = match d.meta.kind {
         acidtrip_core::DocKind::Classic => "CLASSIC",
         acidtrip_core::DocKind::Modern => "MODERN",

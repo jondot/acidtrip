@@ -47,7 +47,7 @@ wait idle
 keys f
 wait "Font text"
 wait idle
-keys /
+keys tab
 type dream
 wait idle
 expect "cut from art"
@@ -101,7 +101,7 @@ expect-not "Sourcing studio"
 keys f
 wait "Font text"
 wait idle
-keys /
+keys tab
 type dream
 wait idle
 keys esc

@@ -20,7 +20,7 @@ With a selection, <kbd>Enter</kbd> opens the ACiDDraw-style block menu (<kbd>Alt
 |---|---|
 | <kbd>C</kbd> | Copy |
 | <kbd>X</kbd> | Cut |
-| <kbd>M</kbd> | Move (cut and carry) |
+| <kbd>M</kbd> | Move: carry the block and click (or <kbd>Space</kbd>) to put it down. <kbd>Esc</kbd> leaves it where it was |
 | <kbd>E</kbd> | Erase selection |
 | <kbd>F</kbd> | Fill selection with brush |
 | <kbd>O</kbd> | Outline selection with box |
@@ -47,6 +47,8 @@ Palette › *Copy selection as ANSI text* puts the selection on the clipboard as
 | <kbd>Alt-I</kbd> / <kbd>Alt-Y</kbd> | insert / delete a line |
 | <kbd>Alt-Shift-I</kbd> / <kbd>Alt-Shift-Y</kbd> | insert / delete a column |
 
+They shift every unlocked layer. Locked layers stay put.
+
 ## Undo
 
-<kbd>Ctrl-Z</kbd> undoes and <kbd>Ctrl-Y</kbd> (or <kbd>Ctrl-Shift-Z</kbd>) redoes, with unlimited history. Every block action is one step.
+<kbd>Ctrl-Z</kbd> undoes and <kbd>Ctrl-Y</kbd> (or <kbd>Ctrl-Shift-Z</kbd>) redoes, with unlimited history. Every block action is one step, a move included. A move that puts the block back where it was adds no step and keeps what you can redo.

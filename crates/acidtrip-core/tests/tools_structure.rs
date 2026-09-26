@@ -47,6 +47,32 @@ fn line_and_column_ops_table() {
 }
 
 #[test]
+fn line_and_column_ops_leave_locked_layers_alone() {
+    type Op = fn(&mut acidtrip_core::TxBuilder);
+    let cases: &[(&str, Op, &str)] = &[
+        ("insert_line 0", |b| tools::insert_line(b, 0), "   \nabc\ndef"),
+        ("delete_line 0", |b| tools::delete_line(b, 0), "def\nghi\n   "),
+        ("insert_column 0", |b| tools::insert_column(b, 0), " ab\n de\n gh"),
+        ("delete_column 0", |b| tools::delete_column(b, 0), "bc \nef \nhi "),
+    ];
+    for &(name, op, bg) in cases {
+        let mut d = scene();
+        d.canvas.layers[1].locked = true;
+        let before = d.canvas.clone();
+        let tx = run(&mut d, op);
+        assert_eq!(layer_text(&d, 0), bg, "{name} shifts the unlocked background");
+        assert_eq!(layer_text(&d, 1), "~~X\n~~~\nY~~", "{name} leaves the locked layer as it was");
+        assert!(d.canvas.layers[1].locked, "{name} keeps the lock");
+        d.revert(&tx);
+        assert_eq!(d.canvas, before, "{name} undoes exactly");
+        // Everything locked: nothing moves and there is nothing to undo.
+        let mut d = scene();
+        d.canvas.layers.iter_mut().for_each(|l| l.locked = true);
+        assert!(run(&mut d, op).is_empty(), "{name} with every layer locked");
+    }
+}
+
+#[test]
 fn structure_ops_out_of_range_are_noops() {
     let mut d = scene();
     for op in [

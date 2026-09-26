@@ -1,0 +1,39 @@
+# '/' types into the Font tool's text like any other key; Tab or a click
+# on Find gets to the font filter, and Tab or a click on the text comes back
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys f
+wait "Font text"
+wait idle
+type "A/B"
+wait idle
+expect "Text A/B"
+expect "Tab: filter"
+shot slash
+# Tab to the filter, pick a FIGlet font, Tab back and keep typing
+keys tab
+type banner
+wait idle
+expect "Find banner"
+expect "Text A/B"
+keys tab
+type "/C"
+wait idle
+expect "Text A/B/C"
+expect "Find banner"
+# a click on Find focuses the filter, a click on the text goes back
+click 10 4
+keys ctrl-u
+type zzzq
+wait "no font matches “zzzq” — Tab to change the filter"
+expect "Text A/B/C"
+click 60 4
+type "/"
+wait idle
+expect "Text A/B/C/"
+keys esc
+wait idle
+expect-not "Font text"

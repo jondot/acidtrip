@@ -90,7 +90,7 @@ wait "Claude drew" 10s
 keys f
 wait "Font text"
 wait idle
-keys /
+keys tab
 type dream
 wait idle
 expect "Dr. Dream logo"

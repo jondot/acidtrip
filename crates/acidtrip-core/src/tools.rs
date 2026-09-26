@@ -632,11 +632,15 @@ pub fn delete_block(b: &mut TxBuilder, layer: usize, r: Rect) {
 
 // ------------------------------------------------- canvas-wide structure ops
 
-/// Apply `f(layer_index, cells)` to a copy of every layer.
+/// Apply `f(layer_index, cells)` to a copy of every unlocked layer. Locked
+/// layers stay as they are, as they do for every other edit.
 fn map_layers(b: &mut TxBuilder, f: impl Fn(usize, &mut Vec<Option<Cell>>, usize, usize)) {
+    if b.canvas().layers.iter().all(|l| l.locked) {
+        return;
+    }
     b.replace_canvas(|c| {
         let mut out = c.clone();
-        for (li, l) in out.layers.iter_mut().enumerate() {
+        for (li, l) in out.layers.iter_mut().enumerate().filter(|(_, l)| !l.locked) {
             f(li, &mut l.cells, c.width, c.height);
         }
         out

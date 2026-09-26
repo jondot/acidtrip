@@ -51,27 +51,23 @@ expect-cell 3 2 "┌"
 expect-cell 12 8 "┘"
 click 118 8
 wait "Block 10x7"
-# Move (cut and carry) from the menu, stamp it lower down with a click
+# Move from the menu: carry it and put it down lower with a click
 click 20 5
-wait "click or Space to stamp"
+wait "carrying the 10x7 block"
 click 40 15
-wait "stamped"
+wait "moved the 10x7 block"
 expect-cell 40 15 "┌"
 expect-cell 42 16 "█" fg=4
 expect-cell 3 2 " "
 expect-cell 5 3 " "
-# picking a tool ends the stamping
 click 93 2
 wait "Select tool"
-expect-not "stamped"
 # undo by mouse: the Art tool's panel has undo/redo keys
 click 117 3
 wait "art: the left hand"
 click 111 7
-wait "undo: Stamp"
+wait "undo: Move"
 expect-cell 40 15 " "
-click 111 7
-wait "undo: Cut"
 expect-cell 3 2 "┌"
 click 111 7
 wait "undo: Outline"

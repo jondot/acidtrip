@@ -50,6 +50,7 @@ actions! {
     Redo => "redo", "Redo", "Edit";
     Copy => "copy", "Copy", "Edit";
     Cut => "cut", "Cut", "Edit";
+    MoveSelection => "move_selection", "Move selection (carry it)", "Edit";
     Paste => "paste", "Paste", "Edit";
     CopyAnsi => "copy_ansi", "Copy selection as ANSI text", "Edit";
     SelectAll => "select_all", "Select all", "Edit";

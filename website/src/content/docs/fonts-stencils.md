@@ -8,7 +8,7 @@ glyph: "Å"
 
 ## The Font tool
 
-<kbd>F</kbd>, or Å in the tools grid, stamps big text. Click *choose a font…* in its panel to open the font dialog: type your text, <kbd>↑</kbd> <kbd>↓</kbd> pick a font, <kbd>/</kbd> filters the list, <kbd>←</kbd> <kbd>→</kbd> change the outline style, and <kbd>Enter</kbd> stamps it.
+<kbd>F</kbd>, or Å in the tools grid, stamps big text. Click *choose a font…* in its panel to open the font dialog: type your text, <kbd>↑</kbd> <kbd>↓</kbd> pick a font, <kbd>Tab</kbd> (or a click on *Find*) switches between your text and the font filter, <kbd>←</kbd> <kbd>→</kbd> change the outline style, and <kbd>Enter</kbd> stamps it.
 
 ![The font dialog with text previewed in a TheDraw font](/shots/font-dialog.png "The font dialog: type, pick a font, stamp. Shown here: Cyanid Red, a TheDraw font from the tdfiglet collection.")
 

@@ -51,7 +51,7 @@ keys esc esc esc esc
 wait idle
 keys f
 wait "Font text"
-keys /
+keys tab
 type stygian
 keys enter
 keys ctrl-u

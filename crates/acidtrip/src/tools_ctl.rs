@@ -5,7 +5,7 @@ use acidtrip_core::charsets::{self, Charset};
 use acidtrip_core::tools::brush::{BrushSpec, GlyphSet};
 use acidtrip_core::tools::pattern::{self, Pattern, PatternCtx};
 use acidtrip_core::tools::{self, BoxStyle, Brush, Ctx, FillMatch, PaintMode, Rect, ShapeFill, StampMode, Symmetry};
-use acidtrip_core::{Cell, Clip, Color, TxBuilder};
+use acidtrip_core::{Cell, Clip, Color, LayerKind, TxBuilder};
 use acidtrip_io::gradient;
 use std::rc::Rc;
 
@@ -300,6 +300,18 @@ pub struct Floating {
     pub x: usize,
     pub y: usize,
     pub source: FloatSource,
+    /// A block carried off the canvas (block menu › Move): it is still in
+    /// place until it is put down, and then leaving its spot and landing
+    /// are one undo step. Esc leaves it where it was.
+    pub lift: Option<Lift>,
+}
+
+/// Where a carried block came from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Lift {
+    pub doc: uuid::Uuid,
+    pub layer: usize,
+    pub rect: Rect,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -816,7 +828,7 @@ impl ToolState {
                     let clip = copy_clip(tab, Some(layer), sel);
                     tab.history.begin_group();
                     tab.edit("Move", |b| tools::erase(b, layer, sel));
-                    self.floating = Some(Floating { clip, x: sel.x, y: sel.y, source: FloatSource::Move });
+                    self.floating = Some(Floating { clip, x: sel.x, y: sel.y, source: FloatSource::Move, lift: None });
                     self.drag = Drag::Moving { grab: (x - sel.x, y - sel.y), from: (sel.x, sel.y) };
                     tab.selection = None;
                 } else {
@@ -1099,6 +1111,25 @@ impl ToolState {
 
     pub fn stamp_floating(&mut self, tab: &mut Tab) -> Option<String> {
         let f = self.floating.clone()?;
+        if let Some(lift) = f.lift {
+            // A carried block: leaving its spot and landing are one step (none
+            // at all when it lands where it was). Another document only gets a copy.
+            let from = Some(lift).filter(|l| l.doc == tab.doc.meta.id && l.layer < tab.doc.canvas.layers.len());
+            let layer = from.map_or(tab.layer, |l| l.layer);
+            tab.edit("Move", |b| {
+                if let Some(l) = from {
+                    tools::erase(b, l.layer, l.rect);
+                }
+                tools::stamp(b, layer, &f.clip, f.x, f.y, StampMode::Opaque);
+            });
+            tab.selection = Some(Rect::new(f.x, f.y, f.clip.width, f.clip.height));
+            self.floating = None;
+            let (w, h) = (f.clip.width, f.clip.height);
+            if from.is_some_and(|l| (l.rect.x, l.rect.y) == (f.x, f.y)) {
+                return Some(format!("the {w}x{h} block is back where it was"));
+            }
+            return Some(format!("moved the {w}x{h} block (Ctrl-Z to undo)"));
+        }
         let layer = tab.layer;
         let mode = if f.source == FloatSource::Move { StampMode::Opaque } else { self.opts.stamp_mode };
         tab.edit("Stamp", |b| tools::stamp(b, layer, &f.clip, f.x, f.y, mode));
@@ -1120,6 +1151,24 @@ impl ToolState {
         }
         let mut out = vec![];
         if let Some(f) = &self.floating {
+            // A carried block's spot shows as it will be once the block is gone.
+            if let Some(l) = f.lift.filter(|l| l.doc == tab.doc.meta.id) {
+                let c = &tab.doc.canvas;
+                for y in l.rect.y..(l.rect.y + l.rect.h).min(c.height) {
+                    for x in l.rect.x..(l.rect.x + l.rect.w).min(c.width) {
+                        let i = y * c.width + x;
+                        let under = c
+                            .layers
+                            .iter()
+                            .enumerate()
+                            .rev()
+                            .filter(|(li, layer)| *li != l.layer && layer.visible && layer.kind == LayerKind::Normal)
+                            .find_map(|(_, layer)| layer.cells[i])
+                            .unwrap_or(Cell::BLANK);
+                        out.push((x, y, under));
+                    }
+                }
+            }
             // Show what a stamp would do: in clear and under modes blank
             // cells are see-through, and under skips cells with art.
             let mode = if f.source == FloatSource::Move { StampMode::Opaque } else { self.opts.stamp_mode };
@@ -1382,7 +1431,7 @@ mod tests {
         clip.set(0, 0, art('A'));
         clip.set(1, 0, art(' '));
         clip.set(2, 0, art('B'));
-        ts.floating = Some(Floating { clip, x: 0, y: 2, source: FloatSource::Paste });
+        ts.floating = Some(Floating { clip, x: 0, y: 2, source: FloatSource::Paste, lift: None });
         let shown = |ts: &ToolState, tab: &Tab| ts.preview(tab).iter().map(|&(x, _, c)| (x, c.ch)).collect::<Vec<_>>();
         ts.opts.stamp_mode = StampMode::Transparent;
         assert_eq!(shown(&ts, &tab), [(0, 'A'), (2, 'B')], "a blank lets the art show through");
@@ -1393,5 +1442,71 @@ mod tests {
         assert_eq!(shown(&ts, &tab), [(0, 'A')], "under skips cells that have art");
         ts.floating.as_mut().unwrap().source = FloatSource::Move;
         assert_eq!(shown(&ts, &tab).len(), 3, "a move always lands opaque");
+    }
+
+    /// A tab with "AB" at (1,1) and one undone edit waiting to be redone.
+    fn art_with_redo() -> (ToolState, Tab) {
+        let (mut ts, mut tab) = setup(&["x"]);
+        ts.set_tool(Tool::Select);
+        let art = |c| Some(Cell::new(c, Color::WHITE, Color::BLACK));
+        tab.edit("Paint", |b| {
+            b.set(0, 1, 1, art('A'));
+            b.set(0, 2, 1, art('B'));
+        });
+        tab.edit("Paint", |b| b.set(0, 9, 9, art('Z')));
+        tab.undo();
+        assert!(tab.history.can_redo());
+        (ts, tab)
+    }
+
+    fn carry(ts: &mut ToolState, tab: &Tab, rect: Rect) {
+        let clip = copy_clip(tab, Some(0), rect);
+        let lift = Some(Lift { doc: tab.doc.meta.id, layer: 0, rect });
+        ts.floating = Some(Floating { clip, x: rect.x, y: rect.y, source: FloatSource::Move, lift });
+    }
+
+    #[test]
+    fn a_carried_block_moves_in_one_step() {
+        let (mut ts, mut tab) = art_with_redo();
+        let steps = tab.history.len();
+        carry(&mut ts, &tab, Rect::new(1, 1, 2, 1));
+        assert_eq!(tab.history.len(), steps, "picking it up changes nothing");
+        assert_eq!(ch(&tab, 1, 1), 'A');
+        let msg = ts.press(&mut tab, 5, 3, Button::Left);
+        assert_eq!(msg.as_deref(), Some("moved the 2x1 block (Ctrl-Z to undo)"));
+        assert_eq!((ch(&tab, 5, 3), ch(&tab, 6, 3)), ('A', 'B'));
+        assert!(tab.doc.canvas.composite(1, 1).is_blank());
+        assert_eq!(tab.history.len(), steps + 1);
+        assert_eq!(tab.undo().as_deref(), Some("Move"));
+        assert_eq!((ch(&tab, 1, 1), ch(&tab, 2, 1)), ('A', 'B'), "one undo puts it back");
+        assert!(tab.doc.canvas.composite(5, 3).is_blank());
+    }
+
+    #[test]
+    fn moves_that_change_nothing_keep_redo() {
+        // A carried block put down where it was.
+        let (mut ts, mut tab) = art_with_redo();
+        let steps = tab.history.len();
+        carry(&mut ts, &tab, Rect::new(1, 1, 2, 1));
+        let msg = ts.press(&mut tab, 1, 1, Button::Left);
+        assert_eq!(msg.as_deref(), Some("the 2x1 block is back where it was"));
+        assert_eq!(tab.history.len(), steps);
+        assert!(tab.history.can_redo(), "redo survives");
+        // A dragged selection let go where it started.
+        let (mut ts, mut tab) = art_with_redo();
+        tab.selection = Some(Rect::new(1, 1, 2, 1));
+        ts.press(&mut tab, 1, 1, Button::Left);
+        ts.drag_to(&mut tab, 3, 2);
+        ts.drag_to(&mut tab, 1, 1);
+        ts.release(&mut tab, 1, 1);
+        assert_eq!((ch(&tab, 1, 1), ch(&tab, 2, 1)), ('A', 'B'));
+        assert_eq!(tab.history.len(), steps);
+        assert_eq!(tab.history.redo_label(), Some("Paint"), "redo survives");
+        // A real move still drops redo.
+        tab.selection = Some(Rect::new(1, 1, 2, 1));
+        ts.press(&mut tab, 1, 1, Button::Left);
+        ts.release(&mut tab, 4, 4);
+        assert_eq!(tab.history.len(), steps + 1);
+        assert!(!tab.history.can_redo());
     }
 }

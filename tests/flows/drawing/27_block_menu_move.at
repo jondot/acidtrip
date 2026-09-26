@@ -1,0 +1,91 @@
+# Move from the block menu: the block is carried without changing
+# anything, put down with a click as one undo step, Esc leaves it where it
+# was, and putting it down where it started adds no step and keeps redo
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+click 5 3
+type "MOVE"
+keys esc
+wait idle
+keys v
+drag 5 3 8 3
+wait "selected 4x1"
+keys enter
+wait "Block 4x1"
+keys m
+wait "carrying the 4x1 block"
+mouse move 20 10
+wait idle
+# the block shows where it would land, its old spot shows empty
+expect-cell 20 10 "M"
+expect-cell 23 10 "E"
+expect-cell 5 3 " "
+shot carrying
+click 20 10
+wait "moved the 4x1 block"
+expect-cell 20 10 "M"
+expect-cell 5 3 " "
+# one undo takes the whole move back
+keys ctrl-z
+wait "undo: Move"
+expect-cell 5 3 "M"
+expect-cell 8 3 "E"
+expect-cell 20 10 " "
+# Esc while carrying: the block stays put and nothing is added
+keys esc
+wait idle
+drag 5 3 8 3
+wait "selected 4x1"
+keys enter
+wait "Block 4x1"
+keys m
+wait "carrying the 4x1 block"
+mouse move 30 12
+wait idle
+expect-cell 30 12 "M"
+keys esc
+wait "move cancelled: the block stays where it was"
+expect-cell 5 3 "M"
+expect-cell 30 12 " "
+# put it down where it was: no step, and the undone move can still be redone
+keys enter
+wait "Block 4x1"
+keys m
+wait "carrying the 4x1 block"
+mouse move 5 3
+wait idle
+click 5 3
+wait "the 4x1 block is back where it was"
+expect-cell 5 3 "M"
+keys ctrl-y
+wait "redo: Move"
+expect-cell 20 10 "M"
+expect-cell 5 3 " "
+keys ctrl-z
+wait "undo: Move"
+keys ctrl-z
+wait "undo: Type"
+expect-cell 5 3 " "
+keys ctrl-y ctrl-y
+wait "redo: Move"
+expect-cell 20 10 "M"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-27/moved.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-27/moved.ans"
+expect-file /tmp/acidtrip-flows/drawing-27/moved.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-27/moved.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 20 10 "M"
+expect-cell 23 10 "E"
+expect-cell 5 3 " "

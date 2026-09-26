@@ -13,7 +13,7 @@ use crate::ui::widgets::{ListState, list_line, popup};
 const ITEMS: &[(char, Action)] = &[
     ('c', Action::Copy),
     ('x', Action::Cut),
-    ('m', Action::Cut),
+    ('m', Action::MoveSelection),
     ('e', Action::DeleteSelection),
     ('f', Action::FillSelection),
     ('o', Action::OutlineSelection),
@@ -42,20 +42,14 @@ impl BlockMenu {
     }
 
     fn run(i: usize) -> Outcome {
-        let (key, a) = ITEMS[i];
-        Outcome::Then(Box::new(move |app: &mut App| {
-            app.run(a);
-            if key == 'm' {
-                // Move = cut + carry.
-                app.run(Action::Paste);
-            }
-        }))
+        let (_, a) = ITEMS[i];
+        Outcome::Then(Box::new(move |app: &mut App| app.run(a)))
     }
 }
 
 fn label(key: char, a: Action) -> &'static str {
     match key {
-        'm' => "Move (cut and carry)",
+        'm' => "Move (carry it)",
         'i' => "Ask AI about this block…",
         _ => a.title(),
     }

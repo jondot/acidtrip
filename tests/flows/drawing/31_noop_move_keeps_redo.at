@@ -1,0 +1,60 @@
+# A move that changes nothing keeps redo: a click inside the selection, or
+# a drag that comes back to where it started, adds no undo step and the
+# stroke undone before it can still be redone; a real move drops redo
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+click 5 3
+type "MOVE"
+keys esc
+wait idle
+keys b
+drag 30 10 34 10
+wait idle
+expect-cell 32 10 "█"
+keys ctrl-z
+wait "undo: Brush"
+expect-cell 32 10 " "
+keys v
+drag 5 3 8 3
+wait "selected 4x1"
+# a click inside: nothing moves
+click 6 3
+wait idle
+expect-cell 5 3 "M"
+# a drag away and back: nothing moves
+keys esc
+wait idle
+drag 5 3 8 3
+wait "selected 4x1"
+mouse down left 6 3
+mouse drag left 12 7
+wait idle
+mouse drag left 6 3
+wait idle
+mouse up left 6 3
+wait idle
+expect-cell 5 3 "M"
+expect-cell 8 3 "E"
+keys ctrl-y
+wait "redo: Brush"
+expect-cell 32 10 "█"
+keys ctrl-z
+wait "undo: Brush"
+# a real move is an edit: redo is gone
+keys esc
+wait idle
+drag 5 3 8 3
+wait "selected 4x1"
+drag 6 3 16 5
+wait idle
+expect-cell 15 5 "M"
+keys ctrl-y
+wait "nothing to redo"
+expect-cell 32 10 " "
+keys ctrl-z
+wait "undo: Move"
+expect-cell 5 3 "M"

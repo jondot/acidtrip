@@ -72,7 +72,7 @@ expect-not "Sourcing studio"
 # The Font tool lists the new font: filter to it, type a word of its letters.
 keys f
 wait "Font text"
-keys /
+keys tab
 type drm
 keys enter
 wait "cut from art"

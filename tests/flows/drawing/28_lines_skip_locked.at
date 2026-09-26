@@ -1,0 +1,75 @@
+# Inserting and deleting lines and columns leaves locked layers alone: the
+# unlocked layer shifts, the locked one stays put and the status says so;
+# with every layer locked nothing moves and it warns
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys b
+drag 5 12 15 12
+wait idle
+expect-cell 10 12 "█"
+keys alt-shift-n
+wait "L2/2"
+keys t
+click 5 8
+type "TOP"
+keys esc
+wait idle
+expect-cell 5 8 "T"
+# lock the Background from its chip in the Layers dialog
+keys ctrl-l
+wait "V show/hide"
+click 60 20
+wait "■ locked"
+keys esc
+wait idle
+# insert a line at the text: it moves down, the locked stroke doesn't
+keys alt-i
+wait "(locked layers stay put)"
+expect "inserted a line at row"
+expect-cell 5 9 "T"
+expect-cell 5 8 " "
+expect-cell 10 12 "█"
+expect-cell 10 13 " "
+shot inserted
+# a column too
+keys alt-shift-i
+wait "(locked layers stay put)"
+expect "inserted a column at"
+expect-cell 10 12 "█"
+expect-cell 5 12 "█"
+expect-cell 15 12 "█"
+expect-cell 16 12 " "
+# delete the line again: still only the text moves
+keys ctrl-z
+wait "undo: Insert column"
+keys ctrl-z
+wait "undo: Insert line"
+expect-cell 5 8 "T"
+expect-cell 10 12 "█"
+# lock Layer 2 as well: now there is nothing to shift
+keys ctrl-l
+wait "V show/hide"
+click 60 16
+wait idle
+keys esc
+wait idle
+keys alt-i
+wait "every layer is locked"
+expect-cell 5 8 "T"
+expect-cell 5 9 " "
+keys ctrl-z
+wait "undo: Layer properties"
+keys alt-i
+wait "(locked layers stay put)"
+expect-cell 5 9 "T"
+expect-cell 10 12 "█"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-28/locked.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-28/locked.ans"
+expect-file /tmp/acidtrip-flows/drawing-28/locked.ans

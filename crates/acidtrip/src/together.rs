@@ -387,7 +387,7 @@ impl App {
         if !self.together.connected() {
             return;
         }
-        let at = if self.key_cursor { Some(self.tab().cursor) } else { self.hover };
+        let at = if self.key_cursor { Some(self.tab().cursor) } else { self.canvas_hover() };
         let at = at.map(|(x, y)| (x as u32, y as u32));
         let t = &mut self.together;
         if at == t.sent_cursor || t.cursor_sent_at.is_some_and(|s| s.elapsed() < CURSOR_EVERY) {
