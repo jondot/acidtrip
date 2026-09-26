@@ -1,0 +1,16 @@
+# Text tool, charset glyphs, cursor keys
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys t
+type ACiD PRODUCTiONS
+keys enter
+keys f1 f2 f3 f4 f5 f6 f7 f8 f9 f10
+keys enter
+type trip
+keys esc
+wait idle
+expect "ACiD PRODUCTiONS"
+expect "trip"
+shot text

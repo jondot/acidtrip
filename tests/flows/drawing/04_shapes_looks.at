@@ -1,0 +1,103 @@
+# Rectangles in three looks (single line, double line, filled shade), an
+# ellipse and a line; switching tool halfway through a shape drops it; undo
+# everything, redo everything
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys r
+wait "RECT"
+click 102 8
+wait idle
+drag 5 3 20 8
+wait idle
+expect-cell 5 3 "┌"
+expect-cell 20 3 "┐"
+expect-cell 5 8 "└"
+expect-cell 20 8 "┘"
+expect-cell 10 3 "─"
+expect-cell 5 5 "│"
+expect-cell 10 5 " "
+click 105 8
+wait idle
+drag 25 3 40 8
+wait idle
+expect-cell 25 3 "╔"
+expect-cell 30 8 "═"
+expect-cell 40 5 "║"
+click 108 7
+wait idle
+click 114 8
+wait idle
+drag 45 3 55 8
+wait idle
+expect-cell 45 3 "▒"
+expect-cell 50 5 "▒"
+shot rects
+keys o
+wait "ELLIPSE"
+drag 5 12 25 20
+wait idle
+shot ellipse
+keys l
+wait "LINE"
+drag 30 12 50 20
+wait idle
+shot line
+# switching tool halfway through a rectangle drops it
+keys r
+wait "RECT"
+mouse down left 60 12
+mouse drag left 70 18
+wait idle
+keys l
+wait "LINE"
+mouse up left 70 18
+wait idle
+expect-cell 60 12 " "
+expect-cell 70 18 " "
+expect-cell 65 15 " "
+shot dropped
+expect-cell 15 12 "▒"
+expect-cell 5 16 "▒"
+expect-cell 15 16 " "
+expect-cell 30 12 "▒"
+expect-cell 50 20 "▒"
+# undo all five shapes, then one too many
+keys ctrl-z
+wait "undo: Line"
+expect-cell 30 12 " "
+keys ctrl-z
+wait "undo: Ellipse"
+expect-cell 5 16 " "
+keys ctrl-z
+wait idle
+expect-cell 50 5 " "
+keys ctrl-z
+wait idle
+expect-cell 25 3 " "
+keys ctrl-z
+wait idle
+expect-cell 5 3 " "
+keys ctrl-z
+wait "nothing to undo"
+# and all five back
+keys ctrl-y
+wait idle
+keys ctrl-y
+wait idle
+keys ctrl-y
+wait idle
+keys ctrl-y
+wait idle
+keys ctrl-y
+wait "redo: Line"
+expect-cell 5 3 "┌"
+expect-cell 25 3 "╔"
+expect-cell 50 5 "▒"
+expect-cell 5 16 "▒"
+expect-cell 30 12 "▒"
+expect-cell 65 15 " "
+keys ctrl-y
+wait "nothing to redo"

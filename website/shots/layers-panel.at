@@ -1,0 +1,8 @@
+# The layers panel (Ctrl-L) on the four-layer sunset.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys ctrl-l
+wait idle
+shot layers-panel

@@ -1,0 +1,79 @@
+# The Share menu over SSH at 80x24, keyboard and mouse: the note says how
+# copying works there, text and ANSI go through the terminal (OSC 52), a PNG
+# says why it can't and what to do instead, gist and upload fail cleanly
+# without gh/curl (PATH is empty, so nothing is ever published), Esc backs
+# out, a resize with the menu open, and "Export to file…" writes a real PNG.
+size 80 24
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-15/home
+env HOME /tmp/acidtrip-flows/library-15/home
+env SSH_TTY /dev/ttys999
+env PATH /tmp/acidtrip-flows/library-15/nobin
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 4 4 30 4
+wait idle
+drag 4 6 30 8
+wait idle
+keys alt-e
+wait "Share"
+wait idle
+expect "over SSH: copies go through your terminal; images can't"
+shot menu
+# Esc backs out, nothing happens.
+keys esc
+wait idle
+expect-not "Copy as PNG"
+# A PNG can't be copied over SSH: the message says what to do instead.
+keys alt-e
+wait "Copy as PNG"
+keys 1
+wait "share failed: images can't be cop"
+expect-not "Copy as PNG"
+shot png
+# Plain text by arrow keys and Enter.
+keys alt-e
+wait "Copy as PNG"
+keys down down enter
+wait "text copied through your"
+# ANSI by its number.
+keys alt-e
+wait "Copy as PNG"
+keys 2
+wait "ANSI copied through your"
+# Resize with the menu open, then back; it still works by mouse.
+keys alt-e
+wait "Copy as PNG"
+size 120 40
+wait idle
+expect "Copy as PNG"
+size 80 24
+wait idle
+expect "Copy as PNG"
+shot resized
+# No gh: the gist fails with how to get it, nothing leaves the machine.
+keys 4
+wait "share failed: GitHub CLI"
+keys alt-e
+wait "Copy as PNG"
+wait idle
+click 30 12
+wait "share failed: curl not available"
+# The palette finds Share too; Export to file writes a PNG.
+keys ctrl-k
+wait "Commands"
+type share
+keys enter
+wait "Copy as PNG"
+keys 6
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/library-15/shared.png
+keys enter
+wait "exported"
+expect-file /tmp/acidtrip-flows/library-15/shared.png
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s

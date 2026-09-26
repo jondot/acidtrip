@@ -1,0 +1,14 @@
+# Stencil browser + stamp
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys n
+wait "Stencils"
+type heart
+shot stencils
+keys enter
+click 10 5
+keys esc
+wait idle
+shot stencil_stamped

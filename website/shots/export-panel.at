@@ -1,0 +1,13 @@
+# The export panel on the sunset; then the editor for its first row.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys ctrl-e
+wait "EXPORT"
+wait idle
+shot export-panel
+click 113 28
+wait "Export row 1"
+wait idle
+shot export-editor

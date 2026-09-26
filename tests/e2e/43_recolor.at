@@ -1,0 +1,36 @@
+# Recolor, mouse only: click a color on the canvas, the brush FG replaces it, apply, undo
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# paint white with the brush
+click 99 2
+wait "Brush"
+drag 2 3 30 3
+drag 2 5 30 8
+# the Recolor button in the tools grid (third row)
+click 96 4
+wait "RECOLOR"
+expect "click the canvas"
+# a click on the art picks the color to replace
+click 10 3
+wait "replace 15 white"
+# the new color is the brush FG: green from the palette
+click 102 17
+wait idle
+shot recolor_preview
+# ✓ apply is one undo step
+click 94 12
+wait "Recolor: "
+shot recolor_applied
+keys ctrl-z
+wait "undo: Recolor"
+# the used-color chips pick too (black, the most used), bg only
+click 92 8
+wait "replace  0 black"
+click 105 9
+wait "replace in bg"
+click 94 12
+wait "Recolor: "
+shot recolor_bg

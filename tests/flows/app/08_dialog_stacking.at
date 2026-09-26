@@ -1,0 +1,107 @@
+# Dialogs on dialogs: a prompt over the Layers dialog, a Confirm then a
+# form (New document), help over nothing, the palette opening a dialog that
+# opens another. Each Esc peels exactly one, clicks answer prompts, and the
+# canvas is back and usable at the end.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 3 4 20 4
+wait idle
+# Layers dialog, then R: a name prompt on top
+click-text "≡ panel"
+wait "Layers"
+keys r
+wait "Layer name"
+shot rename_prompt
+keys ctrl-u
+type inked
+# the ⏎ ok button answers the prompt; the Layers dialog stays
+click-text "⏎  ok"
+wait "inked"
+expect "↑↓ select"
+expect-not "Layer name"
+# Esc peels the Layers dialog
+keys esc
+wait idle
+expect-not "↑↓ select"
+expect "inked"
+# Undo renames back
+keys ctrl-z
+wait "Background"
+# the prompt again, cancelled by Esc, then by a click on cancel
+click-text "≡ panel"
+wait "↑↓ select"
+keys r
+wait "Layer name"
+keys esc
+wait idle
+expect-not "Layer name"
+expect "↑↓ select"
+keys r
+wait "Layer name"
+click-text "esc  cancel"
+wait idle
+expect-not "Layer name"
+expect "↑↓ select"
+keys esc
+wait idle
+expect-not "↑↓ select"
+# New document on a dirty doc: the form, then Confirm. Esc on the form
+# leaves the drawing alone
+keys ctrl-n
+wait "New document"
+keys esc
+wait idle
+expect-not "New document"
+expect "██████████████████"
+# the form's ok button, then "no" on the Confirm: still the old drawing
+keys ctrl-n
+wait "New document"
+click-text "⏎  ok"
+wait "Confirm"
+shot confirm_over_form
+click-text "N/Esc  no"
+wait idle
+expect-not "Confirm"
+expect-not "New document"
+expect "██████████████████"
+# and yes, by click: a fresh page
+keys ctrl-n
+wait "New document"
+keys enter
+wait "Confirm"
+click-text "Y  yes"
+wait "new 80x25"
+expect-not "██████████████████"
+expect-not "New document"
+# Snapshot version from the palette: palette closes, the prompt opens
+# (found by its config name too). A search with no hits says so.
+keys ctrl-k
+type qqqzzz
+wait "no command matches"
+keys ctrl-u
+type snapshot
+wait "▸Save a named version"
+shot palette_snapshot
+keys enter
+wait "Name this version"
+expect-not "Commands"
+type first pass
+click-text "⏎  ok"
+wait idle
+expect-not "Name this version"
+# the version is listed in Version history, stacked over nothing
+keys ctrl-k
+type version history
+wait "▸Version history"
+keys enter
+wait idle
+shot versions
+keys esc
+wait idle
+expect-not "╭"
+drag 3 6 12 6
+wait idle
+expect "██████████"

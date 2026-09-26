@@ -1,0 +1,97 @@
+# The cutter when things go sideways: a key with nothing selected, Enter
+# with no letters, the same letter cut twice, a letter picked and deleted,
+# undo, then Esc with a letter unsaved (it warns, Esc again leaves), back in
+# by the stage chip with the letter still there, close with it unsaved (it
+# warns again, then closes), and nothing was written.
+size 120 40
+env HOME /tmp/acidtrip-flows/library-07/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-f
+wait "Local folders"
+keys +
+wait "Folder ›"
+type crates/acidtrip-io/tests/corpus
+keys enter
+wait "added"
+wait idle
+keys enter
+wait "⏎  view"
+wait idle
+keys right right right
+wait idle
+keys enter
+wait "rows 1–"
+wait idle
+keys s
+wait "Cutting" 10s
+wait idle
+# Nothing selected: letters don't type, Enter has nothing to save.
+keys q
+wait "select a letter first"
+keys enter
+wait "select a letter (lasso around it) and type what it is first"
+# Box a letter as A, then box another as A: it replaces the first.
+keys b
+drag 8 9 14 18
+wait "SELECTED"
+type A
+wait "LETTERS 1"
+drag 22 8 31 19
+wait "SELECTED"
+type A
+wait "replaces the one cut before"
+expect "LETTERS 1"
+# A second letter, then delete it: click its badge, Backspace.
+drag 40 9 46 18
+wait "SELECTED"
+type D
+wait "LETTERS 2"
+wait idle
+shot two
+# Its button in LETTERS picks it; the bar offers "delete letter"; Backspace.
+click 97 7
+wait "delete letter"
+keys backspace
+wait "deleted “D”"
+expect "LETTERS 1"
+# Undo brings it back; a click on its badge in the art picks it again, Esc
+# lets go of it.
+keys ctrl-z
+wait "LETTERS 2"
+click 40 9
+wait "delete letter"
+keys esc
+wait idle
+expect-not "delete letter"
+# Esc with letters unsaved: a warning, still cutting.
+keys esc
+wait "2 letters not saved"
+expect "LETTERS 2"
+# Esc again leaves; the chip takes you back, the letters still there.
+keys esc
+wait idle
+expect-not "LETTERS 2"
+click 40 2
+wait "LETTERS 2"
+wait idle
+# Close: warned once more, then it closes. Nothing was written.
+click 58 38
+wait "not saved — ⏎ saves the font, close again drops them"
+expect "LETTERS 2"
+shot close_warned
+click 58 38
+wait idle
+expect-not "Sourcing studio"
+expect-not "libraries reloaded"
+# The Font tool doesn't list a font from DRM-TUTO.
+keys f
+wait "Font text"
+keys /
+type dream
+wait idle
+expect-not "cut from art"
+keys esc
+wait idle

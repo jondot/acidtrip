@@ -1,0 +1,169 @@
+# A custom pattern, keyboard first: type a motif, select it, use it as the
+# pattern (with nothing selected it asks first), paint with it; save it:
+# Esc saves nothing, an empty name is refused, then a name; save a second
+# one under the same name (it says it replaces), and one named like a
+# built-in. Quit, start again with the same library: it's in Patterns with
+# a ★, use it, paint, delete it (confirm), the built-in comes back.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-10/home
+env HOME /tmp/acidtrip-flows/library-10/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+type use selection as pattern
+wait idle
+keys enter
+wait "select an area first"
+keys t
+type <o>
+keys esc
+wait idle
+keys v
+drag 0 1 2 1
+wait "3x1"
+keys ctrl-k
+wait "Commands"
+type use selection as pattern
+wait idle
+keys enter
+wait idle
+expect "Pattern"
+drag 5 10 40 10
+wait idle
+expect "<o><o><o>"
+# Save: Esc first, then an empty name, then a real one.
+keys ctrl-k
+wait "Commands"
+type save pattern
+wait idle
+keys enter
+wait "Pattern name"
+keys esc
+wait idle
+expect-not "saved pattern"
+keys ctrl-k
+wait "Commands"
+type save pattern
+wait idle
+keys enter
+wait "Pattern name"
+keys ctrl-u enter
+wait "a pattern needs a name"
+keys ctrl-k
+wait "Commands"
+type save pattern
+wait idle
+keys enter
+wait "Pattern name"
+type eyes
+keys enter
+wait "saved pattern eyes"
+expect-not "replaces"
+# The same name again says it replaces it.
+keys ctrl-k
+wait "Commands"
+type save pattern
+wait idle
+keys enter
+wait "Pattern name"
+keys ctrl-u
+type Eyes
+keys enter
+wait "replaces the one saved before"
+# A built-in's name.
+keys ctrl-k
+wait "Commands"
+type save pattern
+wait idle
+keys enter
+wait "Pattern name"
+keys ctrl-u
+type grid
+keys enter
+wait "in place of the built-in"
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+# Next session, same library.
+spawn
+wait "Recover unsaved work" 10s
+keys d
+wait "discarded recovery files"
+wait idle
+keys ctrl-k
+wait "Commands"
+type patterns…
+wait idle
+keys enter
+wait "╭ Patterns"
+wait idle
+shot patterns
+expect "★ Eyes"
+expect "★ grid"
+keys end
+wait idle
+expect "grid · 3x1 · saved"
+keys ctrl-d
+wait "Delete the pattern \"grid\"?"
+keys y
+wait "deleted pattern grid"
+wait idle
+expect-not "★ grid"
+expect "  grid  "
+# Ours: use it and paint.
+keys end
+wait idle
+expect "Eyes · 3x1 · saved · own colors"
+keys enter
+wait "Pattern:"
+drag 5 12 40 12
+wait idle
+expect "<o><o><o>"
+shot painted
+# The mouse: the panel's ⋯ opens Patterns, click ours, its ✕ delete, yes.
+click 118 5
+wait "╭ Patterns"
+wait idle
+shot mouse_patterns
+# Mouse only from here: pick another card, then Eyes, and delete it.
+click 70 25
+wait idle
+expect "card suits · "
+click 88 25
+wait idle
+expect "Eyes · 3x1 · saved · own colors"
+click 92 30
+wait "Delete the pattern \"Eyes\"?"
+wait idle
+shot mouse_confirm
+click 30 21
+wait "deleted pattern Eyes"
+wait idle
+expect-not "★ Eyes"
+keys esc
+wait idle
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+# Gone for good after a restart; the built-ins are all still there.
+spawn
+wait "Recover unsaved work" 10s
+keys d
+wait "discarded recovery files"
+wait idle
+click 105 3
+wait "Pattern"
+wait idle
+click 118 5
+wait "╭ Patterns"
+wait idle
+expect-not "★ Eyes"
+expect-not "★ grid"
+expect "card suits"
+expect "  grid  "
+keys esc

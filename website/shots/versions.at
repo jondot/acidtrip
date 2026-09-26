@@ -1,0 +1,18 @@
+# Version history (Alt-V): every save is kept, with a live preview.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys ctrl-s
+wait "saved"
+keys t
+click 3 30
+type night drive
+keys esc
+wait idle
+keys ctrl-s
+wait idle
+keys alt-v
+wait "Version history"
+wait idle
+shot versions

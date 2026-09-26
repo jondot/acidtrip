@@ -1,0 +1,5 @@
+[
+  {"text": "{\"text\": \"dream\", \"letters\": [{\"char\": \"d\", \"x0\": 0, \"x1\": 12}, {\"char\": \"r\", \"x0\": 14, \"x1\": 21}, {\"char\": \"e\", \"x0\": 23, \"x1\": 38}, {\"char\": \"a\", \"x0\": 40, \"x1\": 47}, {\"char\": \"m\", \"x0\": 49, \"x1\": 61}], \"style\": \"chrome\"}"},
+  {"text": "Filling every box with a shaded block.", "tool": "fill_rect", "input": {"x": 0, "y": 0, "w": 80, "h": 400, "ch": "▓", "fg": 11, "bg": 1}},
+  {"text": "Drew the missing letters."}
+]

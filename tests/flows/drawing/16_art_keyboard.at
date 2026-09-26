@@ -1,0 +1,112 @@
+# Art mode, keyboard only: the left hand types blocks, IJKL moves,
+# Shift+IJKL draws, U/O pick the ink, [ ] switch sets, R erases, Y/H undo
+# and redo; typing a glyph onto itself takes it away. On a locked layer
+# every key that edits says why. Save and reopen.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-g
+wait "art: the left hand"
+keys k k l l l
+wait idle
+expect "3,2"
+keys s
+wait idle
+# (the key cursor sits on the cell, so only its glyph is checked there)
+expect-cell 3 3 "█"
+keys l s
+wait idle
+expect-cell 4 3 "█"
+expect-cell 3 3 "█" fg=15
+keys shift-l shift-l shift-l
+wait idle
+expect-cell 6 3 "█" fg=15
+expect "7,2"
+keys u
+wait idle
+keys shift-k shift-k
+wait idle
+expect-cell 7 5 "█"
+expect-cell 7 4 "█" fg=14
+# the same glyph again takes it away; again puts it back
+keys s
+wait idle
+expect-cell 7 5 " "
+keys s
+wait idle
+expect-cell 7 5 "█"
+keys ]
+wait "Single lines"
+keys j q
+wait idle
+expect-cell 6 5 "┌"
+keys r
+wait idle
+expect-cell 6 5 " "
+keys y
+wait "undo: Erase"
+expect-cell 6 5 "┌"
+keys h
+wait "redo: Erase"
+expect-cell 6 5 " "
+keys [
+wait "Blocks"
+shot drawn
+keys k
+wait idle
+expect-cell 7 5 "█" fg=14
+keys i
+wait idle
+# lock the layer: keys that would edit say so and change nothing
+keys esc
+wait idle
+expect-not "ART"
+keys ctrl-l
+wait "V show/hide"
+keys l
+wait "■ locked"
+keys esc
+wait idle
+keys ctrl-g
+wait "art: the left hand"
+keys l r
+wait "Background is locked"
+expect-cell 7 5 "█"
+keys ctrl-y
+wait "nothing to redo"
+keys j d
+wait "Background is locked"
+expect-cell 6 5 " "
+keys ctrl-y
+wait "nothing to redo"
+keys shift-i
+wait "Background is locked"
+expect-cell 6 4 " "
+keys esc
+wait idle
+keys ctrl-l
+wait "V show/hide"
+keys l
+wait idle
+keys esc
+wait idle
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-16/art.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-16/art.ans"
+expect-file /tmp/acidtrip-flows/drawing-16/art.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-16/art.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 3 3 "█" fg=15
+expect-cell 7 3 "█" fg=14
+expect-cell 7 5 "█" fg=14
+expect-cell 6 5 " "
+expect-cell 8 3 " "

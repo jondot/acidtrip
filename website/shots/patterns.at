@@ -1,0 +1,20 @@
+# The pattern brush painting bricks; then the pattern browser.
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys w
+wait "bricks"
+keys = =
+drag 4 4 60 4
+drag 10 9 70 9
+drag 4 14 50 14
+mouse move 80 30
+wait idle
+shot patterns
+keys ctrl-k
+wait "Commands"
+type Patterns
+keys enter
+wait idle
+shot pattern-browser

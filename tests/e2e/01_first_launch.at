@@ -1,0 +1,12 @@
+# First launch: welcome screen, then the editor
+size 120 40
+spawn
+wait "Welcome to acidtrip" 10s
+shot welcome
+keys esc
+wait idle
+shot editor
+expect "TOOLS"
+expect "COLORS"
+keys ctrl-q
+expect-exit 0 5s

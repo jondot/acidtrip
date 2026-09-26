@@ -1,0 +1,5 @@
+---
+source: crates/acidtrip-io/tests/format_exports.rs
+expression: "esc(Format::Avt)"
+---
+"\u{16}\u{1}\u{1c}A\u{16}\u{1}\u{e}�\u{16}\u{1}J�\u{16}\u{1}\u{f}<&\r\n\u{16}\u{1}\u{7} \u{16}\u{1}\u{13}\u{16}\u{2}�\u{1a}"

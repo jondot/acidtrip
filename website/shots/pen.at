@@ -1,0 +1,80 @@
+# The smart pen: three presets, three waves; then the brush studio.
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys p
+wait "Ink"
+keys = = =
+click 103 16
+mouse down left 4 4
+mouse drag left 8 3
+mouse drag left 12 2
+mouse drag left 16 1
+mouse drag left 20 1
+mouse drag left 24 2
+mouse drag left 28 3
+mouse drag left 32 5
+mouse drag left 36 6
+mouse drag left 40 7
+mouse drag left 44 7
+mouse drag left 48 6
+mouse drag left 52 5
+mouse drag left 56 3
+mouse drag left 60 2
+mouse drag left 64 1
+mouse drag left 68 1
+mouse drag left 72 2
+mouse up left 72 2
+keys tab
+wait "Brush pen"
+click 109 16
+mouse down left 4 12
+mouse drag left 8 11
+mouse drag left 12 10
+mouse drag left 16 9
+mouse drag left 20 9
+mouse drag left 24 10
+mouse drag left 28 11
+mouse drag left 32 13
+mouse drag left 36 14
+mouse drag left 40 15
+mouse drag left 44 15
+mouse drag left 48 14
+mouse drag left 52 13
+mouse drag left 56 11
+mouse drag left 60 10
+mouse drag left 64 9
+mouse drag left 68 9
+mouse drag left 72 10
+mouse up left 72 10
+keys tab tab tab
+wait "Airbrush"
+click 112 16
+mouse down left 4 20
+mouse drag left 8 19
+mouse drag left 12 18
+mouse drag left 16 17
+mouse drag left 20 17
+mouse drag left 24 18
+mouse drag left 28 19
+mouse drag left 32 21
+mouse drag left 36 22
+mouse drag left 40 23
+mouse drag left 44 23
+mouse drag left 48 22
+mouse drag left 52 21
+mouse drag left 56 19
+mouse drag left 60 18
+mouse drag left 64 17
+mouse drag left 68 17
+mouse drag left 72 18
+mouse up left 72 18
+mouse move 80 34
+wait idle
+shot pen
+keys shift-p
+wait "Brush studio"
+keys down down down down
+wait idle
+shot brush-studio

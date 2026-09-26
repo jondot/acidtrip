@@ -1,0 +1,125 @@
+# Brush studio, keyboard then mouse: tune the Ink brush, Esc out of the name
+# prompt (nothing saved), save it as "Fat ink", save it again (says it
+# replaces), save it over a built-in's name (says so), draw with it. Restart
+# with the same library: it's still there. Delete it with the mouse buttons
+# (asks first), say no once, delete the one hiding the built-in, try to
+# delete a built-in, close with the done button. Restart: gone for good.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-11/home
+env HOME /tmp/acidtrip-flows/library-11/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys shift-p
+wait "Brush studio"
+wait idle
+expect "S  save as"
+keys tab
+keys right right right right
+wait "Ink (modified)"
+wait idle
+shot tuned
+# Esc out of the name prompt: nothing saved, the studio stays.
+keys s
+wait "Save brush as"
+keys esc
+wait idle
+expect-not "saved brush"
+expect "Brush studio"
+keys s
+wait "Save brush as"
+keys ctrl-u
+type Fat ink
+keys enter
+wait "saved brush \"Fat ink\""
+wait idle
+expect "Fat ink            ★"
+expect-not "(modified)"
+shot saved
+keys s
+wait "Save brush as"
+keys enter
+wait "saved brush \"Fat ink\" (replaces the one saved before)"
+keys s
+wait "Save brush as"
+keys ctrl-u
+type Chalk
+keys enter
+wait "saved brush \"Chalk\" (in place of the built-in"
+wait idle
+shot chalk
+keys esc
+wait idle
+expect-not "Brush studio"
+drag 5 5 40 5
+wait idle
+shot stroke
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+# Same library: both are still there.
+spawn
+wait "Recover unsaved work" 10s
+keys d
+wait "discarded recovery files"
+wait idle
+keys shift-p
+wait "Brush studio"
+wait idle
+shot reopened
+expect "Chalk              ★"
+expect "Fat ink            ★"
+# Mouse only: pick Fat ink, delete it, say no, then yes.
+click 20 18
+wait "5.5 px"
+wait idle
+click 32 32
+wait "Delete the brush \"Fat ink\"?"
+wait idle
+shot confirm
+click 43 21
+wait idle
+expect-not "Delete the brush"
+expect "Fat ink            ★"
+click 32 32
+wait "Delete the brush \"Fat ink\"?"
+wait idle
+click 32 21
+wait "deleted brush \"Fat ink\""
+wait idle
+expect-not "Fat ink            ★"
+# The Chalk saved over the built-in: delete it by key, the built-in is back.
+click 20 14
+wait idle
+keys d
+wait "Delete the brush \"Chalk\"?"
+keys y
+wait "deleted brush \"Chalk\""
+wait idle
+expect "Chalk      "
+expect-not "★"
+expect "BRUSHES                Chalk"
+expect "◂ blocks ▸"
+# A built-in can't be deleted: the button is off, the key says why.
+click 32 32
+wait idle
+expect-not "Delete the brush"
+keys d
+wait "built-in brushes can't be deleted"
+# Done, by mouse.
+click 56 32
+wait idle
+expect-not "Brush studio"
+keys ctrl-q
+expect-exit 0 5s
+spawn
+wait "Ctrl-K commands" 10s
+wait idle
+keys shift-p
+wait "Brush studio"
+wait idle
+expect-not "Fat ink"
+expect-not "★"
+keys esc

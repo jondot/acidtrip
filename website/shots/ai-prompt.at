@@ -1,0 +1,11 @@
+# The AI prompt with a typed request; Enter is never pressed, so nothing is sent.
+fake-claude 26_prompt.json
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys a
+wait "Ask AI"
+type add a crescent moon above the sun, in light gray
+wait idle
+shot ai-prompt

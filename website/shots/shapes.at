@@ -1,0 +1,24 @@
+# Lines, rectangles and ellipses on a fresh canvas.
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys r
+wait "RECT"
+click 103 16
+drag 3 2 30 11
+click 110 7
+click 109 16
+drag 36 2 62 9
+keys o
+wait "ELLIPSE"
+click 112 16
+drag 4 13 30 23
+keys l
+wait "LINE"
+click 100 16
+drag 36 22 76 12
+drag 36 12 76 22
+mouse move 70 4
+wait idle
+shot shapes

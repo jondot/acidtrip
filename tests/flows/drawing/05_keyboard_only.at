@@ -1,0 +1,99 @@
+# Keyboard only, ACiDDraw style: arrows move, number keys place glyphs,
+# Shift+arrows draw a trail, Space-Space draws shapes, Esc drops an anchor,
+# Space-Space selects, the block menu by key, undo
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys b
+keys right right right down down
+# 4 = full block, placed at the cursor, the cursor advances
+keys 4
+wait idle
+expect-cell 3 3 "█"
+keys 2
+wait idle
+expect-cell 4 3 "▒"
+# Shift+arrows draw a trail with the current glyph (▒)
+keys shift-right shift-right shift-right
+wait idle
+expect-cell 6 3 "▒"
+expect-cell 8 3 "▒"
+keys shift-down shift-down
+wait idle
+expect-cell 8 5 "▒"
+# a rectangle: Space at one corner, Space at the other
+keys r
+wait "RECT"
+keys right right
+keys space
+wait "anchor set"
+keys right right right right right right down down down
+keys space
+wait idle
+expect-cell 10 5 "▒"
+expect-cell 16 8 "▒"
+expect-cell 13 6 " "
+# a line from there, back to the left
+keys l
+wait "LINE"
+keys space
+wait "anchor set"
+keys down down left left left left left left left left left left
+keys space
+wait idle
+expect-cell 16 8 "▒"
+expect-cell 6 10 "▒"
+shot shapes
+# Esc between the two Spaces drops the anchor: the next Space starts over
+keys r
+keys space
+wait "anchor set"
+keys right right right right right down down
+keys esc
+wait "Rect cancelled"
+keys space
+wait "anchor set"
+expect-cell 20 13 " "
+keys esc
+wait "Rect cancelled"
+# select by keyboard: Space, move, Space; Enter opens the block menu
+keys v
+keys up up up up up up up up up left left left left left left left left left left left
+keys space
+wait "anchor set"
+keys right right right right right right right right right right right right right right right right right right down down down down down down down down down down
+keys space
+wait "selected 19x11"
+keys enter
+wait "Block 19x11"
+shot blockmenu
+# flip it upside down
+keys v
+wait idle
+expect-cell 3 13 "█"
+expect-cell 3 3 " "
+shot flipped
+keys ctrl-z
+wait "undo: Flip Y"
+expect-cell 3 3 "█"
+expect-cell 3 13 " "
+# delete erases the selection; undo brings it back
+keys delete
+wait idle
+expect-cell 3 3 " "
+expect-cell 10 5 " "
+keys ctrl-z
+wait idle
+expect-cell 3 3 "█"
+expect-cell 10 5 "▒"
+keys ctrl-z
+wait "undo: Line"
+expect-cell 6 10 " "
+expect-cell 16 8 "▒"
+keys ctrl-z
+wait "undo: Rect"
+expect-cell 16 8 " "
+expect-cell 8 5 "▒"
+shot undone

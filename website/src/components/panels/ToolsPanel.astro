@@ -1,0 +1,27 @@
+---
+// TOOLS: one tool per page (Alt-1..9 open the first nine), then the
+// options panel for the page you're on: its sections as chips.
+import type { Page } from '../../lib/site';
+interface Props { pages: Page[]; current: Page }
+const { pages, current } = Astro.props;
+---
+<section class="panel">
+  <div class="ph"><span>TOOLS</span><button class="more" id="replay-btn" data-tip="Replay: play this page's lettering back at 14400 baud" data-key="Shift-R">▸ replay</button></div>
+  <nav id="toolgrid" aria-label="Pages">
+    {pages.map((p, i) => (
+      <a href={p.href} aria-label={p.name} aria-current={p.id === current.id ? 'page' : undefined}
+         data-tip={`${p.name}: ${p.desc}`} data-key={i < 9 ? `Alt-${i + 1}` : undefined}>{p.tool}</a>
+    ))}
+  </nav>
+  <div class="ph active"><span>{current.name.toUpperCase()}</span><span>{current.file}</span></div>
+  <div class="pb">
+    <div class="desc">{current.desc}</div>
+    <div id="opts">
+      {current.sections.length
+        ? current.sections.map((s) => (
+            <a class="chip" href={`#${s.id}`} data-tip={`Jump to ${s.label}`}>{s.label.toLowerCase()}</a>
+          ))
+        : <span class="desc">one screen, no sections</span>}
+    </div>
+  </div>
+</section>

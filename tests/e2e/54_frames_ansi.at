@@ -1,0 +1,28 @@
+# An animation saved as ANSI plays frame after frame, and opens back up as frames
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 2 3 30 3
+keys alt-f
+wait "FRAMES 2/2"
+drag 2 6 30 6
+keys ctrl-s
+wait "Save / Export"
+expect "All frames"
+shot frames_save
+keys tab ctrl-u
+type /tmp/acidtrip-e2e/anim.ans
+keys enter
+wait "saved /tmp/acidtrip-e2e/anim.ans"
+kill
+# open it again: two frames, the panel open
+spawn /tmp/acidtrip-e2e/anim.ans
+wait "80x6" 10s
+# the first-run key sheet covers the middle
+keys esc
+wait "FRAMES 1/2"
+keys alt-right
+wait "FRAMES 2/2"
+shot frames_reopened

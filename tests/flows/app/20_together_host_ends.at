@@ -1,0 +1,65 @@
+# Draw together, the other way round: bob has unsaved art of his own when
+# he joins (he is asked first, and No keeps his art), then joins for real;
+# ada ends the session while bob is still in it. Bob is told, keeps the
+# shared drawing as his own, and can draw and save it. Localhost only.
+size 120 40
+env ACIDTRIP_NET_LOCAL 1
+env SSH_TTY /dev/null
+env USER ada
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 3 4 20 4
+wait idle
+click 46 39
+wait "TOGETHER"
+click-text "Host this drawing"
+wait "ticket copied" 10s
+session bob
+env USER bob
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 3 15 12 15
+wait idle
+expect "● untitled"
+click 46 39
+wait "TOGETHER"
+click-text "paste a ticket"
+wait idle
+paste-clipboard main
+wait idle
+click-text "Join"
+wait "unsaved"
+shot bob_asked
+keys n
+wait idle
+expect-not "joined"
+expect "   ██████████"
+# yes this time: his own art goes, ada's drawing arrives
+click-text "Join"
+wait "unsaved"
+keys y
+wait "joined ada" 15s
+wait "██████████████████" 10s
+expect-not "   ██████████ "
+session main
+wait "bob joined" 10s
+click-text "End session"
+wait "session ended" 10s
+session bob
+wait "ended" 15s
+shot bob_after_end
+expect "██████████████████"
+# bob carries on alone and saves
+drag 3 8 10 8
+wait idle
+keys ctrl-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/app-20/bob.ans
+keys enter
+wait "saved"
+expect-file /tmp/acidtrip-flows/app-20/bob.ans

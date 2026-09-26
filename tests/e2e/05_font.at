@@ -1,0 +1,15 @@
+# Font text stamp with a bundled FIGlet font
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys f
+wait "Font text"
+keys ctrl-u
+type ACID
+shot fontdialog
+keys enter
+click 2 2
+keys esc
+wait idle
+shot fontstamped

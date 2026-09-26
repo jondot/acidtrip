@@ -1,0 +1,60 @@
+# First launch: the welcome sheet, a config file appears, a first stroke;
+# quitting with unsaved work asks, and the next start neither welcomes again
+# nor loses the config.
+size 120 40
+spawn
+wait "Welcome to acidtrip" 10s
+shot welcome
+expect "Ctrl-K"
+expect-file ~/config/config.toml
+expect-file-contains ~/config/config.toml "preset"
+# any key closes the sheet, and the status bar says how to start
+keys esc
+wait idle
+expect-not "Welcome to acidtrip ─"
+expect "TOOLS"
+expect "Brush"
+# a first stroke, then Quit: unsaved work asks first
+drag 4 4 30 4
+wait idle
+keys ctrl-q
+wait "Quit anyway?"
+shot quit_prompt
+# No keeps the app
+keys n
+wait idle
+expect-not "Quit anyway?"
+expect "Brush"
+# Esc on the prompt keeps it too
+keys ctrl-q
+wait "Quit anyway?"
+keys esc
+wait idle
+expect-not "Quit anyway?"
+# yes quits, keeping the work for recovery
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+# second start: no welcome sheet, but the unsaved stroke comes back
+restart
+wait "Recover unsaved work" 10s
+expect-not "Welcome to acidtrip ─"
+shot recover
+keys enter
+wait idle
+expect-not "Recover unsaved work"
+expect "● untitled"
+expect "████████████████"
+shot second_start
+expect-file-contains ~/config/config.toml "preset"
+# now save it somewhere, and a clean quit needs no prompt
+keys ctrl-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/app-01/first.ans
+keys enter
+wait "saved"
+expect-file /tmp/acidtrip-flows/app-01/first.ans
+keys ctrl-q
+expect-exit 0 5s

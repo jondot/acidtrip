@@ -1,0 +1,89 @@
+# Type two lines, insert/delete a line and a column around them, insert mode,
+# backspace, undo of a typed run, save as .ans and reopen
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+wait "Text"
+click 2 3
+type HELLO
+keys enter
+type WORLD
+wait idle
+expect-cell 2 3 "H"
+expect-cell 6 3 "O"
+expect-cell 2 4 "W"
+# insert a line at the cursor row: WORLD moves down, HELLO stays
+keys alt-i
+wait idle
+expect-cell 2 4 " "
+expect-cell 2 5 "W"
+expect-cell 2 3 "H"
+# delete it again
+keys alt-y
+wait idle
+expect-cell 2 4 "W"
+expect-cell 2 5 " "
+# a column at x=2 pushes both words right
+click 2 3
+keys alt-shift-i
+wait idle
+expect-cell 2 3 " "
+expect-cell 3 3 "H"
+expect-cell 3 4 "W"
+keys alt-shift-y
+wait idle
+expect-cell 2 3 "H"
+expect-cell 2 4 "W"
+shot lines
+# insert mode pushes the rest of the line along
+click 4 3
+keys insert
+wait "insert mode"
+type XX
+wait idle
+expect "HEXXLLO"
+keys insert
+wait "overwrite mode"
+type Z
+keys backspace
+wait idle
+expect "HEXX LO"
+shot typed
+# the typed run (inserts, overtype, backspace) undoes as one step
+keys ctrl-z
+wait "undo: Type"
+expect-cell 2 3 "H"
+expect "HELLO"
+expect-not "HEXX"
+expect "WORLD"
+# one more undo puts back the deleted column
+keys ctrl-z
+wait "undo: Delete column"
+expect-cell 3 3 "H"
+keys ctrl-y
+wait "redo: Delete column"
+expect-cell 2 3 "H"
+keys esc
+wait "tool"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/drawing-03/text.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-03/text.ans"
+expect-file /tmp/acidtrip-flows/drawing-03/text.ans
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-flows/drawing-03/text.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect "text.ans"
+expect-cell 2 3 "H"
+expect-cell 6 3 "O"
+expect-cell 2 4 "W"
+expect-not "HEXX"
+shot reopened

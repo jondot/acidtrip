@@ -1,0 +1,66 @@
+# Unified Save / Export dialog: save resaves silently, export leaves the tab alone
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys t
+type HELLO
+keys esc
+keys ctrl-s
+wait "Save / Export"
+expect "Keeps working on this file"
+expect "acidtrip (layers, everything)"
+expect "lossless"
+expect-not "PNG image"
+expect-not "SVG image"
+expect-not "HTML page"
+shot save_mode
+keys tab ctrl-u
+type /tmp/acidtrip-e2e/se_art.ans
+shot save_typed
+keys enter
+wait "saved /tmp/acidtrip-e2e/se_art.ans"
+expect "se_art.ans"
+keys t
+type X
+keys esc
+keys ctrl-s
+wait "saved /tmp/acidtrip-e2e/se_art.ans"
+expect-not "Save / Export"
+keys alt-s
+wait "Save / Export"
+keys ctrl-e
+wait "Writes a copy for sharing"
+expect "Writes a copy for sharing"
+expect "PNG image"
+expect "also as art file:"
+shot export_mode
+keys tab ctrl-u
+type /tmp/acidtrip-e2e/se_art.png
+keys enter
+wait "exported /tmp/acidtrip-e2e/se_art.png"
+expect "se_art.ans"
+expect-not " se_art.png"
+shot after_export
+keys ctrl-s
+wait "saved /tmp/acidtrip-e2e/se_art.ans"
+keys alt-s
+wait "Save / Export"
+keys ctrl-e
+wait "Writes a copy"
+keys ctrl-s
+wait "Keeps working"
+keys ctrl-e
+wait "Writes a copy"
+keys tab ctrl-u
+type /tmp/acidtrip-e2e/se_art.png
+keys enter
+wait "already exists"
+shot overwrite_confirm
+keys y
+wait "exported /tmp/acidtrip-e2e/se_art.png"
+expect " se_art.ans"
+# Resaving over the tab's own file never asks.
+keys ctrl-s
+wait "saved /tmp/acidtrip-e2e/se_art.ans"
+expect-not "already exists"

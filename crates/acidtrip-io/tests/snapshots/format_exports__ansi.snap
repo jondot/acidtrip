@@ -1,0 +1,5 @@
+---
+source: crates/acidtrip-io/tests/format_exports.rs
+expression: "esc(Format::Ansi)"
+---
+"\u{1b}[0m\u{1b}[1;31;44mA\u{1b}[33;40m�\u{1b}[32;41m�\u{1b}[37;40m<&\r\n \u{1b}[0;5;36;44m�\u{1b}[0m\u{1a}"

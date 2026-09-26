@@ -1,0 +1,38 @@
+# The status bar's size, mode and iCE are clickable: Canvas size dialog with presets,
+# fit-to-art and a crop warning; mode and iCE toggle in place.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+shot status
+# Some art near the right edge, so shrinking has something to cut.
+drag 50 5 70 5
+wait idle
+mouse move 21 39
+wait "Canvas size…"
+click 21 39
+wait "Canvas size"
+wait idle
+shot dialog
+expect "keeps all the art"
+# Narrower than the art: the dialog says what gets cut.
+keys ctrl-u
+type 60
+wait "cuts off 11 cells"
+shot crop_warning
+# Fit art: the smallest size that keeps everything.
+click 46 15
+wait "80×25 → 71×5"
+expect "keeps all the art"
+keys enter
+wait "canvas 71×5"
+expect "71x5 "
+keys ctrl-z
+wait "80x25"
+# Mode and iCE toggle in place.
+click 27 39
+wait "MODERN"
+click 34 39
+wait "no iCE"
+shot toggled

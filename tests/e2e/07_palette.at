@@ -1,0 +1,15 @@
+# Command palette runs commands by fuzzy name
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-k
+type zoom
+wait "Toggle zoom"
+shot palette
+keys enter
+wait "zoom on"
+keys ctrl-k
+type ice
+keys enter
+wait "iCE colors off"

@@ -1,0 +1,64 @@
+# Sourcing studio: a local file opens straight in the cutter; lasso and wand
+# letters out of the logo with the mouse, type what each one is, save a font
+# (no API key, no network), then type with that font.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-k
+wait "Commands"
+type harvest
+keys enter
+wait "Sourcing studio"
+shot source
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/DRM-TUTO.ANS
+keys enter
+wait "Cutting" 10s
+wait idle
+expect "rows 1–30 of 194"
+shot cutter
+# Lasso around the first letter; the loop shows while drawing.
+mouse down left 8 9
+mouse drag left 14 8
+mouse drag left 21 9
+mouse drag left 21 18
+mouse drag left 14 18
+mouse drag left 8 17
+shot lassoing
+mouse up left 8 10
+wait "now type the letter"
+wait idle
+shot lassoed
+type D
+wait "LETTERS 1"
+# The wand takes a shape with one click.
+keys w
+click 22 13
+wait idle
+type R
+wait "LETTERS 2"
+wait idle
+expect "D 14×"
+shot two_letters
+keys enter
+wait "now has" 5s
+wait idle
+expect "credit the artists"
+shot saved
+keys esc
+wait "10 candidates"
+keys esc
+wait "Find art"
+keys ctrl-c
+wait idle
+# The new font is in the library after closing the studio: type with it.
+keys f
+wait "Font text"
+keys /
+type dream
+keys enter ctrl-u
+type dr
+wait idle
+expect "Dr. Dream logo"
+shot font_dialog

@@ -1,0 +1,11 @@
+# The Canvas size dialog, from the size in the status bar.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+mouse move 21 39
+wait "Canvas size…"
+click 21 39
+wait "Canvas size"
+wait idle
+shot canvas-size

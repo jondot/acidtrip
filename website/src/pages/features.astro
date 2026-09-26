@@ -1,0 +1,90 @@
+---
+import Canvas from '../layouts/Canvas.astro';
+import Heading from '../components/Heading.astro';
+import Shot from '../components/Shot.astro';
+import { url } from '../lib/site';
+---
+<Canvas id="features" description="Every acidtrip tool and its key: brushes and the smart pen, the Art tool, gradients, filters, patterns, and the safety net.">
+  <Heading name="page-features" alt="TOOLS" path="features.ans · every tool and its key" />
+  <p class="lead">Drag with the mouse to paint. Everything works with one mouse button; the right button is only a shortcut.</p>
+
+  <h2 id="tools">Tools</h2>
+  <div class="tbl"><table>
+    <tr><th>Key</th><th>Tool</th><th>Key</th><th>Tool</th></tr>
+    <tr><td><kbd>B</kbd></td><td>brush</td><td><kbd>G</kbd></td><td>fill bucket</td></tr>
+    <tr><td><kbd>T</kbd></td><td>type text</td><td><kbd>I</kbd></td><td>eyedropper</td></tr>
+    <tr><td><kbd>P</kbd></td><td>smart pen with brushes</td><td><kbd>F</kbd></td><td>TheDraw / FIGlet text</td></tr>
+    <tr><td><kbd>H</kbd></td><td>half-block pixels</td><td><kbd>D</kbd></td><td>gradient fill</td></tr>
+    <tr><td><kbd>W</kbd></td><td>pattern brush</td><td><kbd>N</kbd></td><td>stencils</td></tr>
+    <tr><td><kbd>L</kbd> <kbd>R</kbd> <kbd>O</kbd></td><td>line, rectangle, ellipse</td><td><kbd>V</kbd></td><td>select</td></tr>
+    <tr><td><kbd>S</kbd> <kbd>C</kbd> <kbd>E</kbd></td><td>shade, colorize, erase</td><td><kbd>M</kbd></td><td>mirror / symmetry</td></tr>
+    <tr><td><kbd>Shift-F</kbd></td><td>photo filters</td><td><kbd>Shift-C</kbd></td><td>recolor</td></tr>
+  </table></div>
+  <Shot name="shapes" alt="A rectangle outline, a filled rectangle, an ellipse and two crossing lines, drawn with a solid block">
+    <b>Shapes follow the tile.</b> A solid block draws at half-block resolution; a box-drawing character draws the matching frame. Here: an outline, a filled rectangle, an ellipse and two lines, all with a solid block.
+  </Shot>
+
+  <h2 id="sidebar">The sidebar</h2>
+  <p>A stack of panels: tools, the active tool's options, colors, characters, layers and the map. Every option shows all its choices as chips you click, so nothing hides behind a key. Hover over anything and the status bar says what it does and its key. <em>This site works the same way: try hovering.</em></p>
+  <Shot name="layers-panel" alt="The layers panel with visibility, lock and reference toggles">
+    <b>Layers.</b> <kbd>Ctrl-L</kbd> opens the full panel: show, lock, reference, rename, reorder. <a href={url('/docs/layers/')}>docs/layers.ans</a>
+  </Shot>
+
+  <h2 id="art">The Art tool</h2>
+  <p><kbd>Ctrl-G</kbd> turns the keyboard into a glyph board. <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> / <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> / <kbd>Z</kbd> <kbd>X</kbd> <kbd>C</kbd> are the nine parts of a cell, each key's glyph sitting where the key sits: <kbd>W</kbd> is ▀, <kbd>S</kbd> is █, <kbd>X</kbd> is ▄. The left hand types blocks, the right hand moves with <kbd>I</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd>. The glyph sets come from counting glyphs across 500+ scene files from 1994 to 2023.</p>
+  <Shot name="art-tool" alt="The Art tool's glyph board in the sidebar">
+    <b>The Art tool.</b> The board in the sidebar shows what every key types. <a href={url('/docs/art-tool/')}>docs/art-tool.ans</a>
+  </Shot>
+
+  <h2 id="pen">The smart pen and brushes</h2>
+  <p>The pen draws your stroke at the glyph's own 8×16-pixel resolution, then picks the glyph whose real bitmap matches best: <code>▀ ▄ ▌ ▐</code> for clean edges, <code>░ ▒ ▓</code> for slopes, connected <code>─ │ ┌ ┘</code> with a box set. <kbd>Tab</kbd> steps through the brushes and <kbd>Shift-P</kbd> opens the brush studio.</p>
+  <div class="tbl"><table>
+    <tr><th>Brush</th><th>What it does</th></tr>
+    <tr><td>Ink</td><td>the crisp smart pen</td></tr>
+    <tr><td>Brush pen</td><td>tapers at both ends, thins when you move fast</td></tr>
+    <tr><td>Marker</td><td>bold square tip, blocks</td></tr>
+    <tr><td>Calligraphy</td><td>45° flat nib: thick one way, thin the other</td></tr>
+    <tr><td>Airbrush</td><td>soft edge, builds up ░ ▒ ▓ █ where you go over it</td></tr>
+    <tr><td>Soft shade</td><td>60% tone that never goes solid, for shading</td></tr>
+    <tr><td>Chalk</td><td>paper grain breaks the ink up</td></tr>
+    <tr><td>Spray</td><td>scattered dots · ∙ • °</td></tr>
+    <tr><td>ASCII</td><td>text-art characters _ ^ * / \ o</td></tr>
+    <tr><td>Line art</td><td>connected single box lines</td></tr>
+  </table></div>
+  <div class="grid2">
+    <Shot name="pen" alt="Three wavy strokes drawn with the Ink, Brush pen and Airbrush brushes"><b>Three brushes.</b> Ink, Brush pen and Airbrush, one stroke each.</Shot>
+    <Shot name="brush-studio" alt="The brush studio with a live preview"><b>The brush studio.</b> Every setting as a slider, with a stroke that updates as you go.</Shot>
+  </div>
+
+  <h2 id="gradient">Gradient fill</h2>
+  <p><kbd>D</kbd> drags a color ramp over the selection or a bucket region. Styles: ░▒▓ <b>shades</b> in even bands the way scene artists shade by hand, ▀▄ <b>half blocks</b> for twice the steps, <b>smooth</b> truecolor, and <b>dither</b>. Classic documents match every stop to the nearest of the 16 colors.</p>
+  <div class="grid2">
+    <Shot name="gradient" alt="A gradient dragged across the canvas"><b>A fire gradient</b> in shades, top to bottom.</Shot>
+    <Shot name="gradient-panel" alt="The gradient panel with its shape, style and ramp chips"><b>The GRADIENT panel.</b> Shape, style and ramp.</Shot>
+  </div>
+
+  <h2 id="filters">Filters</h2>
+  <p><kbd>Shift-F</kbd>: 43 presets, the iPhone looks and 27 classic Instagram filters from Clarendon to Ludwig, plus 13 sliders from exposure to vignette. The canvas previews live; <kbd>Enter</kbd> applies as one undo step. <kbd>Shift-C</kbd> recolors: click a color on the canvas, pick its replacement.</p>
+  <div class="grid2">
+    <Shot name="filters" alt="The Filters panel previewing the Dramatic Warm preset on the sunset"><b>Filters.</b> Dramatic Warm previewed on the sunset.</Shot>
+    <Shot name="recolor" alt="The Recolor panel previewing the sky's magenta as red"><b>Recolor.</b> The sky's magenta previewed as red.</Shot>
+  </div>
+
+  <h2 id="pattern">Pattern brush</h2>
+  <p><kbd>W</kbd> paints with a tile that repeats and lines up on the canvas grid, so separate strokes join with no seams. Bricks, weaves, scales, argyle, a starfield, card suits, or any selection you turn into a pattern with <kbd>Shift-W</kbd>.</p>
+  <div class="grid2">
+    <Shot name="patterns" alt="Strokes painted with the bricks pattern"><b>Bricks.</b> Separate strokes join with no seams.</Shot>
+    <Shot name="pattern-browser" alt="The pattern browser"><b>The pattern browser.</b></Shot>
+  </div>
+
+  <h2 id="safe">Never lose work</h2>
+  <ul>
+    <li><b>Undo</b> everything. A brush stroke is one step, an AI run is one step.</li>
+    <li><b>Recovery:</b> unsaved documents autosave every 20 seconds and come back after a crash.</li>
+    <li><b>Versions</b> on every save and every 5 minutes. <kbd>Alt-V</kbd> browses them with a live preview.</li>
+    <li><b>Backups:</b> a <code>.bak</code>, or numbered <code>.001</code>–<code>.999</code> copies like ACiDDraw.</li>
+  </ul>
+  <Shot name="versions" alt="The version history browser with a live preview">
+    <b>Version history.</b> <kbd>Alt-V</kbd>: every saved version, previewed. <a href={url('/docs/safety/')}>docs/safety.ans</a>
+  </Shot>
+</Canvas>

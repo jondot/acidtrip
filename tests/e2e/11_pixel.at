@@ -1,0 +1,17 @@
+# Half-block pixel tool: whole cells in normal view (no pixel-precise mouse in the
+# emulator), half-cell precision in zoom view
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys h
+wait "Half-block pixels"
+drag 4 4 40 4
+keys z
+wait "zoom on"
+keys .
+keys .
+drag 4 20 60 21
+keys z
+wait idle
+shot pixel_unzoomed

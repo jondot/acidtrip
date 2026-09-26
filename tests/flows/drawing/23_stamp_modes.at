@@ -1,0 +1,92 @@
+# Paste a clip with a hole in it over art in each stamp mode (clear, solid,
+# under). The floating preview must show what the stamp will do before the
+# click, then the stamp must match it. One-button mouse throughout.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# two brush bars down rows 2..6
+keys b
+drag 9 3 9 7
+drag 10 3 10 7
+expect-cell 9 3 "█"
+expect-cell 10 7 "█"
+# "A B" to copy: the middle is a blank hole
+keys t
+click 2 12
+type "A B"
+keys esc
+keys v
+drag 2 12 4 12
+wait "selected 3x1"
+keys ctrl-c
+wait idle
+keys ctrl-v
+wait idle
+# clear (the default): the hole lets the bar show through in the preview
+click 100 7
+wait idle
+mouse move 9 3
+wait idle
+expect-cell 9 3 "A"
+expect-cell 10 3 "█"
+expect-cell 11 3 "B"
+click 9 3
+wait "stamped"
+# solid: the hole covers the bar
+click 107 7
+wait idle
+mouse move 9 5
+wait idle
+expect-cell 9 5 "A"
+expect-cell 10 5 " "
+click 9 5
+wait "stamped"
+# under: only empty cells take the clip, so A and the hole are both skipped
+click 114 7
+wait idle
+mouse move 9 7
+wait idle
+expect-cell 9 7 "█"
+expect-cell 10 7 "█"
+expect-cell 11 7 "B"
+click 9 7
+wait "stamped"
+keys esc
+wait "done stamping"
+# after the float is gone the canvas holds the three stamps
+expect-cell 9 3 "A"
+expect-cell 10 3 "█"
+expect-cell 11 3 "B"
+expect-cell 9 4 "█"
+expect-cell 9 5 "A"
+expect-cell 10 5 " "
+expect-cell 11 5 "B"
+expect-cell 9 7 "█"
+expect-cell 10 7 "█"
+expect-cell 11 7 "B"
+# undo takes back the under stamp only
+keys ctrl-z
+wait idle
+expect-cell 11 7 " "
+expect-cell 11 5 "B"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-23/stamps.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-23/stamps.ans"
+expect-file /tmp/acidtrip-flows/drawing-23/stamps.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-23/stamps.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 9 3 "A"
+expect-cell 10 3 "█"
+expect-cell 11 3 "B"
+expect-cell 10 5 " "
+expect-cell 11 7 " "
+expect-cell 10 7 "█"

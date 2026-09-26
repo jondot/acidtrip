@@ -1,0 +1,99 @@
+# Files that won't open, picked in the Open dialog while unsaved work is
+# up: a damaged .acid, a cut-short XBin and ADF, a PNG that isn't one. Each
+# says why inside the dialog, with the path still there, and the work is
+# never asked about or touched. Then files that do open: an empty .ans
+# (a blank piece bound to it) and art under a name acidtrip doesn't know.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-23/home
+write-file /tmp/acidtrip-flows/documents-23/home/config/config.toml "autosave_seconds = 0\n"
+write-file /tmp/acidtrip-flows/documents-23/broken.acid "not really"
+write-file /tmp/acidtrip-flows/documents-23/cut.xb "XBIN"
+write-file /tmp/acidtrip-flows/documents-23/bad.adf "ADF"
+write-file /tmp/acidtrip-flows/documents-23/fake.png "not a png"
+write-file /tmp/acidtrip-flows/documents-23/empty.ans ""
+write-file /tmp/acidtrip-flows/documents-23/logo.diz "ODD NAME"
+spawn
+wait "Ctrl-K commands" 10s
+keys t
+type KEEPME
+keys esc
+wait "● untitled"
+keys ctrl-o
+wait "type to filter"
+type /tmp/acidtrip-flows/documents-23/broken.acid
+keys enter
+wait "can't open broken.acid: not an .acid file, or it is damaged"
+expect "Open"
+expect "/tmp/acidtrip-flows/documents-23/broken.acid"
+expect-not "Discard them?"
+shot damaged
+# Fix the name in place: each wrong one says its own reason.
+keys ctrl-u
+type /tmp/acidtrip-flows/documents-23/cut.xb
+keys enter
+wait "can't open cut.xb:"
+keys ctrl-u
+type /tmp/acidtrip-flows/documents-23/bad.adf
+keys enter
+wait "can't open bad.adf: ADF file too short"
+keys ctrl-u
+type /tmp/acidtrip-flows/documents-23/fake.png
+keys enter
+wait "can't open fake.png:"
+# Typing clears the complaint.
+type x
+wait idle
+expect-not "can't open"
+keys esc
+wait idle
+expect-not "type to filter"
+expect "KEEPME"
+expect "● untitled"
+# Save it, then the empty file opens clean without asking.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-23/keep.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-23/keep.ans"
+keys ctrl-o
+wait "type to filter"
+type /tmp/acidtrip-flows/documents-23/empty.ans
+keys enter
+wait "opened /tmp/acidtrip-flows/documents-23/empty.ans (80x25)"
+expect-not "KEEPME"
+expect "  empty.ans"
+keys t
+type FILLED
+keys esc
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-23/empty.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-23/empty.ans "FILLED"
+# Art under a name acidtrip doesn't know reads as ANSI, and Ctrl-S writes
+# it back the same way, under the same name.
+keys ctrl-o
+wait "type to filter"
+type /tmp/acidtrip-flows/documents-23/logo.diz
+keys enter
+wait "opened /tmp/acidtrip-flows/documents-23/logo.diz"
+expect "ODD NAME"
+keys t
+type !
+keys esc
+wait "● logo.diz"
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-23/logo.diz"
+expect "  logo.diz"
+expect-file-contains /tmp/acidtrip-flows/documents-23/logo.diz "DD NAME"
+expect-file-contains /tmp/acidtrip-flows/documents-23/logo.diz "!"
+expect-no-file /tmp/acidtrip-flows/documents-23/logo.diz.ans
+expect-file-contains /tmp/acidtrip-flows/documents-23/keep.ans "KEEPME"
+keys ctrl-q
+expect-exit 0 5s
+# It reopens as it was saved.
+spawn /tmp/acidtrip-flows/documents-23/logo.diz
+wait "Ctrl-K commands" 10s
+expect "!DD NAME"
+expect "  logo.diz"
+keys ctrl-q
+expect-exit 0 5s

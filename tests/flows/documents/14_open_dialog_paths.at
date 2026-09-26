@@ -1,0 +1,72 @@
+# The Open dialog with typed paths: a missing file says so (and opens
+# nothing else), a folder path lists that folder, a filter narrows it, Tab
+# completes into a subfolder, and a click on a row opens it. Unsaved work
+# is asked about first (no keeps it). Reopening the open file just says so.
+size 120 40
+write-file /tmp/acidtrip-flows/documents-14/alpha.ans "ALPHA PIECE"
+write-file /tmp/acidtrip-flows/documents-14/sub/bravo.ans "BRAVO PIECE"
+write-file /tmp/acidtrip-flows/documents-14/sub/notes.md "not art"
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type UNSAVED
+keys esc
+wait idle
+keys ctrl-o
+wait "type to filter or a path"
+type /tmp/acidtrip-flows/documents-14/nope.ans
+keys enter
+wait "no file at /tmp/acidtrip-flows/documents-14/nope.ans"
+shot missing
+expect "UNSAVED"
+# A folder: its art files, not other files.
+keys ctrl-u
+type /tmp/acidtrip-flows/documents-14
+keys enter
+wait "sub/bravo.ans"
+expect "alpha.ans"
+expect-not "notes.md"
+expect "in /tmp/acidtrip-flows/documents-14"
+type brav
+wait idle
+expect-not "alpha.ans"
+expect "sub/bravo.ans"
+keys enter
+wait "Discard them?"
+keys n
+wait idle
+expect-not "Discard them?"
+expect "UNSAVED"
+expect "● untitled"
+# Tab completes into the subfolder; a click on the row opens it.
+keys ctrl-o
+wait "type to filter or a path"
+type /tmp/acidtrip-flows/documents-14/su
+keys tab
+wait "in /tmp/acidtrip-flows/documents-14/sub"
+expect "bravo.ans"
+shot completed
+click 30 10
+wait "Discard them?"
+keys y
+wait "opened /tmp/acidtrip-flows/documents-14/sub/bravo.ans"
+expect "BRAVO PIECE"
+expect-not "UNSAVED"
+expect "bravo.ans"
+expect-not "● "
+# The same file again: nothing to do.
+keys ctrl-o
+wait "type to filter or a path"
+type /tmp/acidtrip-flows/documents-14/sub/bravo.ans
+keys enter
+wait "is already open"
+# Esc leaves the dialog without touching anything.
+keys ctrl-o
+wait "type to filter or a path"
+keys esc
+wait idle
+expect-not "type to filter or a path"
+expect "BRAVO PIECE"
+keys ctrl-q
+expect-exit 0 5s

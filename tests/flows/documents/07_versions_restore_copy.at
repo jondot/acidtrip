@@ -1,0 +1,65 @@
+# Version history on a .acid: two saves make two versions. Restore the
+# older one (Enter), undo the restore, then open the older one as an
+# untitled copy with the mouse ("open copy" button). The file on disk is
+# untouched throughout.
+size 120 40
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys alt-v
+wait "Version history"
+expect "No versions yet"
+keys esc
+keys t
+type VERSION ONE
+keys esc
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-07/v.acid
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-07/v.acid"
+keys t
+keys down
+type VERSION TWO
+keys esc
+keys ctrl-s
+wait idle
+expect-not "● v.acid"
+keys alt-v
+wait "Version history"
+shot list
+expect "save"
+keys down
+wait idle
+keys enter
+wait "restored version from"
+expect-not "VERSION TWO"
+expect "VERSION ONE"
+expect "● v.acid"
+keys ctrl-z
+wait "VERSION TWO"
+expect-not "● v.acid"
+# Open the older one as a copy, by mouse.
+keys alt-v
+wait "Version history"
+keys down
+wait idle
+shot copy_selected
+click 20 35
+wait idle
+shot after_click
+expect "untitled copy"
+expect "VERSION ONE"
+expect-not "VERSION TWO"
+expect "untitled"
+expect-not "v.acid"
+# A copy of a saved version is nothing new to lose: quitting doesn't ask.
+keys ctrl-q
+expect-exit 0 5s
+# The file keeps both lines.
+spawn /tmp/acidtrip-flows/documents-07/v.acid
+wait "Ctrl-K commands" 10s
+keys esc
+wait "VERSION TWO"
+expect "VERSION ONE"

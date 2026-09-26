@@ -1,0 +1,97 @@
+# 80x24, the classic terminal: the welcome fits, the status bar keeps its
+# chips, the palette and forms fit and their buttons can be clicked, help
+# scrolls to the end, panels that need the sidebar say how to get room, and
+# drawing and saving work.
+size 80 24
+spawn
+wait "Welcome" 10s
+shot welcome
+keys esc
+wait idle
+expect "80x25"
+expect "CLASSIC"
+drag 2 3 30 3
+wait idle
+expect "████████████████████████████"
+# the palette fits
+keys ctrl-k
+wait "Commands"
+shot palette
+type grid
+wait "▸Toggle grid"
+keys esc
+wait idle
+# help reaches its last line
+keys ?
+wait "Help"
+keys end
+wait "Keymap preset"
+shot help_end
+keys esc
+wait idle
+# a form fits: New document, cancelled by its button
+keys ctrl-n
+wait "New document"
+shot new_doc
+click-text "esc  cancel"
+wait idle
+expect-not "New document"
+expect "████████████████████████████"
+# no sidebar at this width, until asked for: Ctrl-B shows it over the right
+# of the canvas, Ctrl-B again hides it
+expect-not "TOOLS"
+keys ctrl-b
+wait "TOOLS"
+shot sidebar_small
+keys ctrl-b
+wait idle
+expect-not "TOOLS"
+# the Together panel from the palette brings the sidebar with it (and does
+# not start a session by itself)
+keys ctrl-k
+type draw together
+wait "▸Draw together"
+keys enter
+wait "TOGETHER"
+expect "Host this drawing"
+expect-not "ticket copied"
+shot together_small
+click-text "✕"
+wait idle
+expect-not "TOGETHER"
+keys ctrl-b
+wait idle
+expect-not "TOOLS"
+# replay from the palette: its panel shows too, and its buttons click
+keys ctrl-k
+type replay
+wait "▸Replay"
+keys enter
+wait "REPLAY"
+wait "speed"
+shot replay_small
+click-text "4×"
+wait "replay speed 4×"
+keys esc
+wait idle
+expect-not "REPLAY  "
+keys ctrl-b
+wait idle
+expect-not "TOOLS"
+# the status chips still click
+click-text "80x25"
+wait "Canvas size"
+shot canvas_size_small
+keys esc
+wait idle
+# save, then quit without a prompt
+keys ctrl-s
+wait "Save as"
+shot save_small
+keys tab ctrl-u
+type /tmp/acidtrip-flows/app-12/small.ans
+keys enter
+wait "saved"
+expect-file /tmp/acidtrip-flows/app-12/small.ans
+keys ctrl-q
+expect-exit 0 5s

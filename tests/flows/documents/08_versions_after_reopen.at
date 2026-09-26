@@ -1,0 +1,46 @@
+# Versions of a plain .ans survive a restart: save twice, quit, reopen the
+# file from the command line (same home), and Alt-V still lists both saves;
+# restoring the first one and saving writes it back.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-08/home
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type OLD LINE
+keys esc
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-08/art.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-08/art.ans"
+keys t
+keys ctrl-a
+keys esc
+keys t
+type NEW LINE
+keys esc
+wait "NEW LINE"
+keys ctrl-s
+wait idle
+keys ctrl-q
+expect-exit 0 5s
+expect-file-contains /tmp/acidtrip-flows/documents-08/art.ans "NEW LINE"
+spawn /tmp/acidtrip-flows/documents-08/art.ans
+wait "NEW LINE" 10s
+keys alt-v
+wait "Version history"
+expect-not "No versions yet"
+shot list
+keys down
+wait idle
+keys enter
+wait "restored version from"
+expect "OLD LINE"
+expect-not "NEW LINE"
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-08/art.ans"
+keys ctrl-q
+expect-exit 0 5s
+expect-file-contains /tmp/acidtrip-flows/documents-08/art.ans "OLD LINE"

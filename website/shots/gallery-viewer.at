@@ -1,0 +1,20 @@
+# The gallery viewer: add this folder, open it, view the sunset full screen.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys ctrl-f
+wait "Gallery"
+keys +
+wait "Folder ›"
+type .
+keys enter
+wait "added"
+keys enter
+wait idle
+keys down down
+wait idle
+keys enter
+wait "80x32 cells"
+wait idle
+shot gallery-viewer

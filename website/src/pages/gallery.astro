@@ -1,0 +1,75 @@
+---
+import Canvas from '../layouts/Canvas.astro';
+import Heading from '../components/Heading.astro';
+import Shot from '../components/Shot.astro';
+import { art, url } from '../lib/site';
+import { pngSize } from '../lib/rehype-acid.mjs';
+
+const size = (n: string) => pngSize(`art/${n}.png`) ?? [0, 0];
+const lettering = [
+  ['logo-acid3d', 'ACID 3D', 'acid3dx#1'],
+  ['logo-1911', '1911', '1911x#1'],
+  ['logo-acidtron', 'acidtron', 'acidtron'],
+  ['logo-amnesia', 'Amnesia', 'amnesiax#0'],
+];
+// [shot, caption lead, caption, doc]
+const screens: [string, string, string, string][] = [
+  ['overview', 'The editor.', 'Canvas, panels, status bar.', 'getting-started'],
+  ['pen', 'The smart pen.', 'Ink, Brush pen and Airbrush.', 'brushes'],
+  ['brush-studio', 'The brush studio.', 'Tweak a brush with a live preview.', 'brushes'],
+  ['art-tool', 'The Art tool.', 'The keyboard as a glyph board.', 'art-tool'],
+  ['shapes', 'Shapes.', 'Rectangles, an ellipse and lines.', 'drawing'],
+  ['colors-dialog', 'The color dialog.', 'All 16 colors, and a sample.', 'colors-characters'],
+  ['char-picker', 'The character picker.', 'All of CP437.', 'colors-characters'],
+  ['gradient', 'Gradient fill.', 'A fire ramp in shades.', 'gradients'],
+  ['gradient-panel', 'The GRADIENT panel.', 'Shape, style and ramp.', 'gradients'],
+  ['patterns', 'Pattern brush.', 'Tiles that join with no seams.', 'patterns'],
+  ['pattern-browser', 'Patterns.', 'The built-ins.', 'patterns'],
+  ['filters', 'Filters.', 'Dramatic Warm, one of 43 presets.', 'filters'],
+  ['recolor', 'Recolor.', 'Magenta for red.', 'recolor'],
+  ['block-menu', 'The block menu.', 'What to do with a selection.', 'blocks'],
+  ['layers-panel', 'Layers.', 'Show, lock, reference, reorder.', 'layers'],
+  ['frames', 'Frames.', 'The filmstrip and onion skin.', 'animation'],
+  ['export-panel', 'The EXPORT panel.', 'Set up the files once.', 'export'],
+  ['export-editor', 'An export row.', 'Every format and its options.', 'export'],
+  ['import-image', 'Import image.', 'A picture becomes art.', 'formats'],
+  ['share-menu', 'Share.', 'Copy, gist, upload or export.', 'sharing'],
+  ['together-panel', 'Draw together.', 'Host, or paste a ticket.', 'together'],
+  ['together-hosting', 'Hosting.', 'The ticket, and who is here.', 'together'],
+  ['replay', 'Replay.', 'Watch it being drawn again.', 'replay'],
+  ['gallery-home', 'The Gallery.', 'Your pieces, your folders, famous groups.', 'gallery'],
+  ['gallery-viewer', 'A piece, full screen.', 'With its SAUCE credits.', 'gallery'],
+  ['studio-cutter', 'The sourcing studio.', 'Cutting letters out of a logo.', 'studio'],
+  ['my-fonts', 'My fonts.', 'Each font and its coverage.', 'studio'],
+  ['font-dialog', 'TheDraw fonts.', 'Pick one, see it set. Shown: Cyanid Red, from the tdfiglet collection.', 'fonts-stencils'],
+  ['font-stamped', 'Lettering.', 'Cyanid Red stamped on the canvas.', 'fonts-stencils'],
+  ['stencils', 'Stencils.', 'Search and stamp: a built-in heart.', 'fonts-stencils'],
+  ['ai-prompt', 'The AI prompt.', 'Ask Claude to draw.', 'ai'],
+  ['versions', 'Versions.', 'Every save, previewed.', 'safety'],
+  ['key-sheet', 'The key sheet.', 'Every key, live.', 'keymaps-config'],
+  ['palette', 'The command palette.', 'Every command, fuzzy.', 'getting-started'],
+  ['canvas-size', 'Canvas size.', 'Width, height, and where the art goes.', 'getting-started'],
+  ['sauce', 'SAUCE.', 'Title, author, group.', 'getting-started'],
+];
+---
+<Canvas id="gallery" description="Screens captured from the real acidtrip editor by its test harness, and lettering it set in TheDraw fonts.">
+  <Heading name="page-gallery" alt="GALLERY" path="gallery.ans · screens from the real editor, and lettering it set" />
+  <p class="lead">Nothing here is mocked up. The screens are captured by acidtrip's test harness, and the lettering is stamped by acidtrip's own <code>banner</code> tool.</p>
+
+  <h2 id="lettering">Lettering</h2>
+  <p>The site's headings, set by acidtrip in TheDraw fonts from the <a href="https://github.com/tat3r/tdfiglet" target="_blank" rel="noopener">tdfiglet collection</a>, the fonts <code>acidtrip fonts get</code> installs. The fonts belong to the scene artists who drew them.</p>
+  {lettering.map(([n, name, font]) => (
+    <figure>
+      <img class="art" src={art(n)} width={size(n)[0]} height={size(n)[1]} alt={`ACiDTRiP in the TheDraw font ${name}`} loading="lazy" />
+      <figcaption><b>{name}</b> <code>{font}</code></figcaption>
+    </figure>
+  ))}
+
+  <h2 id="screens">Screens</h2>
+  <p>Click one to see it at full size.</p>
+  <div class="grid2">
+    {screens.map(([n, lead, cap, doc]) => (
+      <Shot name={n} alt={`${lead} ${cap}`}><b>{lead}</b> {cap} <a href={url(`/docs/${doc}/`)}>docs/{doc}.ans</a></Shot>
+    ))}
+  </div>
+</Canvas>

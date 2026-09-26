@@ -1,0 +1,132 @@
+# Clipboard across layers: copy what you see, cut only the active layer,
+# carry a floating paste, stamp it at the canvas edge (clipped), Esc drops
+# it, and a locked layer refuses cut, paste and block edits
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# Background: a wall of ▒
+keys b
+keys 2
+wait idle
+keys r
+click 108 7
+wait idle
+drag 2 2 30 10
+wait idle
+expect-cell 10 5 "▒"
+# Layer 2: a word on top
+keys alt-shift-n
+wait "L2/2"
+keys t
+click 10 5
+type "HI"
+keys esc
+wait idle
+expect-cell 10 5 "H"
+expect-cell 12 5 "▒"
+# cut the word with a box that also covers background: only HI goes
+keys v
+drag 8 4 14 6
+wait "selected 7x3"
+keys ctrl-x
+wait idle
+expect-cell 10 5 "▒"
+expect-cell 11 5 "▒"
+keys ctrl-v
+wait idle
+shot floating
+expect "click or Space to stamp"
+# stamp it hanging off the bottom-right corner: it clips, nothing wraps
+click 76 24
+wait idle
+expect-cell 78 25 "H"
+expect-cell 79 25 "I"
+expect-cell 0 2 " "
+click 77 24
+wait idle
+expect-cell 79 25 "H"
+keys esc
+wait idle
+expect-not "click or Space to stamp"
+# copy (not cut) takes what you see: background and word together
+drag 76 24 79 25
+wait "selected 4x2"
+keys ctrl-c
+wait "copied 4x2"
+keys ctrl-v
+wait "click or Space to stamp"
+# Esc drops a floating paste without stamping it
+keys esc
+wait idle
+keys ctrl-z
+wait "undo: Stamp"
+expect-cell 79 25 "I"
+expect-cell 78 25 "H"
+keys ctrl-z
+wait "undo: Stamp"
+expect-cell 78 25 " "
+keys ctrl-z
+wait "undo: Cut"
+expect-cell 10 5 "H"
+# hide the Background: Layer 2 holds only the word, no ▒ came along
+keys ctrl-y
+wait "redo: Cut"
+keys ctrl-y
+keys ctrl-y
+wait "redo: Stamp"
+click 92 26
+wait idle
+expect-cell 78 25 "H"
+expect-cell 77 25 " "
+expect-cell 10 5 " "
+shot layer2_only
+click 92 26
+wait idle
+expect-cell 10 5 "▒"
+# lock Layer 2: move, cut, block fill and paste-stamp all refuse, with a
+# reason (Ctrl-Y "nothing to redo" in between resets the status line)
+keys ctrl-l
+wait "V show/hide"
+keys l
+wait "■ locked"
+keys esc
+wait idle
+drag 78 25 60 20
+wait "Layer 2 is locked"
+expect-cell 78 25 "H"
+expect-cell 60 20 " "
+keys ctrl-y
+wait "nothing to redo"
+keys ctrl-x
+wait "Layer 2 is locked"
+expect-cell 78 25 "H"
+keys ctrl-y
+wait "nothing to redo"
+keys enter
+wait "Block 4x2"
+keys f
+wait "Layer 2 is locked"
+expect-cell 76 25 " "
+expect-cell 79 25 "H"
+keys ctrl-y
+wait "nothing to redo"
+keys ctrl-v
+wait "click or Space to stamp"
+click 40 15
+wait "Layer 2 is locked"
+expect-cell 42 16 " "
+keys esc
+wait idle
+shot locked
+# the Background is not locked: switch to it and the move works
+click 100 26
+wait "L1/2"
+keys v
+drag 2 2 5 3
+wait "selected 4x2"
+drag 3 2 3 12
+wait idle
+expect-cell 3 12 "▒"
+expect-cell 3 2 " "

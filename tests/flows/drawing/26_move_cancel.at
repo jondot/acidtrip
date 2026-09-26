@@ -1,0 +1,112 @@
+# Moving a block with the mouse and changing your mind: Esc mid-drag puts
+# it back and leaves no undo step, a click inside the selection without
+# dragging leaves no step either, switching tool mid-drag puts the block
+# down where it is (one step), and a real move undoes in one go
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+click 5 3
+type "MOVE"
+keys esc
+wait idle
+keys v
+drag 5 3 8 3
+wait "selected 4x1"
+# Esc in the middle of the drag: the block goes back
+mouse down left 6 3
+mouse drag left 10 6
+wait idle
+expect-cell 9 6 "M"
+expect-cell 5 3 " "
+keys esc
+wait idle
+expect-cell 5 3 "M"
+expect-cell 9 6 " "
+mouse up left 10 6
+wait idle
+expect-cell 5 3 "M"
+# nothing happened, so nothing to undo but the typing
+keys ctrl-z
+wait "undo: Type"
+expect-cell 5 3 " "
+keys ctrl-y
+wait "redo: Type"
+expect-cell 5 3 "M"
+# a click inside the selection without moving is not a step
+# Esc drops the old selection first (dragging inside it would move it)
+keys esc
+wait idle
+drag 5 3 8 3
+wait "selected 4x1"
+click 6 3
+wait idle
+expect-cell 5 3 "M"
+expect-cell 8 3 "E"
+keys ctrl-z
+wait "undo: Type"
+keys ctrl-y
+wait "redo: Type"
+# switch to the brush halfway: the block lands where it is now
+# Esc drops the old selection first (dragging inside it would move it)
+keys esc
+wait idle
+drag 5 3 8 3
+wait "selected 4x1"
+mouse down left 5 3
+mouse drag left 20 10
+wait idle
+keys b
+wait "Brush tool"
+mouse up left 20 10
+wait idle
+# (20,10 is under the brush cursor, so check the rest of the word)
+expect-cell 21 10 "O"
+expect-cell 23 10 "E"
+expect-cell 5 3 " "
+keys ctrl-z
+wait "undo: Move"
+expect-cell 5 3 "M"
+expect-cell 21 10 " "
+keys ctrl-z
+wait "undo: Type"
+keys ctrl-y
+wait "redo: Type"
+keys ctrl-y
+wait "redo: Move"
+expect-cell 21 10 "O"
+# a plain move: drag, let go, undo, redo
+keys v esc
+wait idle
+drag 20 10 23 10
+wait "selected 4x1"
+drag 21 10 41 15
+wait idle
+expect-cell 40 15 "M"
+expect-cell 20 10 " "
+keys ctrl-z
+wait "undo: Move"
+expect-cell 20 10 "M"
+expect-cell 40 15 " "
+keys ctrl-y
+wait "redo: Move"
+expect-cell 40 15 "M"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-26/moved.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-26/moved.ans"
+expect-file /tmp/acidtrip-flows/drawing-26/moved.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-26/moved.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 40 15 "M"
+expect-cell 43 15 "E"
+expect-cell 20 10 " "
+expect-cell 5 3 " "

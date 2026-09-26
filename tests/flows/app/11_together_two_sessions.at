@@ -1,0 +1,80 @@
+# Draw together, two people on localhost: ada hosts and copies the ticket,
+# bob pastes it and joins. Strokes go both ways, undo stays local to whoever
+# drew, bob leaves, ada ends the session. A garbage ticket first gets a
+# clear message. Localhost only (ACIDTRIP_NET_LOCAL=1).
+size 120 40
+env ACIDTRIP_NET_LOCAL 1
+env SSH_TTY /dev/null
+env USER ada
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+click 46 39
+wait "TOGETHER"
+click-text "Host this drawing"
+wait "ticket copied" 10s
+wait "ada (you)"
+expect "⇄ 1"
+drag 3 4 20 4
+wait idle
+# bob, in another terminal with his own home
+session bob
+env USER bob
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+click 46 39
+wait "TOGETHER"
+# a ticket that isn't one, pasted into the join field: Join says so
+click-text "paste a ticket"
+wait idle
+paste "hello this is not a ticket"
+wait idle
+click-text "Join"
+wait "ask the host to copy it again"
+shot bad_ticket
+expect-not "joined"
+expect "Host this drawing"
+# the real ticket replaces it, then Join by click
+click-text "join›"
+keys ctrl-u
+paste-clipboard main
+wait idle
+click-text "Join"
+wait "joined ada" 15s
+wait "██████████████████" 10s
+shot bob_joined
+expect "bob (you)"
+# bob draws; ada sees it
+drag 3 8 20 8
+wait idle
+session main
+wait "bob joined" 10s
+wait "⇄ 2" 10s
+shot ada_sees_bob
+# ada draws on another row; bob sees that too
+drag 3 12 12 12
+wait idle
+session bob
+wait "██████████" 10s
+# bob's undo takes back bob's stroke, not ada's
+keys ctrl-z
+wait idle
+session main
+wait idle
+shot after_bob_undo
+expect "██████████"
+# bob leaves: the Together panel's Leave
+session bob
+click-text "Leave"
+wait idle
+shot bob_left
+session main
+wait "bob left" 10s
+click-text "End session"
+wait "session ended" 10s
+expect "Host this drawing"
+# ada's work is all still hers
+expect "██████████████████"

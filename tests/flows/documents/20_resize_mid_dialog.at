@@ -1,0 +1,94 @@
+# The terminal changes size while file dialogs are up: the typed path
+# survives being squeezed down to a tiny window and back, every document
+# dialog draws at 40x12 without falling over, and the export panel gives
+# way to the dialog when the sidebar no longer fits.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-20/home
+write-file /tmp/acidtrip-flows/documents-20/home/config/config.toml "autosave_seconds = 0\n"
+spawn
+wait "Ctrl-K commands" 10s
+keys t
+type RESIZED
+keys esc
+wait idle
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-20/r.acid
+size 80 24
+wait idle
+expect "Save / Export"
+size 40 12
+wait idle
+shot tiny_save
+size 30 8
+wait idle
+size 120 40
+wait "Keeps working on this file. Only formats acidtrip reopens exactly."
+expect "r.acid"
+expect "acidtrip document"
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-20/r.acid"
+expect-file /tmp/acidtrip-flows/documents-20/r.acid
+# Each dialog at 40x12.
+size 40 12
+wait idle
+keys alt-d
+wait idle
+shot tiny_sauce
+keys esc
+keys ctrl-d
+wait idle
+shot tiny_props
+keys esc
+keys alt-v
+wait idle
+shot tiny_versions
+keys esc
+keys ctrl-o
+wait idle
+shot tiny_open
+keys esc
+keys ctrl-n
+wait idle
+shot tiny_new
+keys esc
+keys alt-s
+wait idle
+keys ctrl-e
+wait idle
+shot tiny_export
+keys esc
+wait idle
+# Export panel, then the sidebar goes away.
+size 120 40
+wait idle
+keys ctrl-e
+wait "EXPORT 1"
+size 90 30
+wait idle
+expect-not "EXPORT 1"
+keys ctrl-e
+wait "Writes a copy for sharing"
+keys esc
+size 120 40
+wait idle
+keys t
+type !
+keys esc
+keys ctrl-q
+wait "Quit anyway?"
+size 50 14
+wait idle
+shot tiny_quit
+keys n
+wait idle
+expect "RESIZED!"
+# No room for the message at 50 columns: it's cut, not wrapped.
+keys ctrl-s
+wait "sa…"
+expect-not "● r.acid"
+size 120 40
+wait "  r.acid"
+keys ctrl-q
+expect-exit 0 5s

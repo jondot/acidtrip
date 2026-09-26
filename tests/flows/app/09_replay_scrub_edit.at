@@ -1,0 +1,107 @@
+# Replay: draw (with an undo), save as .acid, watch it back. Pause, step,
+# Home/End, scrub by click, speed, skip idle; an edit leaves the replay and
+# lands on the live piece; after a restart the .acid still replays. Esc
+# always gets back to drawing.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 3 4 20 4
+wait idle
+drag 3 6 20 6
+wait idle
+# pick ▒ from the sidebar, paint, undo it
+click-text "░ ▒ ▓"
+wait idle
+drag 3 8 20 8
+wait idle
+expect "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+keys ctrl-z
+wait idle
+expect-not "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+click-text "▓ █ ▀"
+wait idle
+drag 3 10 10 10
+wait idle
+keys ctrl-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/app-09/piece.acid
+keys enter
+wait "saved"
+expect-file /tmp/acidtrip-flows/app-09/piece.acid
+# the panel opens and plays
+click-text "► replay"
+wait "REPLAY"
+shot replay_start
+# Space pauses, Home goes to the empty page, → steps, End to the finish
+keys space home
+wait "step 0/"
+expect-not "██████████████████"
+keys right
+wait "step 1/"
+keys end
+wait idle
+expect "██████████████████"
+expect-not "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+keys left
+wait idle
+expect-not "step 0/"
+# a click mid-scrubber seeks there (and pauses)
+keys home
+wait "step 0/"
+click 106 6
+wait idle
+expect-not "step 0/"
+shot scrubbed
+# speed and skip-idle buttons answer
+click-text "16×"
+wait "replay speed 16×"
+click-text "skip idle"
+wait "pauses"
+# Esc: back to drawing, the live piece intact
+keys esc
+wait "replay off"
+expect-not "REPLAY"
+expect "██████████████████"
+# again: a click on the canvas only plays/pauses the replay (nothing is
+# painted); picking a tool leaves it, and then strokes land on the live piece
+click-text "► replay"
+wait "REPLAY"
+keys space
+drag 3 14 20 14
+wait idle
+expect "REPLAY"
+expect-not "● piece"
+keys b
+wait idle
+expect-not "REPLAY"
+drag 3 14 20 14
+wait idle
+expect "● piece"
+# Undo while replaying goes back to the live piece and undoes there
+click-text "► replay"
+wait "REPLAY"
+keys ctrl-z
+wait "undo: Brush"
+expect-not "REPLAY"
+keys ctrl-y
+wait "redo: Brush"
+keys ctrl-s
+wait "saved"
+# restart on the file: the history came back with it
+restart /tmp/acidtrip-flows/app-09/piece.acid
+wait "piece" 10s
+click-text "► replay"
+wait "REPLAY"
+expect-not "no edit history"
+keys space end
+wait idle
+shot replay_after_restart
+keys esc
+wait idle
+expect-not "REPLAY"
+drag 30 16 40 16
+wait idle
+expect "● piece"

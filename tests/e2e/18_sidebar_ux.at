@@ -1,0 +1,31 @@
+# Paint-style colors, glyph pick, brush painting, layer duplicate, minimap jump
+size 120 40
+spawn crates/acidtrip-io/tests/corpus/LDA-ANSIACADEMY.ANS
+wait "LDA-ANSIACADEMY" 10s
+keys esc
+wait idle
+# BG slot becomes active; palette click sets BG = red (index 4)
+click 104 13
+wait "palette clicks now set the background"
+click 107 15
+# right-click yellow (14) sets the other slot: FG
+mouse down right 113 16
+mouse up right 113 16
+# pick ▒ from the sidebar charset (glyph 2), then paint on the canvas
+click 98 21
+wait "brush '▒'"
+drag 2 20 30 20
+wait idle
+shot colors_and_paint
+expect "key B"
+# duplicate the layer from the sidebar action row
+click 97 26
+wait "Background copy"
+keys ctrl-l
+wait "Layers"
+shot layers_panel
+keys esc
+# jump to the end of the piece via the minimap
+click 100 38
+wait idle
+shot minimap_jump

@@ -1,0 +1,150 @@
+# The AI prompt through a fake Claude API, run after run in one session:
+# Esc and an empty Enter at the prompt, a suggestion edited into a prompt, a
+# run that one Ctrl-Z takes back (and Ctrl-Y brings back), a run stopped with
+# Esc (after "a" asks whether to stop it and we say no), a run stopped with
+# the status bar's ✕ stop, the block menu's "Ask AI about this block", a
+# refusal, a tool that doesn't exist. Then a restart with no key at all.
+fake-claude tests/flows/library/fake/14_ai.json
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-14/home
+env HOME /tmp/acidtrip-flows/library-14/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# Esc at the prompt: nothing runs.
+keys a
+wait "Ask AI"
+expect "working on the whole canvas"
+keys esc
+wait idle
+expect-not "Ask AI"
+# An empty prompt does nothing, the bar stays.
+keys a
+wait "Ask AI"
+keys enter
+wait idle
+expect "Ask AI"
+# A suggestion fills the line; rewrite it and run.
+keys down
+wait "✦ make a logo that says"
+keys ctrl-u
+type say hello
+keys enter
+wait "AI done" 10s
+expect "HELLO FROM AI"
+expect "╔══"
+expect-claude-calls 2
+shot hello
+keys ctrl-z
+wait idle
+expect-not "HELLO FROM AI"
+expect-not "╔══"
+keys ctrl-y
+wait idle
+expect "HELLO FROM AI"
+keys ctrl-z
+wait idle
+expect-not "HELLO FROM AI"
+# Run two: stop it with Esc while the API is slow to answer.
+keys a
+wait "Ask AI"
+type write two lines
+keys enter
+wait "PARTIAL ONE" 10s
+wait "✕ stop"
+shot running
+# "a" while it works asks to stop it; no keeps it going.
+keys a
+wait "The AI is still working. Stop it?"
+keys n
+# (the spinner never goes quiet, so prove the dialog is gone another way)
+keys ctrl-k
+wait "Commands"
+expect-not "Stop it?"
+expect "✕ stop"
+keys esc
+keys esc
+wait "AI stopped" 10s
+expect-not "NEVER ONE"
+expect-claude-calls 4
+shot stopped
+keys ctrl-z
+wait idle
+expect-not "PARTIAL ONE"
+# Run three: stop it with the mouse.
+keys a
+wait "Ask AI"
+type write two more
+keys enter
+wait "PARTIAL TWO" 10s
+wait "✕ stop"
+click 48 39
+wait "AI stopped" 10s
+expect-not "NEVER TWO"
+expect "PARTIAL TWO"
+expect-claude-calls 6
+# The block menu: select an area, Enter, i.
+keys v
+drag 12 16 40 20
+wait idle
+keys enter
+wait "Ask AI about this block"
+keys i
+wait "Ask AI"
+expect "working on the selection"
+type write in the block
+keys enter
+wait "AI done" 10s
+expect "IN THE BLOCK"
+expect-claude-calls 8
+# A refusal ends the run with an error, nothing drawn.
+keys a
+wait "Ask AI"
+type something odd
+keys enter
+wait "AI error: Claude declined this request" 10s
+expect-claude-calls 9
+# A tool that doesn't exist: the error goes back to the model, the run ends.
+keys a
+wait "Ask AI"
+type use a strange tool
+keys enter
+wait "AI done" 10s
+expect-claude-calls 11
+shot errors
+# One Ctrl-Z per run: the block text goes, the stopped run's text stays
+# until its own undo.
+keys ctrl-z
+wait idle
+expect-not "IN THE BLOCK"
+expect "PARTIAL TWO"
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+# No key: the prompt key shows how to set one up instead.
+env ANTHROPIC_API_KEY ""
+env ANTHROPIC_BASE_URL ""
+spawn
+wait "Recover unsaved work" 10s
+keys d
+wait "discarded recovery files"
+wait idle
+keys a
+wait "AI setup"
+expect "✗ no API key"
+expect "export ANTHROPIC_API_KEY"
+shot nokey
+keys x
+wait idle
+expect-not "AI setup"
+keys ctrl-k
+wait "Commands"
+type ask ai
+keys enter
+wait "AI setup"
+keys esc
+wait idle
+keys ctrl-q
+expect-exit 0 5s

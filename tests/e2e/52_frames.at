@@ -1,0 +1,54 @@
+# Animation frames, mouse only: open FRAMES from the LAYERS header, add a
+# frame, draw over the onion skin, pick frames in the filmstrip, time, play,
+# delete and undo
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# frame 1: a bar across the top
+drag 2 3 30 3
+# ▸ frames in the LAYERS header opens the panel
+expect "▸ frames"
+click 104 24
+wait "FRAMES 1/1"
+expect-not "▸ frames"
+shot frames_panel
+# + adds a blank frame after this one and shows it
+click 93 28
+wait "FRAMES 2/2"
+wait "frame 2/2"
+# frame 2: a bar lower down, drawn over frame 1's dimmed onion skin
+drag 2 6 30 6
+shot frames_onion
+# the next-frame onion toggle
+click 114 29
+wait "onion skin (next frame) on"
+# the first thumbnail goes back to frame 1 (frame 2 now shows through)
+click 95 25
+wait "FRAMES 1/2"
+shot frames_first
+# timing: one more frame per second, frame 1 held two ticks
+click 103 30
+wait "9 fps"
+click 118 30
+wait "frame 1 holds 2 ticks"
+expect "1×2"
+# ▶ play / ■ stop in the header
+click 112 24
+wait "■ stop"
+shot frames_playing
+click 112 24
+wait "▶ play"
+# ✕ deletes the frame shown; undo brings it back
+click 95 25
+wait "FRAMES 1/2"
+click 109 28
+wait "FRAMES 1/1"
+keys ctrl-z
+wait "undo: Delete frame"
+wait "FRAMES 1/2"
+expect "1×2"
+# ✕ in the header closes the panel
+click 118 24
+wait "▸ frames"

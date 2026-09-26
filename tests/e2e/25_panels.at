@@ -1,0 +1,51 @@
+# Sidebar panels: every tool option is a visible chip with a hover tip
+size 140 44
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# hovering a tool button explains it
+mouse move 113 2
+wait "Select — select, then move"
+# Brush panel: paint mode chips
+mouse move 125 7
+wait "colors only, keep the glyphs"
+click 125 7
+mouse move 40 20
+wait "Brush: colors only"
+shot brush_panel
+# Rect: pick the double-frame look, draw filled
+click 130 2
+wait "RECT"
+click 130 7
+click 125 8
+mouse move 40 20
+wait "Rect: double frame"
+drag 4 4 20 9
+wait idle
+expect "╔"
+expect "╝"
+shot rect_look
+# Pen: brush arrows, drag the size slider, gear opens the studio
+keys p
+wait "PEN"
+expect "Ink"
+click 134 6
+wait "Brush pen"
+drag 118 9 130 9
+mouse move 40 20
+wait idle
+expect-not " 7.0px"
+shot pen_panel
+click 138 6
+wait "Brush studio"
+keys esc
+# Shade: one-button users choose lighter with a chip
+click 128 3
+wait "SHADE"
+click 133 7
+mouse move 40 20
+wait "click lightens"
+shot shade_panel
+# Layers: rename button opens the prompt
+mouse move 120 31

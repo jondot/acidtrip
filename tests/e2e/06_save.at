@@ -1,0 +1,30 @@
+# Save as ANSI, quit, reopen, export PNG via dialog
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys t
+type SAVE ME
+keys esc
+keys ctrl-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-e2e/saved.ans
+shot saveas
+keys enter
+wait "saved /tmp/acidtrip-e2e/saved.ans"
+# Ctrl-E opens the EXPORT panel now; the one-file dialog is Save as, then Export.
+keys alt-s
+wait "Save / Export"
+keys ctrl-e
+wait "Writes a copy"
+keys tab ctrl-u
+type /tmp/acidtrip-e2e/saved.png
+keys enter
+wait "exported"
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-e2e/saved.ans
+wait "SAVE ME" 10s
+expect "saved.ans"
+shot reopened

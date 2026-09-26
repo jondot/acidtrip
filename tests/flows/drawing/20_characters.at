@@ -1,0 +1,83 @@
+# Characters: the sidebar set arrows and glyph row by mouse, the "⋯ all"
+# picker by mouse, Alt-K picker by keyboard, [ ] and number keys at the
+# cursor; CP437 symbols survive a save as .ans and reopen
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys b
+wait "Brush tool"
+# › to the next set (symbols), then its first glyph, then paint
+click 118 20
+wait "symbols 7/15"
+expect "set  7  1☺"
+click 96 21
+wait "brush '☺'"
+click 5 3
+wait idle
+expect-cell 5 3 "☺" fg=15
+# the full picker by mouse
+click 114 19
+wait "Characters"
+expect "U+"
+click 34 15
+wait "brush '♥'"
+expect-not "Characters "
+click 7 3
+wait idle
+expect-cell 7 3 "♥"
+# Alt-K, keyboard: arrows and Enter
+keys alt-k
+wait "Characters"
+keys down right enter
+wait "brush '$'"
+click 9 3
+wait idle
+expect-cell 9 3 "$"
+# Esc leaves the picker without changing the brush
+keys alt-k
+wait "Characters"
+keys right right esc
+wait idle
+expect-not "arrows · Enter pick"
+click 11 3
+wait idle
+expect-cell 11 3 "$"
+# ‹ twice: crossings; [ and ] step sets from the keyboard
+click 93 20
+click 93 20
+wait "crossings 5/15"
+keys ]
+wait "charset 6"
+keys [
+wait "charset 5: crossings"
+# number keys place the set's glyph at the keyboard cursor and step right
+keys down down down
+keys 1
+keys 2
+wait idle
+keys right right
+wait idle
+expect-cell 11 6 "┼"
+expect-cell 12 6 "╬"
+keys ctrl-z
+wait "undo: "
+expect-cell 12 6 " "
+expect-cell 11 6 "┼"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-20/chars.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-20/chars.ans"
+expect-file /tmp/acidtrip-flows/drawing-20/chars.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-20/chars.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect "☺ ♥ $ $"
+expect-cell 11 6 "┼"
+expect-cell 12 6 " "

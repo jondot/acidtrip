@@ -1,0 +1,107 @@
+# Gradients (linear, reversed, radial, inside a selection only) and
+# patterns (a pattern made from a selection, stamped as a rect; brush
+# size); undo across both tools
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys d
+wait "GRADIENT"
+# linear over the empty canvas: fg before the start, bg after the end
+drag 10 5 30 5
+wait idle
+expect-cell 5 5 "█" fg=15
+expect-cell 5 20 "█" fg=15
+expect-cell 12 5 "▓"
+expect-cell 35 5 " "
+# reversed, over the solid run on the left only (a gradient fills the
+# area under the pointer, like the bucket)
+click 117 6
+wait "fg → bg ⇄"
+drag 10 5 30 5
+wait idle
+expect-cell 5 5 " "
+expect-cell 13 5 "▒"
+# radial, reversed: bg in the middle, fg outside
+click 107 6
+wait "radial"
+drag 40 12 50 12
+wait idle
+expect-cell 40 12 " "
+expect-cell 38 12 "░"
+expect-cell 70 12 "█" fg=15
+shot radial
+# inside a selection only
+keys v
+drag 60 2 75 4
+wait "selected 16x3"
+keys d
+wait "in the selection"
+click 99 6
+wait idle
+drag 60 3 75 3
+wait idle
+expect-cell 60 3 " "
+expect-cell 59 3 "█" fg=15
+expect-cell 60 5 "█" fg=15
+keys ctrl-z
+wait "undo: Gradient"
+expect-cell 60 3 "█"
+keys esc
+wait idle
+# a pattern from a selection: type XO, select it, use it
+keys t
+click 2 22
+type "XO"
+keys esc
+keys v
+drag 2 22 3 22
+wait "selected 2x1"
+keys w
+wait "Pattern ·"
+shot pat
+click 96 10
+wait idle
+shot usesel
+click 109 6
+wait idle
+drag 1 14 10 16
+wait idle
+shot rect
+# grid alignment: X falls on even columns, wherever the rect starts
+expect-cell 1 14 "O"
+expect-cell 2 14 "X"
+expect-cell 10 16 "X"
+expect-cell 11 15 " "
+expect-cell 12 15 "▓"
+# start alignment: the pattern starts at the rect's corner
+click 113 8
+wait idle
+drag 1 18 6 18
+wait idle
+expect-cell 1 18 "X"
+expect-cell 2 18 "O"
+# the canvas is untouched outside the rect
+expect-cell 7 18 " "
+keys ctrl-z
+wait "undo: Pattern"
+expect-cell 1 18 " "
+keys ctrl-z
+wait "undo: Pattern"
+expect-cell 2 14 " "
+keys ctrl-z
+wait "undo: Type"
+expect-cell 2 22 " "
+keys ctrl-z
+wait "undo: Gradient"
+expect-cell 70 12 " "
+keys ctrl-z
+wait "undo: Gradient"
+expect-cell 5 5 "█" fg=15
+keys ctrl-z
+wait "undo: Gradient"
+expect-cell 5 5 " "
+expect-cell 12 5 " "
+keys ctrl-z
+wait "nothing to undo"

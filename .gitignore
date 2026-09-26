@@ -1,0 +1,12 @@
+/target
+/target-*
+*.swp
+.DS_Store
+/target-*
+/website/node_modules
+/website/dist
+/website/.astro
+__pycache__/
+.vercel
+.env*.local
+.claude/

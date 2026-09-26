@@ -1,0 +1,112 @@
+# Keyboard first: draw a sign, select it, save it as a stencil from the block
+# menu; Esc out of the name prompt saves nothing; the same name twice keeps
+# both. The block menu without a selection asks for one. Restart with the
+# same library: search finds both, stamp one, delete them with Ctrl-D while
+# the search stays put, restart again: gone for good.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-05/home
+env HOME /tmp/acidtrip-flows/library-05/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+type HELLO
+keys esc
+wait idle
+expect "HELLO"
+# Select it and open the block menu.
+keys v
+drag 0 1 4 1
+wait "5x1"
+keys enter
+wait "Block 5x1"
+shot block_menu
+# Esc out of the name prompt: nothing saved.
+keys s
+wait "Stencil name"
+keys esc
+wait idle
+expect-not "saved stencil"
+expect-not "Stencil name"
+# Save it for real, twice under one name.
+keys enter
+wait "Block 5x1"
+keys s
+wait "Stencil name"
+type hello sign
+keys enter
+wait "saved stencil \"hello sign\""
+keys enter
+wait "Block 5x1"
+keys s
+wait "Stencil name"
+type hello sign
+keys enter
+wait "saved stencil \"hello sign\""
+# Nothing selected (Esc drops it): the command asks for a selection.
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+type save selection as stencil
+keys enter
+wait "select an area first"
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+# A new session with the same library.
+spawn
+wait "Recover unsaved work" 10s
+keys d
+wait "discarded recovery files"
+wait idle
+keys n
+wait "Stencils"
+type hello
+wait idle
+shot search
+expect "hello sign"
+keys enter
+wait "click or Space to stamp"
+click 30 10
+wait "stamped"
+keys esc
+wait "done stamping"
+expect "HELLO"
+# N again, with the Stencil tool already on, opens the chooser again.
+# Delete both; the search stays "hello" between deletes.
+keys n
+wait "Stencils"
+type hello
+wait idle
+keys ctrl-d
+wait "deleted stencil hello sign"
+wait idle
+expect "› hello"
+expect "hello sign"
+shot one_left
+keys ctrl-d
+wait idle
+expect-not "▸hello sign"
+expect "› hello"
+keys esc
+wait idle
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+spawn
+wait "Recover unsaved work" 10s
+keys d
+wait "discarded recovery files"
+wait idle
+keys n
+wait "Stencils"
+type hello sign
+wait idle
+expect-not "▸hello sign"
+expect-not "source: drawn"
+shot gone
+keys esc

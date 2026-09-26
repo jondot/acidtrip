@@ -1,0 +1,37 @@
+# Gradient tool with the mouse only: pick it, choose fire + radial from its
+# panel, drag over the bucket region with a live preview; one undo step
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+mouse move 93 3
+wait "Gradient — drag a color ramp"
+click 93 3
+wait "GRADIENT"
+mouse move 112 7
+wait "dither: the shade steps"
+# Classic has 16 colors: smooth explains itself instead
+click 104 7
+wait "smooth needs a Modern document"
+click 99 8
+wait "fire"
+click 108 6
+wait "radial"
+mouse move 40 30
+wait idle
+shot gradient_panel
+# the preview follows the drag before anything is committed
+mouse down left 40 13
+mouse drag left 50 13
+mouse drag left 60 13
+wait idle
+expect "▓"
+shot gradient_preview
+mouse up left 60 13
+wait idle
+shot gradient_fire
+keys ctrl-z
+wait "undo: Gradient"
+keys ctrl-z
+wait "nothing to undo"

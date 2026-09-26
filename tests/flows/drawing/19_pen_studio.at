@@ -1,0 +1,91 @@
+# The Pen: = / - size (from the Brush tool too, which picks the Pen), Tab
+# cycles the brush presets, the Brush studio picks Marker; Esc mid-stroke
+# ends the stroke (what is drawn stays, one undo step); a pen stroke on a
+# hidden layer warns and draws nothing; save as .ans and reopen
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys b =
+wait "Pen: Ink 4.0px"
+expect "PEN"
+keys - -
+wait "Pen: Ink 3.0px"
+keys tab
+wait idle
+expect-not "‹  Ink    "
+keys shift-tab
+wait idle
+keys p
+wait "Pen tool · Ink 3.5px"
+# Esc in the middle of a stroke: the stroke ends, the rest of the drag is ignored
+mouse down left 10 5
+mouse drag left 30 8
+wait idle
+keys esc
+wait idle
+mouse drag left 40 12
+mouse up left 40 12
+wait idle
+expect-cell 12 5 "▄"
+expect-cell 40 12 " "
+expect-cell 38 11 " "
+keys ctrl-z
+wait "undo: Pen"
+expect-cell 12 5 " "
+keys ctrl-y
+wait "redo: Pen"
+expect-cell 12 5 "▄"
+# Brush studio, keyboard only: Marker is the third brush
+keys shift-p
+wait "Brush studio"
+expect "Calligraphy"
+keys down down
+wait idle
+keys enter
+wait idle
+expect-not "Brush studio"
+expect "Marker"
+expect "6.0px"
+drag 10 15 50 15
+wait idle
+expect-cell 30 15 "▓"
+expect-cell 30 14 " "
+# a hidden layer: the pen refuses and says why
+keys alt-shift-n
+wait idle
+keys ctrl-l
+wait "M merge down"
+keys v
+wait idle
+keys esc
+wait idle
+drag 10 20 40 20
+wait "hidden"
+expect-cell 25 20 " "
+keys ctrl-l
+wait "M merge down"
+keys v
+wait idle
+keys esc
+wait idle
+drag 10 20 40 20
+wait idle
+expect-cell 25 20 "▓"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-19/pen.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-19/pen.ans"
+expect-file /tmp/acidtrip-flows/drawing-19/pen.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-19/pen.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 12 5 "▄"
+expect-cell 30 15 "▓"
+expect-cell 25 20 "▓"

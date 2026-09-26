@@ -1,0 +1,148 @@
+# The Gallery at 80x24 across two restarts. Esc out of the folder field keeps
+# the Gallery; add a local folder, view a piece, resize to 120x40 and back
+# while viewing, collect it, take a part by dragging and stamp it; quit
+# (confirm "no" first). After a restart Home has Continue and My collection
+# and scrolls down to the folder; take the collection copy out again; after a
+# second restart the piece is only under Continue, and a part can be taken
+# with the keyboard alone.
+size 80 24
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-17/home
+env HOME /tmp/acidtrip-flows/library-17/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-f
+wait "Local folders"
+wait idle
+expect "add a folder of art"
+keys +
+wait "Folder ›"
+type nope
+keys esc
+wait idle
+expect "Local folders"
+expect-not "Folder ›"
+keys +
+wait "Folder ›"
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus
+keys enter
+wait "▤ corpus"
+wait idle
+keys enter
+wait "⏎  view"
+wait idle
+expect "DR-HEART"
+keys right right enter
+wait "rows 1–16 of 142"
+wait idle
+expect "tutorial on how to draw hearts"
+# Bigger: more rows and the piece's details.
+size 120 40
+wait "80x142 cells"
+wait idle
+expect "rows 1–32 of 142"
+size 80 24
+wait "rows 1–16 of 142"
+wait idle
+expect "c  save to collection"
+keys c
+wait "saved DR-HEART to your collection"
+wait idle
+expect "✓ in your collection"
+keys t
+wait "drag a box, or arrows size one"
+drag 10 13 32 19
+wait "took 23x7 from DR-HEART"
+wait idle
+expect-not "Gallery"
+keys enter
+wait "stamped"
+keys esc
+wait idle
+keys ctrl-q
+wait "Quit anyway?"
+keys n
+wait idle
+expect-not "Quit anyway?"
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+# Restart: the work quit away is offered back (discard it); Continue and
+# My collection are both there; the folder is below.
+spawn
+wait "Recover unsaved work" 10s
+keys d
+wait "discarded recovery files"
+wait idle
+keys ctrl-f
+wait "Continue"
+wait idle
+expect "My collection"
+keys down
+wait idle
+expect "Local folders"
+expect "▤ corpus"
+expect "c  remove from collection"
+keys c
+wait "removed DR-HEART from your collection"
+wait idle
+expect "c  save to collection"
+keys esc
+wait idle
+expect-not "Gallery"
+keys ctrl-q
+expect-exit 0 5s
+# Second restart: only Continue has it; view and take a part by keyboard.
+spawn
+wait "Ctrl-K commands" 10s
+wait idle
+keys ctrl-f
+wait "Continue"
+wait idle
+expect "save a piece (c) to keep a copy that works offline"
+keys enter
+wait "rows 1–16 of 142"
+wait idle
+expect "c  save to collection"
+keys down down down down down down down down down down
+wait "rows 11–26 of 142"
+keys t
+wait "drag a box, or arrows size one"
+wait idle
+expect "⏎  take what's shown"
+# Arrows grow the box from the view's top-left, Shift moves it.
+keys right right right right right right right right right right right
+keys right right right right right right right right right right right
+keys down down down down down down
+wait "23x7 · ⏎ take it"
+keys shift-right shift-right shift-right shift-right shift-right shift-right shift-right shift-right shift-right
+wait idle
+expect "23x7 · ⏎ take it"
+expect "⏎  take it"
+keys enter
+wait "took 23x7 from DR-HEART"
+wait idle
+keys enter
+wait "stamped"
+keys esc
+wait idle
+# With no box, Enter takes what's shown.
+keys ctrl-f
+wait "Continue"
+wait idle
+keys enter
+wait "rows 1–16 of 142"
+keys t
+wait "take what's shown"
+keys enter
+wait "took 76x17 from DR-HEART"
+keys esc
+wait idle
+expect-not "took 76x17"
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s

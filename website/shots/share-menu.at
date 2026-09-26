@@ -1,0 +1,9 @@
+# The share menu (Alt-E).
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys alt-e
+wait "Share"
+wait idle
+shot share-menu

@@ -1,0 +1,102 @@
+# Frames: draw frame 1, add a blank frame (onion skin shows the last one),
+# draw frame 2, duplicate, reorder, delete; undo jumps to the frame it
+# changes; save as .acid, reopen with every frame
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys b
+drag 5 5 15 5
+wait idle
+click 105 24
+wait "FRAMES 1/1"
+keys alt-f
+wait "frame 2/2"
+expect "FRAMES 2/2"
+expect-cell 10 5 "█" fg=#5f5f63
+shot onion
+click 100 29
+wait idle
+expect-cell 10 5 " "
+shot no_onion
+click 100 29
+wait idle
+drag 5 8 15 8
+wait idle
+expect-cell 10 8 "█" fg=15
+keys alt-shift-f
+wait "FRAMES 3/3"
+expect-cell 10 8 "█" fg=15
+drag 5 10 15 10
+wait idle
+shot frame3
+expect-cell 10 10 "█" fg=15
+# move frame 3 earlier: it becomes frame 2
+click 101 28
+wait "FRAMES 2/3"
+expect-cell 10 10 "█" fg=15
+# frame 1 is the plain stroke; frame 3 (was 2) has no row-10 stroke
+keys alt-left
+wait "FRAMES 1/3"
+expect-cell 10 5 "█" fg=15
+expect-cell 10 10 " "
+keys alt-right alt-right
+wait "FRAMES 3/3"
+expect-cell 10 8 "█" fg=15
+# (the row-10 stroke here is the onion skin of frame 2, dimmed)
+expect-cell 10 10 "█" fg=#5f5f63
+# delete frame 1 from the strip
+keys alt-left alt-left
+wait "FRAMES 1/3"
+click 109 28
+wait "FRAMES 1/2"
+expect-cell 10 10 "█" fg=15
+expect-cell 10 5 " "
+shot deleted
+# undo walks back: the deleted frame returns, then the reorder, then the
+# stroke on the duplicate (the view jumps to that frame)
+keys ctrl-z
+wait "FRAMES 1/3"
+expect-cell 10 5 "█" fg=15
+keys ctrl-z
+wait "undo: Move frame"
+keys ctrl-z
+wait "undo: Brush"
+expect "FRAMES 3/3"
+expect-cell 10 10 " "
+expect-cell 10 8 "█" fg=15
+keys ctrl-y
+wait "redo: Brush"
+expect-cell 10 10 "█" fg=15
+# a new stroke on frame 1 drops the redo of the reorder
+keys alt-left alt-left
+wait "FRAMES 1/3"
+drag 5 15 15 15
+wait idle
+keys ctrl-y
+wait "nothing to redo"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-10/anim.acid"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-10/anim.acid"
+expect-file /tmp/acidtrip-flows/drawing-10/anim.acid
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-10/anim.acid
+wait "Welcome" 10s
+keys esc
+wait idle
+click 105 24
+wait "FRAMES 1/3"
+expect-cell 10 5 "█" fg=15
+expect-cell 10 15 "█" fg=15
+keys alt-right
+wait "FRAMES 2/3"
+expect-cell 10 8 "█" fg=15
+keys alt-right
+wait "FRAMES 3/3"
+expect-cell 10 10 "█" fg=15
+shot reopened

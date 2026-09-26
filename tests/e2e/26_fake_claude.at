@@ -1,0 +1,21 @@
+# The AI prompt draws through a fake Claude API (no real key, no network):
+# one tool round (box + text), then a closing text reply.
+fake-claude tests/e2e/fake/26_prompt.json
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys a
+wait "Ask AI"
+type draw a sign
+keys enter
+wait "AI done" 10s
+expect "FAKE CLAUDE WAS HERE"
+expect "╔══"
+expect-claude-calls 2
+shot drawn
+# One Ctrl-Z undoes the whole run.
+keys ctrl-z
+wait idle
+expect-not "FAKE CLAUDE WAS HERE"

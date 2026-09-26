@@ -1,0 +1,9 @@
+# The art tool on the sunset.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys ctrl-g
+wait "Blocks"
+wait idle
+shot art-tool

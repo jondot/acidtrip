@@ -1,0 +1,73 @@
+# Saving where something is lost asks first, every time. A piece with two
+# layers saved as .ans: the dialog says what's lost. Ctrl-S later asks
+# "Save anyway?": no writes nothing (still dirty), yes flattens it into the
+# file. Then plain ASCII: colors are lost, same question on Ctrl-S.
+size 120 40
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type BOTTOM LAYER
+keys esc
+keys alt-shift-n
+wait "L2/2"
+keys t
+keys down
+type TOP LAYER
+keys esc
+wait idle
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-13/two.ans
+wait "loses"
+shot save_dialog
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-13/two.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-13/two.ans "TOP LAYER"
+# An edit, then Ctrl-S: asked; say no.
+keys t
+keys down
+type THIRD
+keys esc
+keys ctrl-s
+wait "Save anyway?"
+shot ask
+keys n
+wait idle
+expect "● two.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-13/two.ans "TOP LAYER"
+keys ctrl-s
+wait "Save anyway?"
+keys y
+wait "saved /tmp/acidtrip-flows/documents-13/two.ans"
+expect-not "● two.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-13/two.ans "THIRD"
+expect-file-contains /tmp/acidtrip-flows/documents-13/two.ans "BOTTOM LAYER"
+# Plain ASCII keeps the letters only.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-13/plain.asc
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-13/plain.asc"
+keys t
+type X
+keys esc
+keys ctrl-s
+wait "Save anyway?"
+keys esc
+wait idle
+expect "● plain.asc"
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+expect-file-contains /tmp/acidtrip-flows/documents-13/plain.asc "BOTTOM LAYER"
+spawn /tmp/acidtrip-flows/documents-13/two.ans
+wait "Ctrl-K commands" 10s
+keys esc
+wait "TOP LAYER"
+expect "BOTTOM LAYER"
+expect "THIRD"
+expect "L1/1"

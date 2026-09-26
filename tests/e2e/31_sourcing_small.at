@@ -1,0 +1,37 @@
+# Sourcing studio at 80x24: the file opens in the cutter, back to its logos,
+# save a stencil, back into the cutter and scroll around the piece
+size 80 24
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-k
+wait "Commands"
+type harvest
+keys enter
+wait "Sourcing studio"
+shot small_source
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/DRM-TUTO.ANS
+keys enter
+wait "Cutting" 10s
+wait idle
+shot small_first_cut
+keys esc
+wait "10 candidates"
+wait idle
+shot small_candidates
+keys down s
+wait "Stencil name"
+shot small_naming
+keys enter
+wait "saved stencil"
+wait idle
+shot small_saved
+keys enter
+wait "Cutting"
+wait idle
+shot small_cutter
+keys pagedown right right
+wait idle
+expect-not "↕1–"
+shot small_cutter_scrolled

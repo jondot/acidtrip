@@ -1,0 +1,22 @@
+---
+// LAYERS: every page is a layer of the document.
+import type { Page } from '../../lib/site';
+import { VGA } from '../../lib/vga';
+interface Props { pages: Page[]; current: Page }
+const { pages, current } = Astro.props;
+const THUMBS = [[13, 11], [9, 13], [11, 15], [14, 6], [10, 2], [12, 4], [13, 5], [15, 11], [11, 3], [14, 12], [13, 9], [10, 11]];
+---
+<section class="panel">
+  <div class="ph"><span>LAYERS</span><span class="desc" style="color:var(--accent2)">≡ {pages.length} pages</span></div>
+  <nav id="layers" aria-label="All pages">
+    {pages.map((p, i) => {
+      const [a, b] = THUMBS[i % THUMBS.length];
+      return (
+        <a class="layer" href={p.href} aria-current={p.id === current.id ? 'page' : undefined}
+           data-tip={`Layer ${i + 1}: ${p.file}: ${p.desc}`}>
+          <span class="eye">◉</span><span class="th" style={`--c1:${VGA[a].hex};--c2:${VGA[b].hex}`}></span><span class="nm">{p.file}</span>
+        </a>
+      );
+    })}
+  </nav>
+</section>

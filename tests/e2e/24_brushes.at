@@ -1,0 +1,285 @@
+# Brush engine: presets via Tab, strokes with each, brush studio with live preview
+size 140 44
+spawn
+wait "Welcome" 10s
+keys esc
+keys p
+wait "Pen"
+wait "Ink"
+mouse down left 2 2
+mouse drag left 3 2
+mouse drag left 5 3
+mouse drag left 6 3
+mouse drag left 8 3
+mouse drag left 9 4
+mouse drag left 11 4
+mouse drag left 12 3
+mouse drag left 14 3
+mouse drag left 15 3
+mouse drag left 17 2
+mouse drag left 19 2
+mouse drag left 20 2
+mouse drag left 22 1
+mouse drag left 23 1
+mouse drag left 25 1
+mouse drag left 26 0
+mouse drag left 28 0
+mouse drag left 29 1
+mouse drag left 31 1
+mouse drag left 32 1
+mouse drag left 34 2
+mouse drag left 36 2
+mouse up left 36 2
+keys tab
+wait "Brush pen"
+mouse down left 41 2
+mouse drag left 42 2
+mouse drag left 44 3
+mouse drag left 45 3
+mouse drag left 47 3
+mouse drag left 48 4
+mouse drag left 50 4
+mouse drag left 51 3
+mouse drag left 53 3
+mouse drag left 54 3
+mouse drag left 56 2
+mouse drag left 58 2
+mouse drag left 59 2
+mouse drag left 61 1
+mouse drag left 62 1
+mouse drag left 64 1
+mouse drag left 65 0
+mouse drag left 67 0
+mouse drag left 68 1
+mouse drag left 70 1
+mouse drag left 71 1
+mouse drag left 73 2
+mouse drag left 75 2
+mouse up left 75 2
+keys tab
+wait "Marker"
+mouse down left 2 7
+mouse drag left 3 7
+mouse drag left 5 8
+mouse drag left 6 8
+mouse drag left 8 8
+mouse drag left 9 9
+mouse drag left 11 9
+mouse drag left 12 8
+mouse drag left 14 8
+mouse drag left 15 8
+mouse drag left 17 7
+mouse drag left 19 7
+mouse drag left 20 7
+mouse drag left 22 6
+mouse drag left 23 6
+mouse drag left 25 6
+mouse drag left 26 5
+mouse drag left 28 5
+mouse drag left 29 6
+mouse drag left 31 6
+mouse drag left 32 6
+mouse drag left 34 7
+mouse drag left 36 7
+mouse up left 36 7
+keys tab
+wait "Calligraphy"
+mouse down left 41 7
+mouse drag left 42 7
+mouse drag left 44 8
+mouse drag left 45 8
+mouse drag left 47 8
+mouse drag left 48 9
+mouse drag left 50 9
+mouse drag left 51 8
+mouse drag left 53 8
+mouse drag left 54 8
+mouse drag left 56 7
+mouse drag left 58 7
+mouse drag left 59 7
+mouse drag left 61 6
+mouse drag left 62 6
+mouse drag left 64 6
+mouse drag left 65 5
+mouse drag left 67 5
+mouse drag left 68 6
+mouse drag left 70 6
+mouse drag left 71 6
+mouse drag left 73 7
+mouse drag left 75 7
+mouse up left 75 7
+keys tab
+wait "Airbrush"
+mouse down left 2 12
+mouse drag left 3 12
+mouse drag left 5 13
+mouse drag left 6 13
+mouse drag left 8 13
+mouse drag left 9 14
+mouse drag left 11 14
+mouse drag left 12 13
+mouse drag left 14 13
+mouse drag left 15 13
+mouse drag left 17 12
+mouse drag left 19 12
+mouse drag left 20 12
+mouse drag left 22 11
+mouse drag left 23 11
+mouse drag left 25 11
+mouse drag left 26 10
+mouse drag left 28 10
+mouse drag left 29 11
+mouse drag left 31 11
+mouse drag left 32 11
+mouse drag left 34 12
+mouse drag left 36 12
+mouse up left 36 12
+keys tab
+wait "Soft shade"
+mouse down left 41 12
+mouse drag left 42 12
+mouse drag left 44 13
+mouse drag left 45 13
+mouse drag left 47 13
+mouse drag left 48 14
+mouse drag left 50 14
+mouse drag left 51 13
+mouse drag left 53 13
+mouse drag left 54 13
+mouse drag left 56 12
+mouse drag left 58 12
+mouse drag left 59 12
+mouse drag left 61 11
+mouse drag left 62 11
+mouse drag left 64 11
+mouse drag left 65 10
+mouse drag left 67 10
+mouse drag left 68 11
+mouse drag left 70 11
+mouse drag left 71 11
+mouse drag left 73 12
+mouse drag left 75 12
+mouse up left 75 12
+keys tab
+wait "Chalk"
+mouse down left 2 17
+mouse drag left 3 17
+mouse drag left 5 18
+mouse drag left 6 18
+mouse drag left 8 18
+mouse drag left 9 19
+mouse drag left 11 19
+mouse drag left 12 18
+mouse drag left 14 18
+mouse drag left 15 18
+mouse drag left 17 17
+mouse drag left 19 17
+mouse drag left 20 17
+mouse drag left 22 16
+mouse drag left 23 16
+mouse drag left 25 16
+mouse drag left 26 15
+mouse drag left 28 15
+mouse drag left 29 16
+mouse drag left 31 16
+mouse drag left 32 16
+mouse drag left 34 17
+mouse drag left 36 17
+mouse up left 36 17
+keys tab
+wait "Spray"
+mouse down left 41 17
+mouse drag left 42 17
+mouse drag left 44 18
+mouse drag left 45 18
+mouse drag left 47 18
+mouse drag left 48 19
+mouse drag left 50 19
+mouse drag left 51 18
+mouse drag left 53 18
+mouse drag left 54 18
+mouse drag left 56 17
+mouse drag left 58 17
+mouse drag left 59 17
+mouse drag left 61 16
+mouse drag left 62 16
+mouse drag left 64 16
+mouse drag left 65 15
+mouse drag left 67 15
+mouse drag left 68 16
+mouse drag left 70 16
+mouse drag left 71 16
+mouse drag left 73 17
+mouse drag left 75 17
+mouse up left 75 17
+keys tab
+wait "ASCII"
+mouse down left 2 22
+mouse drag left 3 22
+mouse drag left 5 23
+mouse drag left 6 23
+mouse drag left 8 23
+mouse drag left 9 24
+mouse drag left 11 24
+mouse drag left 12 23
+mouse drag left 14 23
+mouse drag left 15 23
+mouse drag left 17 22
+mouse drag left 19 22
+mouse drag left 20 22
+mouse drag left 22 21
+mouse drag left 23 21
+mouse drag left 25 21
+mouse drag left 26 20
+mouse drag left 28 20
+mouse drag left 29 21
+mouse drag left 31 21
+mouse drag left 32 21
+mouse drag left 34 22
+mouse drag left 36 22
+mouse up left 36 22
+keys tab
+wait "Line art"
+mouse down left 41 22
+mouse drag left 42 22
+mouse drag left 44 23
+mouse drag left 45 23
+mouse drag left 47 23
+mouse drag left 48 24
+mouse drag left 50 24
+mouse drag left 51 23
+mouse drag left 53 23
+mouse drag left 54 23
+mouse drag left 56 22
+mouse drag left 58 22
+mouse drag left 59 22
+mouse drag left 61 21
+mouse drag left 62 21
+mouse drag left 64 21
+mouse drag left 65 20
+mouse drag left 67 20
+mouse drag left 68 21
+mouse drag left 70 21
+mouse drag left 71 21
+mouse drag left 73 22
+mouse drag left 75 22
+mouse up left 75 22
+wait idle
+shot brushes_all
+keys tab
+wait "Ink"
+keys shift-p
+wait "Brush studio"
+keys down down down down
+wait "Airbrush"
+wait idle
+shot studio_airbrush
+keys tab
+keys down down down
+keys left left
+wait "(modified)"
+wait idle
+shot studio_tweak
+keys esc
+wait idle
+expect "Airbrush"

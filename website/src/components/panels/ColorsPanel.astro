@@ -1,0 +1,19 @@
+---
+// COLORS: FG recolors the site's accent, BG the canvas. Without iCE,
+// backgrounds stay in the dark 8, like the editor.
+import { VGA } from '../../lib/vga';
+---
+<section class="panel">
+  <div class="ph"><span>COLORS</span><button class="more" id="reset" data-tip="Back to acidtrip's own magenta on black">↺ reset</button></div>
+  <div class="pb colors">
+    <button class="box" id="fgbox" data-tip="FG: the site's accent. Click it, then a color"><span class="t" id="fglbl">▸FG◂</span><span class="t" id="fgname">magenta</span></button>
+    <button class="box" id="bgbox" data-tip="BG: the canvas color. Click it, then a color"><span class="t" id="bglbl">BG</span><span class="t" id="bgname">black</span></button>
+    <button class="swapbtn" id="swap" data-tip="Swap FG and BG" data-key="X">⇄<br />swap</button>
+  </div>
+  <div id="pal">
+    {VGA.map((c, i) => (
+      <button style={`background:${c.hex};color:${c.light ? '#000' : '#fff'}`} data-col={i} aria-label={c.name} data-tip={`${c.name}: set the accent (FG)`}>{i === 13 ? 'F' : i === 0 ? 'B' : ''}</button>
+    ))}
+  </div>
+  <div class="pb desc" id="palhint">click a color: foreground</div>
+</section>

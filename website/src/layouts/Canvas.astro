@@ -1,0 +1,72 @@
+---
+// Every page is a file open in the editor: tabs across the top, the page
+// on the canvas, the panels on the right, the status bar below.
+import '../styles/editor.css';
+import TabBar from '../components/TabBar.astro';
+import Sidebar from '../components/Sidebar.astro';
+import StatusBar from '../components/StatusBar.astro';
+import CommandPalette from '../components/CommandPalette.astro';
+import Lightbox from '../components/Lightbox.astro';
+import { pages, url, GITHUB, INSTALL } from '../lib/site';
+import { VGA } from '../lib/vga';
+
+interface Props { id: string; description?: string }
+const { id, description } = Astro.props;
+const all = await pages();
+const current = all.find((p) => p.id === id)!;
+const client = {
+  github: GITHUB,
+  install: INSTALL,
+  pages: all.map((p) => ({ id: p.id, file: p.file, desc: p.desc, href: p.href, doc: !!p.doc })),
+  current: id,
+  vga: VGA,
+};
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>{current.file} — acidtrip</title>
+  <meta name="description" content={description ?? `acidtrip, a terminal ANSI art editor in the spirit of ACiDDraw. ${current.desc}.`} />
+  <meta name="theme-color" content="#0e0e14" />
+  <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" />
+  <script is:inline>
+    // Your COLORS, before the first paint.
+    try {
+      const s = JSON.parse(localStorage.getItem('acidtrip.site.colors') || 'null');
+      const H = ['#000000','#0000aa','#00aa00','#00aaaa','#aa0000','#aa00aa','#aa5500','#aaaaaa','#555555','#5555ff','#55ff55','#55ffff','#ff5555','#ff55ff','#ffff55','#ffffff'];
+      if (s && H[s.fg] && H[s.bg] && s.fg !== s.bg) {
+        const n = parseInt(H[s.fg].slice(1), 16), l = (0.2126 * (n >> 16) + 0.7152 * (n >> 8 & 255) + 0.0722 * (n & 255)) / 255;
+        const r = document.documentElement.style;
+        r.setProperty('--accent', H[s.fg]); r.setProperty('--on-accent', l > 0.45 ? '#000' : '#fff'); r.setProperty('--canvas', H[s.bg]);
+      }
+    } catch {}
+  </script>
+</head>
+<body>
+  <div id="app">
+    <TabBar pages={all} current={current} />
+    <div id="main">
+      <main id="canvas" tabindex="-1">
+        <div id="sheet">
+          <article class="page" data-page={id}>
+            <slot />
+          </article>
+        </div>
+      </main>
+      <Sidebar pages={all} current={current} />
+    </div>
+    <StatusBar pages={all} current={current} />
+  </div>
+  <CommandPalette pages={all} />
+  <Lightbox />
+  <script type="application/json" id="site-data" set:html={JSON.stringify(client).replace(/</g, '\\u003c')} />
+  <script>
+    import '../scripts/editor';
+  </script>
+</body>
+</html>

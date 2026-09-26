@@ -1,0 +1,52 @@
+# Quit anyway, then recover next start: the recovery dialog lists the
+# untitled piece and restoring brings it back dirty. Quit again without
+# saving (still recoverable), restore once more and save it: the third
+# start has nothing to recover.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-04/home
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type RESCUE ME
+keys esc
+wait idle
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+spawn
+wait "Recover unsaved work" 10s
+expect "didn't close cleanly"
+expect "untitled"
+shot dialog
+keys enter
+wait "recovered — save it to keep it"
+expect "RESCUE ME"
+expect "● untitled"
+# Quit without saving again: still recoverable.
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+spawn
+wait "Recover unsaved work" 10s
+keys enter
+wait "RESCUE ME"
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-04/rescued.acid
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-04/rescued.acid"
+expect "rescued.acid"
+expect-not "● rescued"
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-04/rescued.acid
+# Nothing left to recover.
+spawn
+wait "Ctrl-K commands" 10s
+expect-not "Recover unsaved work"
+keys ctrl-q
+expect-exit 0 5s

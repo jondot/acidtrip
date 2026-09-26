@@ -1,0 +1,12 @@
+# Number row places charset glyphs at the cursor and advances (ACiDDraw F-key bar)
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys 1 2 3 4 4 3 2 1
+keys down home
+keys 5 5 5 6 6 6
+wait idle
+expect "░▒▓██▓▒░"
+expect "▀▀▀▄▄▄"
+shot glyphs

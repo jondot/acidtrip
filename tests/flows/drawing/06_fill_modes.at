@@ -1,0 +1,71 @@
+# Fill bucket: inside a box, outside it (to the canvas edges), match modes
+# (all / char / color), paint modes (color only keeps the glyph), undo
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys r
+wait "RECT"
+drag 5 3 25 10
+wait idle
+expect-cell 5 3 "█" fg=15
+keys g
+wait "FILL"
+shot panel
+# red inside the box
+click 107 15
+wait "red"
+click 15 6
+wait idle
+expect-cell 15 6 "█" fg=4
+expect-cell 24 9 "█" fg=4
+expect-cell 5 3 "█" fg=15
+expect-cell 26 6 " "
+keys ctrl-z
+wait "undo: Fill"
+expect-cell 15 6 " "
+keys ctrl-y
+wait "redo: Fill"
+expect-cell 15 6 "█" fg=4
+# green outside, all the way to the canvas edges and corners
+click 100 15
+wait "green"
+click 50 20
+wait idle
+expect-cell 50 20 "█" fg=2
+expect-cell 0 1 "█" fg=2
+expect-cell 79 25 "█" fg=2
+expect-cell 79 1 "█" fg=2
+expect-cell 15 6 "█" fg=4
+expect-cell 10 3 "▀" fg=15
+shot filled
+# paint colors only: the box's left side turns blue, the glyphs stay
+click 105 8
+wait "color"
+click 97 15
+wait "blue"
+click 5 5
+wait idle
+expect-cell 5 5 "█" fg=1
+expect-cell 5 10 "█" fg=1
+expect-cell 10 3 "▀" fg=15
+expect-cell 10 10 "▄" fg=15
+# match by color: every white cell joined to the top edge, whatever its glyph
+click 111 7
+wait "match color"
+click 10 3
+wait idle
+expect-cell 10 3 "▀" fg=1
+expect-cell 25 5 "█" fg=1
+expect-cell 10 10 "▄" fg=1
+expect-cell 15 6 "█" fg=4
+expect-cell 50 20 "█" fg=2
+shot matched
+keys ctrl-z
+wait idle
+keys ctrl-z
+wait idle
+expect-cell 5 5 "█" fg=15
+expect-cell 10 3 "▀" fg=15
+expect-cell 50 20 "█" fg=2

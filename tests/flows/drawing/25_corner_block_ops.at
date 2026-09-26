@@ -1,0 +1,95 @@
+# Block edits in the bottom-right corner with the mouse: a selection
+# dragged past the canvas edge stops at the edge, the ↻ chip turns letters
+# upside down (b becomes q, not d), ⇆ mirrors them, cut says "cut", a paste
+# carried half off the canvas is clipped when stamped; undo, redo, save and
+# reopen
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+click 74 24
+type "WXYZ"
+click 76 25
+type "abd"
+keys esc
+wait idle
+expect-cell 74 24 "W"
+expect-cell 78 25 "d"
+# drag well past the canvas into the sidebar: the selection stops at 79,24
+keys v
+drag 73 23 110 35
+wait "selected 7x3"
+# turn it 180 degrees with the ↻ chip
+click 103 8
+wait idle
+expect-cell 75 24 "Z"
+expect-cell 78 24 "W"
+expect-cell 74 23 "p"
+expect-cell 75 23 "q"
+expect-cell 76 23 "a"
+expect-cell 78 25 " "
+keys ctrl-z
+wait "undo: Rotate"
+expect-cell 76 25 "a"
+expect-cell 78 25 "d"
+# mirror it left-right with the ⇆ chip: b and d swap
+click 97 8
+wait idle
+expect-cell 74 25 "b"
+expect-cell 75 25 "d"
+expect-cell 76 25 "a"
+expect-cell 75 24 "Z"
+expect-cell 78 24 "W"
+# cut says so, and empties the block
+keys ctrl-x
+wait "cut 7x3"
+expect-cell 75 24 " "
+expect-cell 74 25 " "
+# carry the paste to the corner: only the part on the canvas shows
+mouse move 76 23
+wait idle
+keys ctrl-v
+wait "Space to stamp"
+mouse move 76 23
+wait idle
+expect-cell 78 24 "Z"
+expect-cell 79 24 "Y"
+expect-cell 77 25 "b"
+expect-cell 79 25 "a"
+click 76 23
+wait "stamped"
+keys esc
+wait "done stamping"
+expect-cell 78 24 "Z"
+expect-cell 79 24 "Y"
+expect-cell 77 25 "b"
+expect-cell 78 25 "d"
+expect-cell 79 25 "a"
+keys ctrl-z
+wait "undo: Stamp"
+expect-cell 79 24 " "
+expect-cell 77 25 " "
+keys ctrl-y
+wait "redo: Stamp"
+expect-cell 79 25 "a"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-25/corner.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-25/corner.ans"
+expect-file /tmp/acidtrip-flows/drawing-25/corner.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-25/corner.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 78 24 "Z"
+expect-cell 79 24 "Y"
+expect-cell 77 25 "b"
+expect-cell 78 25 "d"
+expect-cell 79 25 "a"
+expect-cell 74 24 " "

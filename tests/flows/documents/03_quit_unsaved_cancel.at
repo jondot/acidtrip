@@ -1,0 +1,47 @@
+# Quit with unsaved work: Esc, N and a click on "N/Esc no" all keep the app
+# open with the work intact, and it still takes keys. Then save: the next
+# Ctrl-Q quits without asking, and the file holds all the art.
+size 120 40
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type DO NOT LOSE
+keys esc
+wait idle
+keys ctrl-q
+wait "Quit anyway?"
+expect "Unsaved: untitled"
+keys esc
+wait idle
+expect-not "Quit anyway?"
+expect "DO NOT LOSE"
+keys ctrl-q
+wait "Quit anyway?"
+keys n
+wait idle
+expect-not "Quit anyway?"
+# Keep drawing after cancelling.
+keys t
+keys down
+type STILL HERE
+keys esc
+wait "STILL HERE"
+keys ctrl-q
+wait "Quit anyway?"
+shot confirm
+click 42 21
+wait idle
+expect-not "Quit anyway?"
+expect "STILL HERE"
+# Save: then quitting doesn't ask.
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-03/keep.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-03/keep.ans"
+keys ctrl-q
+expect-exit 0 5s
+expect-file-contains /tmp/acidtrip-flows/documents-03/keep.ans "DO NOT LOSE"
+expect-file-contains /tmp/acidtrip-flows/documents-03/keep.ans "STILL HERE"

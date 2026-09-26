@@ -1,0 +1,104 @@
+# From a gallery piece to a font you type with: view a logo in the Gallery,
+# send it to the sourcing studio, cut three letters with three different
+# tools (box, wand, lasso), save the font, find it in the Font tool, stamp a
+# word made of its letters, undo and redo the stamp, save the drawing.
+size 120 40
+env HOME /tmp/acidtrip-flows/library-04/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-f
+wait "Local folders"
+keys +
+wait "Folder ›"
+type crates/acidtrip-io/tests/corpus
+keys enter
+wait "added"
+wait idle
+keys enter
+wait "⏎  view"
+wait idle
+keys right right right
+wait idle
+expect "DRM-TUTO"
+keys enter
+wait "rows 1–"
+wait idle
+# To the studio: it opens cutting this piece.
+keys s
+wait "Cutting" 10s
+wait idle
+shot cutting
+# Box: the first letter.
+keys b
+drag 8 9 14 18
+wait "SELECTED"
+type A
+wait "LETTERS 1"
+# Wand: one click takes the second.
+keys w
+click 40 13
+wait "now type the letter"
+type B
+wait "LETTERS 2"
+# Lasso: draw around the third.
+keys l
+mouse down left 22 8
+mouse drag left 31 8
+mouse drag left 31 19
+mouse drag left 22 19
+mouse up left 22 19
+wait "SELECTED"
+type C
+wait "LETTERS 3"
+wait idle
+shot three_letters
+# Enter saves them into the font.
+keys enter
+wait "now has" 5s
+wait idle
+shot saved_font
+# Esc steps back: the logos found, the source, then out.
+keys esc
+wait idle
+expect-not "LETTERS 3"
+keys esc
+wait "Source ›"
+wait idle
+keys esc
+wait "libraries reloaded"
+expect-not "Sourcing studio"
+# The Font tool lists the new font: filter to it, type a word of its letters.
+keys f
+wait "Font text"
+keys /
+type drm
+keys enter
+wait "cut from art"
+wait idle
+shot font_dialog
+keys ctrl-u
+type CAB
+wait idle
+shot cab
+keys enter
+wait "click or Space to stamp"
+click 10 5
+wait "stamped"
+keys esc
+wait idle
+shot stamped
+keys ctrl-z
+wait idle
+shot undone
+keys ctrl-y
+wait idle
+shot redone
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/library-04/cab.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/library-04/cab.ans"
+expect-file /tmp/acidtrip-flows/library-04/cab.ans

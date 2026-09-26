@@ -1,0 +1,76 @@
+# Command palette end to end: search, a search with no hits, run by Enter,
+# by click and by wheel; Esc and a click outside close it; a command that
+# opens its own dialog; and back to drawing each time.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+expect "New document"
+# nothing matches: the list empties, Enter does nothing, the palette stays
+type qqqzzzxx
+wait idle
+expect-not "New document"
+keys enter
+wait idle
+expect "Commands"
+# clear the query and search for real
+keys ctrl-u
+type grid
+wait "Toggle grid guides"
+shot search_grid
+keys enter
+wait idle
+expect-not "Commands"
+# Ctrl-P is the other palette key; the wheel moves the selection
+keys ctrl-p
+wait "Commands"
+mouse scroll down 50 15
+mouse scroll down 50 15
+wait idle
+expect "▸Save  ·File"
+keys esc
+wait idle
+expect-not "Commands"
+# a click outside closes it without running anything
+keys ctrl-k
+wait "Commands"
+click 5 38
+wait idle
+expect-not "Commands"
+expect "Brush"
+# a click on a row runs it: the first row is New document…
+keys ctrl-k
+wait "Commands"
+click 40 12
+wait "New document"
+shot new_from_click
+keys esc
+wait idle
+# a palette command that opens a dialog: Esc from that dialog lands on the canvas
+keys ctrl-k
+type colors
+wait "Colors…"
+keys enter
+wait idle
+expect-not "Commands"
+shot colors_dialog
+keys esc
+wait idle
+expect-not "Commands"
+# the tool is still the brush, and it still paints
+drag 3 5 12 5
+wait idle
+expect "██████████"
+# palette by category word: "Layers" finds the layer commands
+keys ctrl-k
+type add layer
+wait "Add layer"
+keys enter
+wait idle
+expect "L2/2"
+keys ctrl-z
+wait idle
+expect "L1/1"

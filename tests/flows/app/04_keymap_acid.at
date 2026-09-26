@@ -1,0 +1,63 @@
+# The ACiDDraw preset from config.toml really takes effect: it starts typing,
+# Esc while typing opens the colors (the ACiDDraw way), Alt-letter commands
+# work, the palette and help show the preset's keys.
+home-file config/config.toml "[keymap]\npreset = \"acid\"\n"
+size 120 40
+spawn
+wait "80x25" 10s
+expect-not "Welcome to acidtrip ─"
+# ACiDDraw starts in the text tool: the keyboard types
+expect " TYPE "
+type hello
+wait idle
+expect "hello"
+# Esc while typing: the colors, not "leave the text tool"
+keys esc
+wait "Colors"
+shot text_esc_colors
+keys esc
+wait idle
+expect-not "▸fg"
+expect " TYPE "
+# Alt-R is undo in ACiDDraw
+keys alt-r
+wait idle
+expect-not "hello"
+# Alt-Z toggles iCE
+keys alt-z
+wait "no iCE"
+keys alt-z
+wait idle
+expect-not "no iCE"
+# a mouse user can still pick the brush and paint
+click 99 2
+wait " Brush "
+drag 3 4 20 4
+wait idle
+expect "██████████████████"
+# the palette lists the preset's key next to Undo
+keys ctrl-k
+type undo
+wait "▸Undo"
+expect "Alt-R"
+keys esc
+wait idle
+# help says which preset is on
+keys alt-h
+wait "Help"
+keys end
+wait "Keymap preset: Acid"
+keys esc
+wait idle
+expect-not "Keymap preset"
+# Alt-S saves (to a name first: it's untitled)
+keys alt-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/app-04/acid.ans
+keys enter
+wait "saved"
+expect-file /tmp/acidtrip-flows/app-04/acid.ans
+# Alt-X quits; the work is saved so it asks nothing
+keys alt-x
+expect-exit 0 5s

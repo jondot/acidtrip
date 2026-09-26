@@ -1,0 +1,8 @@
+# The editor with our own sunset open: canvas, sidebar panels, status bar.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+mouse move 40 20
+wait idle
+shot overview

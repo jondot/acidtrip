@@ -1,0 +1,56 @@
+# The whole file round on an 80x24 terminal (no sidebar): Save / Export
+# fits, Ctrl-E opens it in export mode, the SAUCE and canvas dialogs fit,
+# versions and the quit question work, and the status says what happened.
+size 80 24
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-19/home
+write-file /tmp/acidtrip-flows/documents-19/home/config/config.toml "autosave_seconds = 0\n"
+spawn
+wait "Ctrl-K commands" 10s
+keys t
+type SMALL SCREEN
+keys esc
+wait idle
+keys ctrl-s
+wait "Save / Export"
+shot save
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-19/s.xb
+wait "XBin"
+keys enter
+wait "saved …/s.xb"
+expect "s.xb"
+keys ctrl-e
+wait "Writes a copy for sharing"
+shot export
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-19/s.png
+keys enter
+wait "exported …/s.png"
+expect-file /tmp/acidtrip-flows/documents-19/s.png
+keys alt-d
+wait "SAUCE"
+shot sauce
+keys esc
+click 21 23
+wait "art stays top-left"
+shot canvas
+keys esc
+keys alt-v
+wait "Version history"
+expect "save  SMALL SCREEN"
+shot versions
+keys esc
+keys t
+type !
+keys esc
+keys ctrl-q
+wait "Quit anyway?"
+shot quit
+keys n
+wait idle
+expect "● s.xb"
+keys ctrl-s
+wait "saved …/s.xb"
+keys ctrl-q
+expect-exit 0 5s
+expect-file-contains /tmp/acidtrip-flows/documents-19/s.xb "SMALL SCREEN!"

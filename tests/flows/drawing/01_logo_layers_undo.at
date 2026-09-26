@@ -1,0 +1,131 @@
+# Font logo -> select -> flip -> gradient over it -> new layer -> pattern
+# background -> move layer below -> hide/show -> undo x5 -> redo -> merge
+# down -> save .ans -> reopen
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# FIGlet "HI" stamped at canvas 2,1
+keys f
+wait "Font text"
+keys backspace backspace backspace backspace
+type HI
+wait idle
+expect "|_| |_| |___|"
+keys enter
+wait idle
+click 2 2
+wait idle
+keys esc
+wait "done stamping"
+expect "|_| |_| |___|"
+shot stamped
+# select it and flip it left-right from the block menu
+keys v
+drag 2 2 16 7
+wait "selected 15x6"
+keys enter
+wait "Block"
+keys h
+wait idle
+expect "|___| |_| |_|"
+expect-not "|_| |_| |___|"
+shot flipped
+# a gradient dragged over the selection stays inside it
+keys d
+wait "in the selection"
+drag 2 2 16 7
+wait idle
+expect-cell 2 2 "█"
+expect-cell 17 2 " "
+expect-not "|___|"
+shot gradient
+# a new layer, filled with bricks around the art
+keys alt-shift-n
+wait "L2/2"
+keys w
+wait "bricks"
+click 115 6
+wait "Pattern: bricks · fill"
+click 50 15
+wait idle
+expect-cell 30 1 "█"
+expect-cell 31 1 " "
+expect-cell 2 2 "█"
+shot patfill
+# move it below: the opaque Background covers it; hide Background to see it
+click 109 27
+wait idle
+expect "L1/2"
+expect-cell 30 1 " "
+click 92 25
+wait idle
+expect "○ ▀▀▀▀ Background"
+expect-cell 30 1 "█"
+shot hidden
+click 92 25
+wait idle
+expect "◉ ▀▀▀▀ Background"
+expect-cell 30 1 " "
+# undo x5: show, hide, move, fill, add layer -> back to the gradient alone
+keys ctrl-z
+wait idle
+keys ctrl-z
+wait idle
+keys ctrl-z
+wait idle
+keys ctrl-z
+wait idle
+keys ctrl-z
+wait "undo: Add layer"
+expect "L1/1"
+expect-not "Layer 2"
+expect-cell 2 2 "█"
+expect-cell 30 1 " "
+shot undo5
+# one more undo takes the gradient off: the flipped logo is back
+keys ctrl-z
+wait "undo: Gradient"
+expect "|___| |_| |_|"
+keys ctrl-y
+wait "redo: Gradient"
+# redo add, fill, move
+keys ctrl-y
+wait idle
+keys ctrl-y
+wait idle
+keys ctrl-y
+wait "redo: Move layer"
+expect "L1/2"
+expect "Layer 2"
+# merging the bottom layer says why nothing happens
+click 113 27
+wait "nothing below"
+expect "L1/2"
+# merge Background down onto the bricks: one layer, the gradient wins
+click 100 25
+wait "L2/2"
+click 113 27
+wait "L1/1"
+expect-not "Background"
+expect-cell 2 2 "█"
+expect-cell 30 1 " "
+shot merged
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/drawing-01/logo.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-01/logo.ans"
+expect-file /tmp/acidtrip-flows/drawing-01/logo.ans
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-flows/drawing-01/logo.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect "logo.ans"
+expect-cell 2 2 "█"
+expect-cell 30 1 " "
+shot reopened

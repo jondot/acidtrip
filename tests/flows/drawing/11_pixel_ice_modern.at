@@ -1,0 +1,92 @@
+# Half-block pixels: whole cells unzoomed, half cells in zoom (top and
+# bottom halves keep their own colors); iCE on/off; Classic -> Modern and
+# back by undo
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys h
+wait "PIXEL"
+wait "whole cells — Z zooms for half cells · Tab: pen/fill"
+# unzoomed, a pixel click paints the whole cell
+click 10 5
+wait idle
+expect-cell 10 5 "█" fg=15
+click 97 15
+wait "blue"
+drag 20 5 20 12
+wait idle
+expect-cell 20 5 "█" fg=1
+expect-cell 20 12 "█" fg=1
+# zoom: 2x2 screen cells per canvas cell, one screen row per half
+keys z
+wait "zoom on: 2x2 per cell"
+expect "ZOOM"
+# canvas cell (5,4) bottom half, then (5,5) top half, in red
+click 106 15
+wait "red"
+click 10 10
+wait idle
+click 10 11
+wait idle
+shot zoompix
+keys z
+wait "zoom off"
+expect-not "ZOOM"
+expect-cell 5 5 "▄" fg=4
+expect-cell 5 6 "▀" fg=4
+# paint the top of (5,4) white: the cell holds both halves, two colors
+keys z
+wait "zoom on"
+click 115 16
+click 10 9
+wait idle
+keys z
+wait "zoom off"
+expect-cell 5 5 "▀" fg=15 bg=4
+shot halves
+keys ctrl-z
+wait "undo: Pixel"
+expect-cell 5 5 "▄" fg=4
+# iCE off: the status chip says so; back on
+click 34 39
+wait "no iCE"
+click 34 39
+wait idle
+expect " iCE "
+expect-not "no iCE"
+# Classic -> Modern from the status chip; undo returns to Classic
+click 28 39
+wait idle
+shot convert
+wait "Modern document"
+expect "MODERN"
+click 30 8
+wait idle
+expect-cell 30 8 "█" fg=15
+keys ctrl-z
+wait "undo: Pixel"
+keys ctrl-z
+wait "undo: Convert to Modern"
+expect "CLASSIC"
+expect-cell 5 5 "▄" fg=4
+expect-cell 20 12 "█" fg=1
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-11/pix.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-11/pix.ans"
+expect-file /tmp/acidtrip-flows/drawing-11/pix.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-11/pix.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 5 5 "▄" fg=4
+expect-cell 5 6 "▀" fg=4
+expect-cell 10 5 "█" fg=15
+expect-cell 20 8 "█" fg=1
+expect "CLASSIC"

@@ -1,0 +1,93 @@
+# One mouse button only, no keys: close the welcome, pick red and the brush
+# from the sidebar, draw an L, then use the Select panel chips (flip, flip,
+# rotate, outline, fill, block menu); dimmed chips with no selection say why
+size 120 40
+spawn
+wait "Welcome" 10s
+click 40 12
+wait idle
+expect-not "Welcome to acidtrip ─"
+expect-cell 40 12 " "
+click 106 15
+click 99 2
+wait idle
+drag 5 3 5 7
+drag 5 7 10 7
+wait idle
+expect-cell 5 3 "█" fg=4
+expect-cell 10 7 "█" fg=4
+click 93 2
+wait "Select tool"
+# chips are dimmed until there is a selection
+click 97 8
+wait "select an area first"
+click 118 8
+wait idle
+expect "select an area first"
+expect-not "TYPE"
+expect-not "Block"
+drag 3 2 12 8
+wait "selected 10x7"
+shot selected
+click 97 8
+wait idle
+expect-cell 10 3 "█"
+expect-cell 5 3 " "
+click 100 8
+wait idle
+expect-cell 5 3 "█"
+expect-cell 10 3 "█"
+expect-cell 10 7 "█"
+expect-cell 5 7 " "
+click 103 8
+wait idle
+# rotating 180 after both flips gives the L back
+expect-cell 5 3 "█"
+expect-cell 10 3 " "
+expect-cell 10 7 "█"
+click 109 8
+wait idle
+expect-cell 3 2 "┌"
+expect-cell 12 8 "┘"
+click 118 8
+wait "Block 10x7"
+# Move (cut and carry) from the menu, stamp it lower down with a click
+click 20 5
+wait "click or Space to stamp"
+click 40 15
+wait "stamped"
+expect-cell 40 15 "┌"
+expect-cell 42 16 "█" fg=4
+expect-cell 3 2 " "
+expect-cell 5 3 " "
+# picking a tool ends the stamping
+click 93 2
+wait "Select tool"
+expect-not "stamped"
+# undo by mouse: the Art tool's panel has undo/redo keys
+click 117 3
+wait "art: the left hand"
+click 111 7
+wait "undo: Stamp"
+expect-cell 40 15 " "
+click 111 7
+wait "undo: Cut"
+expect-cell 3 2 "┌"
+click 111 7
+wait "undo: Outline"
+expect-cell 3 2 " "
+click 111 7
+wait "undo: Rotate"
+click 111 7
+wait "undo: Flip Y"
+click 111 7
+wait "undo: Flip X"
+expect-cell 5 3 "█" fg=4
+click 111 7
+wait "undo: Brush"
+expect-cell 10 7 " "
+expect-cell 5 7 "█" fg=4
+click 115 7
+wait "redo: Brush"
+expect-cell 10 7 "█" fg=4
+shot art

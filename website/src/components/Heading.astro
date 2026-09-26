@@ -1,0 +1,13 @@
+---
+// A heading lettered in a TheDraw font (public/art/NAME.png, made by
+// scripts/headings.py), with the page's file path under it.
+import { art } from '../lib/site';
+import { pngSize } from '../lib/rehype-acid.mjs';
+interface Props { name: string; alt: string; path?: string; reveal?: boolean; id?: string }
+const { name, alt, path, reveal = false, id } = Astro.props;
+const [width, height] = pngSize(`art/${name}.png`) ?? [0, 0];
+---
+<div class="heading">
+  <img class:list={['art', { reveal }]} data-lettering id={id} src={art(name)} width={width} height={height} alt={alt} />
+  {path && <span class="path">{path}</span>}
+</div>

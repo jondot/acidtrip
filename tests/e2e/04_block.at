@@ -1,0 +1,24 @@
+# Selection, block menu flip/outline, copy/paste stamping
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys t
+type >>> acid >>>
+keys esc
+keys v
+drag 0 1 12 1
+keys enter
+wait "Block"
+shot blockmenu
+keys h
+wait idle
+expect "<<< bica <<<"
+keys ctrl-c
+keys ctrl-v
+click 20 5
+click 20 7
+keys esc
+wait idle
+shot stamped
+expect "<<< bica <<<"

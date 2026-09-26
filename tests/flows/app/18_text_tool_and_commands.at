@@ -1,0 +1,66 @@
+# Typing on the canvas and commands don't step on each other: while the
+# text tool types, letters and ? are text; Ctrl-K opens the palette and what
+# is typed there stays there; Esc from the palette goes back to typing;
+# a command run from the palette acts; undo takes the typing back.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+wait "Text"
+click 4 4
+type Hi? bet
+wait "Hi? bet"
+expect-not "Help"
+expect-not "BRUSH"
+# the palette while typing: the query is not typed into the art
+keys ctrl-k
+wait "Commands"
+type grid
+wait "▸Toggle grid"
+keys esc
+wait idle
+expect-not "Commands"
+expect-not "Hi? betgrid"
+# back to typing where it was
+type !!
+wait "Hi? bet!!"
+# a command that opens a dialog, then back to the text
+keys ctrl-k
+type canvas size
+wait "▸Canvas size"
+keys enter
+wait "art stays top-left"
+keys esc
+wait idle
+type X
+wait "Hi? bet!!X"
+# the palette runs Undo: the last run of typing comes back out
+keys ctrl-k
+type undo
+wait "▸Undo"
+keys enter
+wait "undo"
+expect-not "Hi? bet!!X"
+shot after_undo
+# the text cursor went back to where the undone text began: no gap
+expect "13,3"
+type Y
+wait "Hi? bet!!Y"
+# Enter starts the next line under the first letter
+keys enter
+type ok
+wait idle
+shot two_lines
+expect "ok"
+keys esc
+wait idle
+# out of the text tool, letters are tools again
+keys b
+wait "Brush"
+keys ?
+wait "Help"
+keys esc
+wait idle
+expect-not "Help"

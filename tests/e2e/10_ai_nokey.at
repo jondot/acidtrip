@@ -1,0 +1,10 @@
+# AI prompt without a key explains setup (and the MCP route)
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys a
+wait "AI setup"
+expect "no API key"
+expect "claude mcp add acidtrip"
+shot aisetup

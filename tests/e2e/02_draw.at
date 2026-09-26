@@ -1,0 +1,35 @@
+# Mouse painting, colors, shapes, fill, undo/redo
+size 120 40
+spawn
+wait "Welcome to acidtrip" 10s
+keys esc
+wait idle
+# brush stroke with white full blocks
+drag 5 3 30 3
+drag 5 4 30 8
+# pick red (sidebar palette: row 1, col 4 → x=768/8=96+12, y) - use keys instead
+keys b
+keys .
+keys .
+keys .
+drag 10 10 40 12
+shot brush
+# rectangle
+keys r
+drag 45 2 70 10
+# ellipse filled
+keys o
+keys tab
+drag 45 12 75 22
+# fill inside rect with shade glyph 2 (▒)
+keys g
+keys 2
+click 50 5
+shot shapes
+keys ctrl-z
+wait idle
+shot undo
+keys ctrl-y
+wait idle
+shot redo
+expect "redo:"

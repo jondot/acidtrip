@@ -1,0 +1,33 @@
+---
+// The open files across the top, and the brand chips.
+import type { Page } from '../lib/site';
+interface Props { pages: Page[]; current: Page }
+const { pages, current } = Astro.props;
+const byId = (id: string) => pages.find((p) => p.id === id)!;
+// The docs tab shows the doc you're on; elsewhere the last one you read
+// (the client swaps it in from localStorage), else the docs index.
+const docsTab = current.doc ? current : byId('docs');
+const tabs = [byId('index'), byId('features'), docsTab, byId('gallery'), byId('download')];
+const SET = ['░', '▒', '▓', '█', '▀', '▄', '▌', '▐', '■', '·'];
+const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+---
+<header id="top">
+  <nav id="tabs" aria-label="Open files">
+    {tabs.map((p) => (
+      <a class="tab" href={p.href} data-doc-tab={p === docsTab ? '' : undefined}
+         aria-current={p.id === current.id ? 'page' : undefined}
+         data-tip={`${p.file}: ${p.desc}`}>{p.file}</a>
+    ))}
+  </nav>
+  <div id="set" aria-label="Character set">
+    <span class="lbl">set 6</span>
+    {SET.map((g, i) => (
+      <button data-glyph={i} aria-pressed={i === 3 ? 'true' : 'false'} data-tip={`Draw the page's rules with ${g}`} data-key={KEYS[i]}>{KEYS[i]}<b>{g}</b></button>
+    ))}
+  </div>
+  <div id="brand">
+    <button class="chip" id="menu" aria-expanded="false" aria-controls="side" data-tip="Show the panels: tools, colors, characters, layers and the map">☰ panels</button>
+    <button class="chip" id="cmd" data-tip="Command palette: search every page and doc section" data-key="Ctrl-K">⌘K commands</button>
+    <a class="name" href={pages[0].href}>acidtrip</a>
+  </div>
+</header>

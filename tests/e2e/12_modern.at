@@ -1,0 +1,22 @@
+# Modern document: Unicode + RGB
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-n
+wait "New document"
+keys down down right
+keys enter
+wait "Modern"
+keys alt-c
+wait "Colors"
+keys tab
+type ff8800
+keys enter enter
+keys t
+type ╭──╮ λ → ★ ✓
+keys esc
+wait idle
+expect "MODERN"
+expect "★"
+shot modern

@@ -1,0 +1,93 @@
+# Changing your mind: every document dialog, with something typed or
+# picked in it, then Esc. The piece stays clean and as it was, nothing is
+# written or created, undo has nothing new to take back, and keys go to
+# the canvas again afterwards.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-25/home
+write-file /tmp/acidtrip-flows/documents-25/home/config/config.toml "autosave_seconds = 0\n"
+write-file /tmp/acidtrip-flows/documents-25/s.ans "STEADY"
+spawn /tmp/acidtrip-flows/documents-25/s.ans
+wait "Ctrl-K commands" 10s
+expect "  s.ans"
+# New document: another size and kind picked, then Esc.
+keys ctrl-n
+wait "New document"
+keys tab
+type 5
+keys esc
+wait idle
+expect-not "New document"
+expect "80x25"
+expect "  s.ans"
+# Save / Export with a new name and format.
+keys alt-s
+wait "Save / Export"
+keys down down tab ctrl-u
+type /tmp/acidtrip-flows/documents-25/never.xb
+keys esc
+wait idle
+expect-not "Save / Export"
+# Export mode.
+keys alt-s
+wait "Save / Export"
+keys ctrl-e
+wait "Writes a copy for sharing"
+keys esc
+wait idle
+# Open, with a path typed.
+keys ctrl-o
+wait "type to filter"
+type /tmp/acidtrip-flows/documents-25/elsewhere.ans
+keys esc
+wait idle
+expect-not "type to filter"
+# SAUCE, with a title typed.
+keys alt-d
+wait "SAUCE"
+type NEVER
+keys esc
+wait idle
+expect-not "NEVER"
+# Document properties.
+keys ctrl-d
+wait idle
+shot props
+keys tab
+type 9
+keys esc
+wait idle
+# Versions (none yet for this file).
+keys alt-v
+wait "Version history"
+keys esc
+wait idle
+expect-not "Version history"
+# Canvas size from its chip, with a bigger size typed.
+click 21 39
+wait "resize"
+keys ctrl-u
+type 200
+keys esc
+wait idle
+expect-not "resize"
+expect "80x25"
+# Still clean, nothing written, and the canvas takes keys.
+expect "  s.ans"
+expect-not "● s.ans"
+expect-no-file /tmp/acidtrip-flows/documents-25/never.xb /tmp/acidtrip-flows/documents-25/s.ans.bak
+keys ctrl-z
+wait idle
+expect "STEADY"
+expect "  s.ans"
+keys t
+type Q
+keys esc
+wait "● s.ans"
+expect "QTEADY"
+keys ctrl-z
+wait "  s.ans"
+expect "STEADY"
+keys ctrl-q
+expect-exit 0 5s
+expect-file-contains /tmp/acidtrip-flows/documents-25/s.ans "STEADY"
+expect-file-not-contains /tmp/acidtrip-flows/documents-25/s.ans "SAUCE00"

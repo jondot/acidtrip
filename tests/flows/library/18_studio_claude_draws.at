@@ -1,0 +1,117 @@
+# The studio's "Claude draws N missing" with no key, then through a fake
+# Claude: cut two letters with the box tool and save, ask with no key (it
+# says how to set one), restart with a key, a refusal, then a slow drawing
+# the studio is closed in the middle of (it warns once; the letters are
+# saved anyway, and the app says so). The Font tool shows them without a
+# restart, and My fonts counts them as drawn by Claude.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-18/home
+env HOME /tmp/acidtrip-flows/library-18/home
+env ANTHROPIC_API_KEY ""
+env ANTHROPIC_BASE_URL ""
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+type harvest
+wait idle
+keys enter
+wait "Sourcing studio"
+wait idle
+expect "Everything works by hand. With an API key"
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/DRM-TUTO.ANS
+keys enter
+wait "Cutting" 10s
+wait idle
+keys b
+wait "drag a box over a letter"
+drag 3 27 22 36
+wait "SELECTED"
+type P
+wait "LETTERS 1"
+keys =
+drag 24 27 43 36
+wait "SELECTED"
+type A
+wait "LETTERS 2"
+keys enter
+wait "now has 4 letters"
+wait idle
+keys ctrl-f
+wait "MY FONTS"
+wait idle
+expect "4 of 62 letters"
+expect "a  Claude draws 34 missing"
+keys a
+wait "drawing letters needs Claude: set ANTHROPIC_API_KEY"
+keys ctrl-c
+wait idle
+expect-not "Sourcing studio"
+keys ctrl-q
+expect-exit 0 5s
+# With a key (a fake Claude).
+fake-claude tests/flows/library/fake/18_studio_claude.json
+spawn
+wait "Ctrl-K commands" 10s
+wait idle
+keys ctrl-k
+wait "Commands"
+type harvest
+wait idle
+keys enter
+wait "Sourcing studio"
+wait idle
+expect "Claude is on"
+keys ctrl-f
+wait "MY FONTS"
+wait idle
+expect "Dr. Dream logo  4 of 62 letters"
+# A refusal says so; nothing changes.
+keys a
+wait "font completion failed: Claude declined this request"
+expect-claude-calls 1
+expect "4 of 62 letters"
+# A slow drawing: closing asks once, the second close leaves.
+keys a
+wait "Claude is drawing 34 letters for Dr. Dream logo"
+keys ctrl-c
+wait "Claude is still drawing — its letters will be saved"
+expect "Sourcing studio"
+keys ctrl-c
+wait idle
+expect-not "Sourcing studio"
+expect-claude-calls 3 10s
+# The app says when the letters are in.
+wait "Claude drew" 10s
+# The Font tool has them without a restart: nothing of "ACiD" is missing.
+keys f
+wait "Font text"
+wait idle
+keys /
+type dream
+wait idle
+expect "Dr. Dream logo"
+expect-not "in this font"
+keys esc esc
+wait idle
+expect-not "Font text"
+# My fonts counts Claude's letters.
+keys ctrl-k
+wait "Commands"
+type harvest
+wait idle
+keys enter
+wait "Sourcing studio"
+wait idle
+keys ctrl-f
+wait "MY FONTS"
+wait idle
+expect "62 of 62 letters · 58 drawn by Claude"
+expect "A–Z 0–9 complete"
+keys ctrl-c
+wait idle
+keys ctrl-q
+expect-exit 0 5s

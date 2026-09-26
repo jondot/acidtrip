@@ -1,0 +1,10 @@
+# The command palette (Ctrl-K) over our sunset, fuzzy-matching "grad".
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+type grad
+wait idle
+shot palette

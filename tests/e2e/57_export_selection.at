@@ -1,0 +1,47 @@
+# EXPORT panel: a selection exports just that; tips on the controls;
+# the whole / selection chips; Alt-Shift-E exports without the mouse.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys t
+type CROP THIS
+keys esc
+keys ctrl-e
+wait "Whole piece"
+mouse move 112 27
+wait "select an area first"
+# Select "CROP" and the panel follows it.
+keys v
+drag 0 1 3 1
+wait "Selection"
+expect "4×1"
+expect "untitled-sel"
+shot selection_scope
+mouse move 100 28
+wait "writes untitled-selection.png"
+mouse move 112 27
+wait "export only the selection (4×1)"
+# The folder, by keyboard in its prompt.
+click 100 30
+wait "Export to folder"
+keys ctrl-u
+type /tmp/acidtrip-e2e/sel
+keys enter
+wait "exports go to /tmp/acidtrip-e2e/sel"
+mouse move 105 31
+wait "write untitled-selection.png"
+keys alt-shift-e
+wait "exported untitled-selection.png"
+expect-file /tmp/acidtrip-e2e/sel/untitled-selection.png
+# Back to the whole piece: one click on the chip.
+click 103 27
+wait "Whole piece"
+expect "80×25"
+# + adds a row, − takes it away again.
+click 95 29
+wait "Export 2 files"
+click 117 29
+wait "Export 1 file"
+expect-not "untitled@2x"
+shot whole_again

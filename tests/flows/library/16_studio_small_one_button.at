@@ -1,0 +1,120 @@
+# The cutter at 80x24 with one mouse button (a path and letter names are the
+# only things typed): the tool and mode buttons instead of Shift/Alt/right
+# click. Paint a few cells, switch to "+ add" and wand a whole shape onto
+# them, "- take away" a column with paint, name it; resize to 120x40 and back
+# mid-cut with the letter kept; "= new" and wand a second letter; undo it by
+# button, cut it again, save with the button, My fonts by its chip, close by
+# its button. The Font tool lists the new font and shows the letter it has
+# in a word with letters it lacks; the stencil is in the Stencil tool.
+size 80 24
+env HOME /tmp/acidtrip-flows/library-16/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+type harvest
+wait idle
+keys enter
+wait "Sourcing studio"
+wait idle
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/DRM-TUTO.ANS
+keys enter
+wait "Cutting" 10s
+wait idle
+expect "l  lasso"
+expect "-  take away"
+# Paint a diagonal of cells.
+click 14 5
+wait idle
+drag 8 11 12 15
+wait "SELECTED  4×4"
+# "+ add", then the wand adds the whole shape.
+click 55 5
+wait idle
+click 25 5
+wait idle
+click 22 12
+wait "SELECTED  19×8"
+# "- take away" with paint: a column goes.
+click 64 5
+wait idle
+click 14 5
+wait idle
+drag 7 11 7 16
+wait "SELECTED  18×8"
+shot shrunk
+type D
+wait "LETTERS 1"
+wait idle
+expect "“D” is 18×8"
+# Resize mid-cut: the letter stays, the view refits.
+size 120 40
+wait "rows 1–30 of 194"
+wait idle
+expect "LETTERS 1"
+shot big
+size 80 24
+wait "↔1–41/80"
+wait idle
+expect "LETTERS 1"
+# "= new", wand the next shape, keep it as a stencil; undo drops the
+# selection, wand it again.
+click 47 5
+wait idle
+click 25 5
+wait idle
+click 33 12
+wait "SELECTED  42×9"
+# The stencil button keeps the selection as a stencil, as it is.
+click 30 22
+wait "stencil “Dr. Dream logo” saved (42×9)"
+click 35 22
+wait idle
+expect-not "SELECTED  42×9"
+click 33 12
+wait "SELECTED  42×9"
+type M
+wait "LETTERS 2"
+wait idle
+shot two
+# Save by the button.
+click 4 22
+wait "now has 4 letters"
+wait idle
+# My fonts by its chip: both letters (and their lowercase), from this piece.
+click 58 2
+wait "MY FONTS"
+wait idle
+expect "4 of 62 letters"
+shot my_fonts
+# Close by its button.
+click 33 22
+wait idle
+expect-not "Sourcing studio"
+keys f
+wait "Font text"
+wait idle
+keys /
+type dream
+wait idle
+expect "cut from art"
+# "ACiD": A, C and i are left out, so the D shows (it used to be pushed out
+# of the preview by letter-wide holes).
+expect "no A, C, i in this font"
+expect "▄▄▄▄▄▄▄▄ █▄▄▄▌"
+shot font_tool
+keys esc esc
+wait idle
+expect-not "Font text"
+# The stencil from the cutter is in the Stencil tool.
+keys n
+wait "Stencils"
+wait idle
+expect "Dr. Dream logo"
+keys esc
+wait idle
+keys ctrl-q
+expect-exit 0 5s

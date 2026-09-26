@@ -1,0 +1,5 @@
+[
+  {"content": [{"type": "text", "text": "I can't help with that."}], "stop_reason": "refusal"},
+  {"tool": "fill_rect", "input": {"x": 0, "y": 0, "w": 400, "h": 400, "ch": "█", "fg": 12}, "delay_ms": 3000},
+  {"text": "Drew them."}
+]

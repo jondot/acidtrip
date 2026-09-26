@@ -1,0 +1,20 @@
+# Filters on the sunset: the Dramatic Warm preset, previewed live on the canvas.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+click 93 4
+wait "FILTERS"
+click 113 21
+wait idle
+click 118 6
+wait "2/43"
+click 118 6
+click 118 6
+click 118 6
+click 118 6
+wait "6/43"
+wait idle
+mouse move 60 36
+wait idle
+shot filters

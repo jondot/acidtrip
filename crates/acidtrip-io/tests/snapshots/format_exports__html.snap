@@ -1,0 +1,41 @@
+---
+source: crates/acidtrip-io/tests/format_exports.rs
+expression: "text(Format::Html, &o)"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="acidtrip">
+<title>Tiny &lt;test&gt;</title>
+<style>
+@font-face { font-family: "Perfect DOS VGA 437"; src: local("Perfect DOS VGA 437"), local("PerfectDOSVGA437"), url("PerfectDOSVGA437.ttf") format("truetype"); }
+html, body { margin: 0; background: #000; }
+body { display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 16px; box-sizing: border-box; }
+.acid {
+  margin: 0;
+  color: #aaaaaa;
+  background: #000000;
+  font-family: "Perfect DOS VGA 437", "Px437 IBM VGA 8x16", "Px437 IBM VGA8", Consolas, Menlo, "DejaVu Sans Mono", monospace;
+  font-size: min(16px, calc((100vw - 32px) / 6 / 0.6));
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-ligatures: none;
+  white-space: pre;
+}
+.acid .f0 { color: #ff5555; } .acid .b0 { background: #ff5555; }
+.acid .f1 { color: #0000aa; } .acid .b1 { background: #0000aa; }
+.acid .f2 { color: #ffff55; } .acid .b2 { background: #ffff55; }
+.acid .f3 { color: #55ff55; } .acid .b3 { background: #55ff55; }
+.acid .f4 { color: #aa0000; } .acid .b4 { background: #aa0000; }
+.acid .f5 { color: #ffffff; } .acid .b5 { background: #ffffff; }
+.acid .f6 { color: #00aaaa; } .acid .b6 { background: #00aaaa; }
+.acid .f7 { color: #5555ff; } .acid .b7 { background: #5555ff; }
+</style>
+</head>
+<body>
+<pre class="acid" aria-label="Tiny &lt;test&gt;"><span class="f0 b1">A</span><span class="f2">█</span><span class="f3 b4">▀</span><span class="f5">&lt;&amp;</span>
+ <span class="f6 b7">░</span></pre>
+</body>
+</html>

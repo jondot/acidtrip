@@ -1,0 +1,18 @@
+# Animation frames: a ball bouncing over three frames, onion skin on.
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys o
+drag 6 14 16 20
+click 104 24
+wait "FRAMES 1/1"
+keys alt-f
+wait "FRAMES 2/2"
+drag 22 6 32 12
+keys alt-f
+wait "FRAMES 3/3"
+drag 38 14 48 20
+mouse move 70 30
+wait idle
+shot frames

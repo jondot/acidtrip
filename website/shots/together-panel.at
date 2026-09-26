@@ -1,0 +1,19 @@
+# Draw together on the sunset: the panel, then hosting (localhost only).
+env ACIDTRIP_NET_LOCAL 1
+env USER ada
+env SSH_TTY /dev/null
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+click 45 39
+wait "TOGETHER"
+wait idle
+shot together-panel
+click 96 6
+wait "Copy" 10s
+wait "ada (you)"
+wait idle
+mouse move 60 36
+wait idle
+shot together-hosting

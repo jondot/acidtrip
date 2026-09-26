@@ -1,0 +1,14 @@
+---
+// CHARACTERS: the picked glyph draws the page's rules.
+const SET = ['░', '▒', '▓', '█', '▀', '▄', '▌', '▐', '■', '·'];
+const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+---
+<section class="panel">
+  <div class="ph"><span>CHARACTERS</span><button class="more" data-cmd data-tip="Search everything" data-key="Ctrl-K">… all</button></div>
+  <div class="pb chars"><button id="prevset" data-tip="Previous set" data-key="[">‹</button><span class="name">blocks &amp; shades 6/15</span><button id="nextset" data-tip="Next set" data-key="]">›</button></div>
+  <div id="glyphs">
+    {SET.map((g, i) => (
+      <button data-glyph={i} aria-pressed={i === 3 ? 'true' : 'false'} data-tip={`Draw the page's rules with ${g}`} data-key={KEYS[i]}><b>{g}</b><span>{KEYS[i]}</span></button>
+    ))}
+  </div>
+</section>

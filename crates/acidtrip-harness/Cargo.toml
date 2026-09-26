@@ -1,0 +1,29 @@
+[package]
+name = "acidtrip-harness"
+description = "Headless pty end-to-end test and screenshot harness for acidtrip"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "acidtrip-harness"
+path = "src/main.rs"
+
+[dependencies]
+acidtrip-core.workspace = true
+anyhow.workspace = true
+image.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+portable-pty = "0.9"
+vt100 = "0.16"
+clap = { version = "4", features = ["derive"] }
+libc = "0.2"
+
+[dev-dependencies]
+crossterm = "0.29"

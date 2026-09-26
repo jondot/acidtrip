@@ -1,0 +1,135 @@
+# Image import on an 80x24 terminal, by mouse once the dialog is open (the
+# palette opens it): export a small PNG, add it as a reference layer, click
+# presets, sizes and values, resize the terminal mid-dialog, cancel with
+# the button, then import by clicks as a stamp and place it with a click.
+size 80 24
+env HOME /tmp/acidtrip-flows/library-13/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys 4
+drag 2 2 20 6
+wait idle
+keys ctrl-k
+wait "Commands"
+type export as
+wait idle
+keys enter
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/library-13/pic.png
+keys enter
+wait "exported …/pic.png"
+expect-file /tmp/acidtrip-flows/library-13/pic.png
+keys ctrl-k
+wait "Commands"
+type reference image
+wait idle
+keys enter
+wait "Reference image layer"
+type /tmp/acidtrip-flows/library-13/pic.png
+keys enter
+wait "change…" 30s
+wait idle
+shot ref_small
+expect "1–9 of 13"
+expect-not "Remove specks"
+# Scroll the settings with ▼: the last ones show.
+click 18 20
+wait "Remove specks"
+wait idle
+expect "Dark to black"
+expect-not "Colors ‹"
+shot scrolled
+# The comic preset by click; it adds Keep lines.
+click 5 6
+wait "Keep lines ‹ 100% ›"
+expect "5–13 of 15"
+shot comic
+# Clicks on a value: the right side steps forward, ‹ steps back.
+click 19 19
+wait "Keep lines ‹ 80% ›"
+click 19 19
+wait "Keep lines ‹ 60% ›"
+click 26 19
+wait "Keep lines ‹ 80% ›"
+# ▲ back up to the first settings.
+click 14 20
+wait "Colors ‹"
+expect-not "Keep lines"
+# A bigger terminal mid-dialog: every setting fits, no scroll buttons.
+size 120 40
+wait "Remove specks"
+wait idle
+expect "Colors ‹"
+expect "Keep lines ‹ 80% ›"
+expect-not "of 15"
+shot big
+size 80 24
+wait "of 15"
+wait idle
+shot small_again
+# Add it: a locked reference layer plus a Drawing layer on top.
+click 12 21
+wait "imported pic as a layer" 30s
+wait idle
+expect "L3/3"
+shot ref_added
+keys ctrl-z
+wait idle
+keys ctrl-z
+wait idle
+expect "L1/1"
+# Import image: open, then Cancel by the button.
+keys ctrl-k
+wait "Commands"
+type import image
+wait idle
+keys enter
+wait "Import image"
+type /tmp/acidtrip-flows/library-13/pic.png
+keys enter
+wait "change…" 30s
+wait idle
+shot import_small
+click 25 21
+wait idle
+expect-not "Import image"
+keys ctrl-k
+wait "Commands"
+type import image
+wait idle
+keys enter
+wait "Import image"
+type /tmp/acidtrip-flows/library-13/pic.png
+keys enter
+wait "change…" 30s
+click 30 11
+wait "Into ‹ new layer ›"
+click 19 11
+wait "Into ‹ stamp (place it) ›"
+# Change… goes back to the file list; Esc there keeps the picture.
+click 18 2
+wait "Image "
+wait idle
+expect-not "PRESET"
+keys esc
+wait idle
+expect-not "Import image"
+keys ctrl-k
+wait "Commands"
+type import image
+wait idle
+keys enter
+wait "Import image"
+type /tmp/acidtrip-flows/library-13/pic.png
+keys enter
+wait "change…" 30s
+click 10 21
+wait "click or Space to stamp" 30s
+click 40 14
+wait "stamped"
+keys esc
+wait idle
+shot stamped

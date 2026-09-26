@@ -1,0 +1,17 @@
+---
+// The status bar: mode, FG swatch, cursor cell, page size, document kind,
+// iCE, layer position, and the tip for whatever you hover.
+import type { Page } from '../lib/site';
+interface Props { pages: Page[]; current: Page }
+const { pages, current } = Astro.props;
+const ix = pages.indexOf(current);
+---
+<footer id="status">
+  <span id="mode">{current.name}</span><span id="fgsw" aria-hidden="true"></span>
+  <span id="pos">0,0</span>
+  <span id="size" class="sb-link">80x25</span>
+  <button class="sb-link" id="classic" data-tip="Classic documents: CP437 and 16 colors. Modern: Unicode and 24-bit">CLASSIC</button>
+  <button class="sb-link" id="ice" aria-pressed="false" data-tip="iCE colors: allow the bright 8 as backgrounds" data-key="Alt-Z">iCE</button>
+  <span id="lpos">L{ix + 1}/{pages.length}</span>
+  <span id="tip"><span class="ic">▸</span> Welcome to acidtrip — hover anything · click a tool or a layer · Ctrl-K commands</span>
+</footer>

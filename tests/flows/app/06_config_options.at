@@ -1,0 +1,67 @@
+# Config options take effect: new-document kind, size and iCE; the sidebar
+# and grid start states; the SAUCE author default. "Open settings file"
+# runs the editor and comes back to a fully drawn screen, reloading the
+# file; an editor that can't run says so.
+home-file config/config.toml "[new_doc]\nkind = \"modern\"\nwidth = 100\nheight = 30\nice = false\n\n[ui]\nsidebar = false\nshow_grid = true\nauthor = \"flowtester\"\n"
+env VISUAL true
+size 120 40
+spawn
+wait "100x30" 10s
+expect "MODERN"
+expect "no iCE"
+# no sidebar, and the grid guides are on
+expect-not "TOOLS"
+expect "·         ·"
+shot start
+# the author default reached the document's SAUCE
+keys alt-d
+wait "flowtester"
+shot sauce
+keys esc
+wait idle
+expect-not "flowtester"
+# Document properties: the note wraps whole and a click on "cancel" closes it
+keys ctrl-d
+wait "Document properties"
+expect "downsamples."
+shot doc_props
+wait "esc  cancel"
+click-text "esc  cancel"
+wait idle
+expect-not "Document properties"
+# Ctrl-B brings the sidebar back
+keys ctrl-b
+wait "TOOLS"
+# a new document follows the config too
+keys ctrl-n
+wait "New document"
+shot new_doc
+keys enter
+wait idle
+expect "100x30"
+expect "MODERN"
+# the settings editor: the app hands over the screen and takes it back whole
+keys ctrl-k
+type settings file
+wait "▸Open settings file"
+keys enter
+wait "settings reloaded"
+expect "TOOLS"
+expect "acidtrip"
+expect "100x30"
+shot after_editor
+# an editor that isn't there: a clear message, the app carries on
+restart
+wait "100x30" 10s
+env VISUAL /nonexistent/editor
+restart
+wait "100x30" 10s
+keys ctrl-k
+type settings file
+wait "▸Open settings file"
+keys enter
+wait "can't run /nonexistent/editor: No such file"
+shot bad_editor
+expect-not "TOOLS"
+keys ctrl-b
+wait "TOOLS"

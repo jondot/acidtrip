@@ -1,0 +1,19 @@
+---
+// The sidebar: acidtrip's panels, as the site's navigation. On phones it's
+// a bottom sheet the ☰ panels chip opens.
+import type { Page } from '../lib/site';
+import ToolsPanel from './panels/ToolsPanel.astro';
+import ColorsPanel from './panels/ColorsPanel.astro';
+import CharactersPanel from './panels/CharactersPanel.astro';
+import LayersPanel from './panels/LayersPanel.astro';
+import Minimap from './panels/Minimap.astro';
+interface Props { pages: Page[]; current: Page }
+const { pages, current } = Astro.props;
+---
+<aside id="side" aria-label="Panels">
+  <ToolsPanel pages={pages} current={current} />
+  <ColorsPanel />
+  <CharactersPanel />
+  <LayersPanel pages={pages} current={current} />
+  <Minimap />
+</aside>

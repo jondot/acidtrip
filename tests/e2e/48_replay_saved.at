@@ -1,0 +1,51 @@
+# The edit history travels in the .acid: save, reopen, replay it and export
+# a GIF. A piece without history (an .ans) gets the modem reveal instead.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 2 3 30 3
+drag 2 6 30 6
+keys ctrl-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-e2e/replayed.acid
+keys enter
+wait "saved /tmp/acidtrip-e2e/replayed.acid"
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-e2e/replayed.acid
+wait "replayed.acid" 10s
+keys esc
+wait idle
+click 114 1
+wait "REPLAY"
+keys end
+wait idle
+expect "brush"
+shot reopened
+click 99 10
+wait "wrote /tmp/acidtrip-e2e/replayed-replay.gif" 20s
+click 110 10
+wait "wrote /tmp/acidtrip-e2e/replayed-replay.cast" 20s
+# The ✕ in the panel's title bar leaves.
+click 117 5
+wait "back to the live piece"
+expect-not "REPLAY"
+# Save as ANSI (no history there), reopen: the modem reveal plays.
+keys ctrl-shift-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-e2e/replayed.ans
+keys enter
+wait "saved /tmp/acidtrip-e2e/replayed.ans"
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-e2e/replayed.ans
+wait "replayed.ans" 10s
+keys esc
+wait idle
+click 114 1
+wait "modem reveal instead"
+shot fallback

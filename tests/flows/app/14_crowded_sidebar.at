@@ -1,0 +1,49 @@
+# Several sidebar panels at once on a short terminal: Together, Replay and
+# the tool panels all want room. Each panel that was asked for must stay
+# reachable and clickable, closing one gives the room back.
+size 120 30
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 3 4 30 4
+wait idle
+shot start
+click 46 29
+wait "TOGETHER"
+shot together
+click-text "► replay"
+wait "REPLAY"
+shot both
+expect-not "TOGETHER"
+# leaving the replay gives the slot back to the Together panel
+keys esc
+wait "replay off"
+wait "TOGETHER"
+expect "Host this drawing"
+# the brush panel is gone for now, but B still picks the brush and draws
+keys b
+drag 3 6 30 6
+wait idle
+expect "   ███████████████████████████"
+# the layers strip at the bottom still clicks: add a layer
+click-text "+"
+wait "L2/2"
+shot layer_added
+# shorter still: the panels asked for win over the bottom strips
+size 120 20
+wait idle
+shot short
+expect "TOGETHER"
+click-text "✕"
+wait idle
+expect-not "TOGETHER"
+shot short_closed
+expect "BRUSH"
+# the new layer is undoable like any edit
+keys ctrl-z
+wait "L1/1"
+size 120 30
+wait idle
+expect "LAYERS"
+expect "Background"

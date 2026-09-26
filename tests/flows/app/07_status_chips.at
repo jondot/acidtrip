@@ -1,0 +1,60 @@
+# The status-bar chips are buttons: size opens Canvas size (cancel by
+# click), iCE toggles both ways, the kind chip converts and Undo takes it
+# back, and ⇄ opens and closes the Together panel. Hovering says what each
+# does. Drawing still works at the end.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 3 4 20 4
+wait idle
+# hover tips
+mouse move 22 39
+wait idle
+shot hover_size
+# size chip
+click-text "80x25"
+wait "Canvas size"
+shot size_dialog
+click-text "esc  cancel"
+wait idle
+expect-not "art stays top-left"
+expect "80x25"
+# iCE chip: off, then on again
+click 35 39
+wait "no iCE"
+click-text "no iCE"
+wait idle
+expect-not "no iCE"
+expect "CLASSIC iCE"
+# the kind chip converts to Modern; Undo brings Classic back
+click-text "CLASSIC"
+wait "MODERN"
+expect "██████████████████"
+shot modern
+keys ctrl-z
+wait "CLASSIC"
+expect "██████████████████"
+# ⇄ opens the Together panel and ✕ closes it
+click 46 39
+wait "TOGETHER"
+shot together
+click-text "✕"
+wait idle
+expect-not "TOGETHER"
+expect "COLORS"
+# still drawing
+drag 3 8 20 8
+wait idle
+expect "● untitled"
+# Undo walks back: the stroke, then both iCE clicks, then the first stroke
+keys ctrl-z
+wait idle
+keys ctrl-z
+wait "no iCE"
+keys ctrl-z
+wait "CLASSIC iCE"
+keys ctrl-z
+wait idle
+expect-not "██████████████████"

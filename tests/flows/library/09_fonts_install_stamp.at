@@ -1,0 +1,74 @@
+# Installing fonts and stamping with them: install a TheDraw font from the
+# command line (a file with no fonts is refused), the in-app download says
+# it's offline instead of hanging, the Font dialog lists the new font, a
+# filter with no match says so, a TheDraw word stamped with the mouse (a
+# click on the preview), then keyboard only: F again reopens the chooser, a
+# FIGlet font, stamp with Space twice, Esc, undo one.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-09/home
+env HOME /tmp/acidtrip-flows/library-09/home
+spawn fonts install crates/acidtrip-io/tests/fixtures/tdf/dream.tdf
+wait "installed Dream"
+expect-exit 0 10s
+spawn fonts install crates/acidtrip-io/tests/corpus/README.md
+wait "no TheDraw, FIGlet or acidtrip fonts"
+expect-exit 1 10s
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# Offline: the download refuses and says how to install instead.
+keys ctrl-k
+wait "Commands"
+type download more thedraw
+wait idle
+keys enter
+wait "offline: no downloads"
+# The Font dialog; a filter that matches nothing.
+keys f
+wait "Font text"
+keys /
+type zzzq
+wait "no font matches “zzzq”"
+expect-not "No fonts."
+keys backspace backspace backspace backspace
+type dream
+keys enter
+wait "TDF color"
+wait idle
+keys ctrl-u
+type ACID
+wait idle
+shot dream
+# One click on the preview stamps.
+click 60 12
+wait "click or Space to stamp"
+click 5 5
+wait "stamped"
+keys esc
+wait "done stamping"
+# F again, with the Font tool on: the chooser again. FIGlet, keyboard only.
+keys f
+wait "Font text"
+keys /
+type banner
+keys enter
+wait "FIGlet"
+keys ctrl-u
+type hey
+wait idle
+shot banner
+keys enter
+wait "click or Space to stamp"
+keys down down down down down down down down down down
+keys space
+wait "stamped"
+keys right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right
+keys space
+wait idle
+keys esc
+wait "done stamping"
+shot two_banners
+keys ctrl-z
+wait "undo"
+shot undone

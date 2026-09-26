@@ -1,0 +1,115 @@
+# The same round trip for TundraDraw, PCBoard, Avatar, UTF-8 ANSI and the
+# native .acid: save each via Save As, reopen each from the command line.
+size 120 40
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+# Colored text on two rows, so every format has attributes to carry.
+keys ctrl-down ctrl-down ctrl-down
+keys t
+type ROUND TRIP
+keys esc
+keys ctrl-right ctrl-right
+keys t
+keys down
+type SECOND ROW
+keys esc
+wait idle
+# Save as .tnd: the tab moves to the new file.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-12/art.tnd
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-12/art.tnd"
+expect "art.tnd"
+expect-not "● "
+# Save as .pcb: the tab moves to the new file.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-12/art.pcb
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-12/art.pcb"
+expect "art.pcb"
+expect-not "● "
+# Save as .avt: the tab moves to the new file.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-12/art.avt
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-12/art.avt"
+expect "art.avt"
+expect-not "● "
+# Save as .utf8ans: the tab moves to the new file.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-12/art.utf8ans
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-12/art.utf8ans"
+expect "art.utf8ans"
+expect-not "● "
+# Save as .acid: the tab moves to the new file.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-12/art.acid
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-12/art.acid"
+expect "art.acid"
+expect-not "● "
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-12/art.tnd
+spawn /tmp/acidtrip-flows/documents-12/art.tnd
+wait "Ctrl-K commands" 10s
+keys esc
+wait "ROUND TRIP"
+expect "SECOND ROW"
+expect "art.tnd"
+expect-not "● "
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-12/art.pcb
+spawn /tmp/acidtrip-flows/documents-12/art.pcb
+wait "Ctrl-K commands" 10s
+keys esc
+wait "ROUND TRIP"
+expect "SECOND ROW"
+expect "art.pcb"
+expect-not "● "
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-12/art.avt
+spawn /tmp/acidtrip-flows/documents-12/art.avt
+wait "Ctrl-K commands" 10s
+keys esc
+wait "ROUND TRIP"
+expect "SECOND ROW"
+expect "art.avt"
+expect-not "● "
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-12/art.utf8ans
+spawn /tmp/acidtrip-flows/documents-12/art.utf8ans
+wait "Ctrl-K commands" 10s
+keys esc
+wait "ROUND TRIP"
+expect "SECOND ROW"
+expect "art.utf8ans"
+expect-not "● "
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-12/art.acid
+spawn /tmp/acidtrip-flows/documents-12/art.acid
+wait "Ctrl-K commands" 10s
+keys esc
+wait "ROUND TRIP"
+expect "SECOND ROW"
+expect "art.acid"
+expect-not "● "
+shot reopened_acid
+keys ctrl-q
+expect-exit 0 5s

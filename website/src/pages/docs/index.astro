@@ -1,0 +1,18 @@
+---
+import Canvas from '../../layouts/Canvas.astro';
+import Heading from '../../components/Heading.astro';
+import { pages } from '../../lib/site';
+const docs = (await pages()).filter((p) => p.doc);
+---
+<Canvas id="docs" description="The acidtrip manual: drawing, colors, brushes, layers, animation, export, sharing, drawing together, replay, the gallery, fonts, AI and the command line.">
+  <Heading name="page-docs" alt="DOCS" path="docs/index.ans · the manual, one file per topic" />
+  <p class="lead">Everything acidtrip does, one file per topic. Each one is also a layer in LAYERS and a tool in TOOLS; <kbd>Ctrl-K</kbd> searches every heading.</p>
+  <div class="rule" aria-hidden="true"></div>
+  <ul class="doclist">
+    {docs.map((d) => (
+      <li><a href={d.href} data-tip={`${d.file}: ${d.desc}`}><span class="g">{d.tool}</span><b>{d.name}</b><span class="d">{d.desc}</span></a></li>
+    ))}
+  </ul>
+  <div class="rule" aria-hidden="true"></div>
+  <p class="dim">New here? Start with <a href={docs[0].href}>{docs[0].file}</a>.</p>
+</Canvas>

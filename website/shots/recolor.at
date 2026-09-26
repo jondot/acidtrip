@@ -1,0 +1,16 @@
+# Recolor on the sunset: pick the sky's magenta, preview it as light red.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+click 96 4
+wait "RECOLOR"
+click 113 10
+wait idle
+click 4 19
+wait "replace"
+click 106 18
+wait idle
+mouse move 60 36
+wait idle
+shot recolor

@@ -1,0 +1,39 @@
+# MANUAL (network; not run by cargo test): the gallery on 16colo.rs — year rows
+# with pack posters, a pack as a grid, a piece full screen, a group, a search.
+size 140 44
+env ACIDTRIP_OFFLINE ""
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-f
+wait "Gallery"
+wait "on 16colo.rs" 30s
+wait idle
+shot home_online
+# Down to the first year row, open its first pack.
+keys down down
+wait idle
+shot year_row
+keys enter
+wait " · " 10s
+wait idle
+shot pack_grid
+keys enter
+wait " cells" 30s
+wait idle
+shot piece
+keys esc esc
+# ACiD's packs.
+keys up
+wait idle
+keys enter
+wait "packs, newest first" 20s
+wait idle
+shot group
+keys esc
+keys /
+type blocktronics
+keys enter
+wait "Search: blocktronics"
+wait idle
+shot search

@@ -1,0 +1,13 @@
+---
+source: crates/acidtrip-io/tests/format_exports.rs
+expression: "text(Format::PascalArray, &o)"
+---
+{ Tiny <test> 6x2 char/attribute pairs (acidtrip) }
+const
+  AcidArtWidth = 6;
+  AcidArtHeight = 2;
+  AcidArtLength = 24;
+  AcidArt : array [0..23] of Byte = (
+    $41,$1C,$DB,$0E,$DF,$4A,$3C,$0F,$26,$0F,$20,$07,
+    $20,$07,$B0,$93,$20,$07,$20,$07,$20,$07,$20,$07
+  );

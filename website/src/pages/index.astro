@@ -1,0 +1,62 @@
+---
+import Canvas from '../layouts/Canvas.astro';
+import Shot from '../components/Shot.astro';
+import Term from '../components/Term.astro';
+import { art, url, GITHUB, INSTALL } from '../lib/site';
+import { pngSize } from '../lib/rehype-acid.mjs';
+
+const size = (n: string) => pngSize(`art/${n}.png`) ?? [0, 0];
+const features = [
+  { id: 'draw', text: 'Paint with the mouse, or drive it from the keyboard the ACiDDraw way. A smart pen matches each cell to the glyph whose real bitmap fits your stroke best. There are ten brushes, a pattern brush, gradients, iPhone and Instagram filters, and half-block pixels for two colors per cell.',
+    more: ['/features/', 'features.ans'], shot: 'pen', alt: 'Strokes drawn with the smart pen and its brushes' },
+  { id: 'together', text: "Host a drawing, send the ticket, and draw on one canvas together, BBS art jam style. Everyone's cursor shows with their name. Connections are peer to peer and get through routers and firewalls, with no accounts and nothing to set up.",
+    more: ['/docs/together/', 'docs/together.ans'], shot: 'together-hosting', alt: 'Hosting a Draw together session: the ticket and who is here' },
+  { id: 'replay', text: 'Every edit is logged with its time and saved inside .acid files. Play a piece back speed-paint style, skip the idle bits, hide what was undone, and save the replay as a GIF or an asciinema cast.',
+    more: ['/docs/replay/', 'docs/replay.ans'], shot: 'replay', alt: 'The REPLAY panel with its scrubber' },
+  { id: 'frames', text: 'A piece can have frames: a filmstrip, onion skin to trace the next pose, fps and hold for timing. Out as an animated GIF, a classic ansimation you cat at a baud rate, or an asciinema cast.',
+    more: ['/docs/animation/', 'docs/animation.ans'], shot: 'frames', alt: 'Frames with the filmstrip and onion skin' },
+  { id: 'gallery', text: 'Browse sixteen colors of history like a streaming service: every year on 16colo.rs, famous groups, your own folders. Open a piece full screen, play it at 14400 baud, or take a part of it into your art.',
+    more: ['/docs/gallery/', 'docs/gallery.ans'], shot: 'gallery-home', alt: 'The Gallery home screen: your collection, local folders and famous groups' },
+  { id: 'studio', text: "The sourcing studio cuts letters out of scene logos, free form, and builds fonts and stencils in the artist's style, credited. Claude can read the letters for you and draw the ones that are missing.",
+    more: ['/docs/studio/', 'docs/studio.ans'], shot: 'studio-cutter', alt: 'The sourcing studio cutting letters out of a logo' },
+  { id: 'formats', text: 'ANSI with iCE colors and 24-bit PabloDraw, BIN, XBin, ADF, IDF, TND, PCBoard, Avatar and ASCII, all saved losslessly. Images come in as art, with presets for photos, pixel art, comics and line art.',
+    more: ['/docs/formats/', 'docs/formats.ans'], shot: 'import-image', alt: 'Importing an image with its presets and a live preview' },
+  { id: 'export', text: 'Out to PNG, SVG, animated GIF, an HTML page, a React component, C arrays and asciinema. The Export panel sets up the files once, a row each with its own format and scale, and writes them all with one click.',
+    more: ['/docs/export/', 'docs/export.ans'], shot: 'export-panel', alt: 'The EXPORT panel in the sidebar' },
+];
+---
+<Canvas id="index" description="acidtrip, a terminal ANSI art editor in the spirit of ACiDDraw, rebuilt for today. Mouse-first, every classic scene format, drawing together, replay, TheDraw fonts, and Claude as a drawing partner.">
+  <picture>
+    <source media="(max-width:700px)" srcset={art('logo-amnesia')} width={size('logo-amnesia')[0]} height={size('logo-amnesia')[1]} />
+    <img class="art reveal" id="logo" data-lettering src={art('logo-acidtron')} width={size('logo-acidtron')[0]} height={size('logo-acidtron')[1]} alt="ACiDTRiP, lettered in the TheDraw font acidtron" />
+  </picture>
+  <div class="rule" aria-hidden="true"></div>
+  <p class="lead">A terminal ANSI art editor in the spirit of ACiDDraw, rebuilt for today.<span class="cursor" aria-hidden="true">_</span></p>
+  <p>Mouse-first, with rebindable keys and every classic scene format. It exports to SVG, HTML, React and GIF, sets text in TheDraw and FIGlet fonts, keeps versions and recovers from crashes. Claude can draw with you.</p>
+  <Term copy={INSTALL}><pre><span class="c">$</span> {INSTALL}
+<span class="c">$</span> acidtrip                 <span class="c"># new canvas</span>
+<span class="c">$</span> acidtrip logo.ans        <span class="c"># open (or create) a file</span></pre></Term>
+  <div class="actions">
+    <a class="btn" href={url('/docs/getting-started/')} data-tip="Read the docs, starting with the first run">▸ read the docs</a>
+    <a class="btn alt" href={url('/download/')} data-tip="Install, terminals and the command line">↓ download</a>
+    <a class="btn alt" href={GITHUB} target="_blank" rel="noopener" data-tip="The source on GitHub (opens a new tab)">github ↗</a>
+  </div>
+  <Shot name="overview" alt="acidtrip with a synthwave sunset open: the canvas on the left, the sidebar panels on the right, the status bar below" eager>
+    <b>The real thing:</b> acidtrip with <code>sunset.acid</code> open, a piece drawn with acidtrip's own tools. Every screen on this site is captured by the test harness, which drives the editor in a pseudo-terminal.
+  </Shot>
+
+  <div class="rule" aria-hidden="true"></div>
+
+  {features.map((f) => (
+    <section class="feature">
+      <div class="text">
+        <h2 id={f.id}><img class="art" src={art('h-' + f.id)} width={size('h-' + f.id)[0]} height={size('h-' + f.id)[1]} alt={f.id} /></h2>
+        <p>{f.text}</p>
+        <a class="more" href={url(f.more[0])}>→ {f.more[1]}</a>
+      </div>
+      <Shot name={f.shot} alt={f.alt} />
+    </section>
+  ))}
+  <div class="rule" aria-hidden="true"></div>
+  <p class="dim">Runs in any terminal with truecolor and mouse input: iTerm2, kitty, WezTerm, Ghostty, Alacritty, or Terminal.app with fewer key combinations. Colors always come from the document's own VGA palette, so the art looks the same whatever your terminal theme. The lettering on this site is set in TheDraw fonts by acidtrip itself.</p>
+</Canvas>

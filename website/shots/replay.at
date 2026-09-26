@@ -1,0 +1,31 @@
+# Replay: a small drawing, then the scrubber halfway back through it.
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys r
+wait "RECT"
+click 110 7
+click 97 16
+drag 4 2 76 9
+click 103 16
+drag 4 10 76 13
+keys o
+wait "ELLIPSE"
+click 112 16
+drag 30 4 50 12
+keys l
+wait "LINE"
+click 109 16
+drag 4 16 76 16
+drag 4 19 76 19
+drag 4 22 76 22
+click 114 1
+wait "REPLAY"
+wait "step"
+wait idle
+click 104 6
+wait idle
+mouse move 60 34
+wait idle
+shot replay

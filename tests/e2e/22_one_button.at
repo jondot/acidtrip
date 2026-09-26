@@ -1,0 +1,24 @@
+# Everything with one mouse button: E toggles the eraser, Option-drag erases, BG via the BG box
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 2 3 30 3
+# E on, erase, E off → back to the brush and painting again
+keys e
+wait "Erase"
+drag 5 3 9 3
+keys e
+wait "Brush tool"
+drag 2 5 30 5
+# Option-drag erases without switching tools
+mouse down left 10 5 alt
+mouse drag left 14 5 alt
+mouse up left 14 5 alt
+# set the background with left clicks only: BG box, then a color
+click 106 8
+click 105 11
+wait idle
+shot one_button
+expect "Brush"

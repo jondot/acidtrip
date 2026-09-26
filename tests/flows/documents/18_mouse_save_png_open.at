@@ -1,0 +1,67 @@
+# Saving with the mouse alone: the name in the top bar is a button. On a
+# piece with a file it saves; hovering says so first. Untitled, it opens
+# Save / Export, and its cancel button leaves. A PNG given on the command
+# line opens as a picture to work on: Ctrl-S asks for a name rather than
+# painting over the image, and cancelling leaves it alone.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-18/home
+write-file /tmp/acidtrip-flows/documents-18/home/config/config.toml "autosave_seconds = 0\n"
+write-file /tmp/acidtrip-flows/documents-18/m.ans "MOUSE ONLY"
+spawn /tmp/acidtrip-flows/documents-18/m.ans
+wait "Ctrl-K commands" 10s
+expect "  m.ans"
+click 5 5
+wait "● m.ans"
+mouse move 4 0
+wait "ⓘ Save"
+shot hover
+click 4 0
+wait "saved /tmp/acidtrip-flows/documents-18/m.ans"
+expect-not "● m.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-18/m.ans "MOUSE ONLY"
+# A PNG copy of it, for later.
+keys alt-s
+wait "Save / Export"
+keys ctrl-e
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-18/m.png
+keys enter
+wait "exported /tmp/acidtrip-flows/documents-18/m.png"
+keys ctrl-q
+expect-exit 0 5s
+# Untitled: the name opens Save / Export.
+spawn
+wait "Ctrl-K commands" 10s
+click 4 0
+wait "Save / Export"
+shot untitled_dialog
+click 72 32
+wait idle
+expect-not "Save / Export"
+expect-no-file untitled.ans
+keys ctrl-q
+expect-exit 0 5s
+# The PNG: a picture to work on, not a file Ctrl-S paints over.
+spawn /tmp/acidtrip-flows/documents-18/m.png
+wait "Ctrl-K commands" 10s
+expect "  m.png"
+keys t
+type NOTE
+keys esc
+wait "● m.png"
+keys ctrl-s
+wait "Save / Export"
+expect "Keeps working on this file"
+keys esc
+wait idle
+expect "● m.png"
+click 4 0
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-18/from_png.acid
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-18/from_png.acid"
+expect "  from_png.acid"
+expect-file-contains /tmp/acidtrip-flows/documents-18/m.png "PNG"
+keys ctrl-q
+expect-exit 0 5s

@@ -1,0 +1,10 @@
+# The stencil library, searching for a heart.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys n
+wait "Stencils"
+type "heart"
+wait idle
+shot stencils

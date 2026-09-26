@@ -1,0 +1,93 @@
+# A piece's life: draw, save as .ans, quit, reopen from the command line,
+# edit, undo back past the reopen point, save as .xb, then export a 2x PNG
+# through the EXPORT panel. Both files exist and the .xb reopens.
+size 120 40
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type LIFE OF A PIECE
+keys esc
+wait idle
+expect "● untitled"
+keys ctrl-s
+wait "Save / Export"
+expect "Keeps working on this file"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-01/life.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-01/life.ans"
+expect-not "● "
+expect "life.ans"
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-01/life.ans
+expect-file-contains /tmp/acidtrip-flows/documents-01/life.ans "LIFE OF A PIECE"
+# Reopen from the command line: the art is back and the tab is clean.
+spawn /tmp/acidtrip-flows/documents-01/life.ans
+wait "LIFE OF A PIECE" 10s
+keys esc
+expect "life.ans"
+expect-not "● life.ans"
+# An edit below the text, then undo past it: nothing older to undo.
+keys t
+keys down down
+type EDITED
+keys esc
+wait "EDITED"
+expect "● life.ans"
+keys ctrl-z
+wait idle
+expect-not "EDITED"
+keys ctrl-z
+wait "nothing to undo"
+expect "LIFE OF A PIECE"
+expect-not "● life.ans"
+keys ctrl-y
+wait "EDITED"
+shot reopened_edited
+# Save as XBin: the tab now works on the .xb.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-01/life.xb
+wait "›XBin"
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-01/life.xb"
+expect "life.xb"
+# Export panel: one PNG row, stepped to 2x, written next to the piece.
+keys ctrl-e
+wait "EXPORT"
+expect "Export 1 file"
+shot panel
+click 93 28
+wait "life@2x"
+click 100 31
+wait "exported"
+shot exported
+expect-file /tmp/acidtrip-flows/documents-01/life@2x.png /tmp/acidtrip-flows/documents-01/life.xb
+# The export row is part of the piece, so quitting asks first. Cancel, save, quit.
+expect "● life.xb"
+keys ctrl-q
+wait "Quit anyway?"
+keys esc
+wait idle
+expect-not "Quit anyway?"
+keys ctrl-s
+wait idle
+shot resaved
+expect-not "● life.xb"
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-flows/documents-01/life.xb
+wait "EDITED" 10s
+expect "LIFE OF A PIECE"
+expect "life.xb"
+# XBin keeps the art (trimmed to the used rows) but not the export rows:
+# only .acid keeps those, so the panel is back to one 1x PNG.
+expect "80x3"
+keys esc
+keys ctrl-e
+wait "EXPORT"
+expect "1x  life "
+shot reopened_panel

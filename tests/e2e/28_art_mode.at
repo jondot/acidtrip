@@ -1,0 +1,60 @@
+# The art tool (Ctrl-G): the left hand types blocks from the board, IJKL move
+# (Shift draws), R erases, [ ] rotate the glyph sets, Y/H undo/redo; the
+# sidebar shows the board; a key can be given another glyph.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-g
+wait "Blocks"
+wait idle
+shot board
+# S = full block at the cursor (the cursor stays), L moves right, W = upper half.
+type s
+type l
+type w
+type k
+type f
+wait idle
+shot typed
+expect "█▀"
+expect " ■"
+# Shift+L draws a trail to the right with the brush (■ from F).
+type LL
+wait idle
+expect " ■■■"
+# F again on the same glyph erases it; R erases too.
+type f
+type j
+type r
+wait idle
+expect " ■  "
+# Y undoes (the erase comes back), H redoes.
+type y
+wait idle
+expect " ■■ "
+type h
+wait idle
+expect " ■  "
+# ] rotates to single lines: Q is a top-left corner.
+type ]
+wait "Single lines"
+type q
+wait idle
+expect "┌"
+shot lines
+# [ goes back to blocks.
+type [
+wait "art keys: Blocks"
+# Click T on the sidebar board, pick the next glyph, and T types it.
+click 105 7
+wait "Art mode: what T types"
+keys right enter
+wait "T now types"
+wait idle
+shot reassigned
+# Esc leaves the art tool: letters are tool keys again (T = text).
+keys esc
+wait "art off"
+type t
+wait "TYPE"

@@ -1,0 +1,76 @@
+# Keyboard only: collect a piece from a local folder, back out with Esc at
+# every stage, quit, start again offline: the collection still has the piece
+# and it opens full screen from the saved copy. Collecting it twice is
+# refused politely; `c` on the collection copy takes it out again.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-02/home
+env HOME /tmp/acidtrip-flows/library-02/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-f
+wait "Local folders"
+keys +
+wait "Folder ›"
+type crates/acidtrip-io/tests/corpus
+keys enter
+wait "added"
+wait idle
+keys enter
+wait "⏎  view"
+wait idle
+keys right enter
+wait "rows 1–"
+expect "save to collection"
+keys c
+wait "saved BF-TUTOR to your collection"
+wait idle
+expect "✓ in your collection"
+shot collected
+# Again: it's kept already.
+keys c
+wait "already in your collection"
+# Esc: viewer -> grid -> home, where My collection shows the piece.
+keys esc
+wait idle
+expect-not "open as document"
+keys esc
+wait "My collection"
+wait idle
+shot home
+keys esc
+wait idle
+expect-not "My collection"
+keys ctrl-q
+expect-exit 0 5s
+# A new session, still offline: the collection copy is there.
+spawn
+wait "Ctrl-K commands" 10s
+keys ctrl-f
+wait "My collection"
+wait idle
+# Continue holds the folder piece; My collection its copy, one row down.
+keys down
+wait idle
+expect "remove from collection"
+shot collection_selected
+keys enter
+wait "rows 1–"
+wait idle
+expect "drawing like shit, lesson I"
+shot viewing_copy
+# Out of the collection: the button says so first.
+expect "remove from collection"
+keys c
+wait "removed BF-TUTOR from your collection"
+wait idle
+expect "save to collection"
+# The viewer was opened from home: one Esc goes back there.
+keys esc
+wait idle
+expect "save a piece (c) to keep a copy"
+shot collection_empty
+keys esc
+wait idle
+expect-not "Gallery"

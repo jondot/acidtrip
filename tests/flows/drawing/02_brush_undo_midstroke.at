@@ -1,0 +1,101 @@
+# Brush strokes, glyph keys, eraser, right-drag erase, undo/redo; a new edit
+# drops the redo; switching tool or pressing Esc in the middle of a drag
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys b
+drag 5 3 15 3
+wait idle
+expect-cell 5 3 "█" fg=15
+expect-cell 15 3 "█"
+# number keys pick glyphs: 1 is the light shade
+keys 1
+drag 5 5 15 5
+wait idle
+expect-cell 10 5 "░"
+keys ctrl-z
+wait "undo: "
+expect-cell 10 5 " "
+expect-cell 10 3 "█"
+keys ctrl-y
+wait "redo: "
+expect-cell 10 5 "░"
+# undo, then draw something new: redo has nothing left
+keys ctrl-z
+wait idle
+drag 5 7 15 7
+wait idle
+keys ctrl-y
+wait "nothing to redo"
+expect-cell 10 5 " "
+expect-cell 10 7 "░"
+# eraser takes cells back to blank
+keys e
+drag 5 3 9 3
+wait idle
+expect-cell 7 3 " "
+expect-cell 12 3 "█"
+# right-drag with the brush erases too
+keys b
+drag 10 7 12 7 right
+wait idle
+expect-cell 11 7 " "
+expect-cell 13 7 "░"
+shot strokes
+# a color key mid-stroke keeps the stroke going in the new color: one undo step
+mouse down left 5 20
+mouse drag left 10 20
+wait idle
+keys ,
+mouse drag left 15 20
+mouse up left 15 20
+wait idle
+expect-cell 7 20 "░" fg=15
+expect-cell 14 20 "░" fg=14
+keys ctrl-z
+wait idle
+expect-cell 7 20 " "
+expect-cell 14 20 " "
+# switching tool mid-stroke ends the stroke; the next shape is its own step
+mouse down left 20 10
+mouse drag left 30 10
+wait idle
+keys r
+wait "Rect"
+mouse drag left 35 10
+mouse up left 35 10
+wait idle
+expect-cell 25 10 "░"
+drag 40 12 50 16
+wait idle
+expect-cell 40 12 "░"
+expect-not "  Rect cancelled"
+shot rect
+keys ctrl-z
+wait idle
+expect-cell 40 12 " "
+expect-cell 25 10 "░"
+keys ctrl-z
+wait idle
+expect-cell 25 10 " "
+# Esc while dragging a rectangle cancels it
+mouse down left 40 12
+mouse drag left 50 16
+wait idle
+keys esc
+wait "Rect cancelled"
+mouse up left 50 16
+wait idle
+expect-cell 40 12 " "
+expect-cell 50 16 " "
+shot cancelled
+# and the tool still works after
+drag 40 12 50 16
+wait idle
+expect-cell 40 12 "░"
+keys ctrl-z
+wait idle
+expect-cell 40 12 " "
+expect-cell 7 7 "░"

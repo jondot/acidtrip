@@ -1,0 +1,100 @@
+# The EXPORT panel's own flow: Alt-Shift-E writes the rows next to the
+# piece, a click on the scale grows it, a second row adds a file. The
+# folder is changed to a subfolder (made on export), which then goes
+# read-only: the export says why and writes nothing. A selection exports
+# just that part under its own name, "whole" goes back. "as…" is the
+# one-off dialog. The folder and rows are kept with the saved piece.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-24/home
+write-file /tmp/acidtrip-flows/documents-24/home/config/config.toml "autosave_seconds = 0\n"
+spawn
+wait "Ctrl-K commands" 10s
+keys t
+type EXPORT ME
+keys esc
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-24/k.acid
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-24/k.acid"
+keys ctrl-e
+wait "EXPORT 1"
+expect "to …dtrip-flows/documents-24"
+keys alt-shift-e
+wait "exported k.png → /tmp/acidtrip-flows/documents-24"
+expect-file /tmp/acidtrip-flows/documents-24/k.png
+# Scale up by a click; the export button says what it writes.
+click 93 28
+wait "2x"
+expect "● k.acid"
+mouse move 99 31
+wait "write k"
+shot run_tip
+keys alt-shift-e
+wait "exported k"
+expect-file /tmp/acidtrip-flows/documents-24/k@2x.png
+# A second row.
+click 95 29
+wait "EXPORT 2"
+expect "Export 2 files"
+# The folder: a subfolder next to the piece.
+click 95 31
+wait "Export to folder"
+keys ctrl-u
+type out
+keys enter
+wait "exports go to /tmp/acidtrip-flows/documents-24/out"
+keys alt-shift-e
+wait "→ /tmp/acidtrip-flows/documents-24/out"
+shot to_out
+expect-file /tmp/acidtrip-flows/documents-24/out/k.svg
+# It goes read-only: nothing written, and the reason.
+chmod 555 /tmp/acidtrip-flows/documents-24/out
+keys alt-shift-e
+wait "export failed: can't write in"
+expect "permission denied"
+chmod 755 /tmp/acidtrip-flows/documents-24/out
+# A selection exports just that part.
+keys v
+drag 1 1 6 3
+wait "selected 6x3"
+wait "Selection"
+expect "k-selection"
+keys alt-shift-e
+wait "k-selection"
+expect-file /tmp/acidtrip-flows/documents-24/out/k-selection.svg
+click 102 27
+wait "Whole piece"
+expect "2x  k@2x"
+expect-not "2x  k-selection"
+# "as…": the one-off dialog, in export mode.
+click 113 24
+wait "Save / Export"
+expect "Writes a copy for sharing"
+keys esc
+wait idle
+expect-not "Save / Export"
+# Kept with the piece.
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-24/k.acid"
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-flows/documents-24/k.acid
+wait "Ctrl-K commands" 10s
+keys ctrl-e
+wait "EXPORT 2"
+expect "to …p-flows/documents-24/out"
+expect "Export 2 files"
+# After a reopen, a folder change is one undo step like any edit.
+click 95 31
+wait "Export to folder"
+keys ctrl-u
+keys enter
+wait "exports go to /tmp/acidtrip-flows/documents-24"
+expect "● k.acid"
+keys ctrl-z
+wait "to …p-flows/documents-24/out"
+expect-not "● k.acid"
+keys ctrl-q
+expect-exit 0 5s

@@ -1,0 +1,76 @@
+# The Save / Export dialog around files that already exist. Export mode
+# writes a PNG copy and leaves the piece unsaved. Exporting over it asks;
+# "no" comes back to the dialog with the path kept, Esc leaves. Saving over
+# someone else's .ans asks too: "no" writes nothing, "yes" writes the piece
+# and keeps a .bak of the old file.
+size 120 40
+write-file /tmp/acidtrip-flows/documents-10/taken.ans "ORIGINAL"
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type MINE NOW
+keys esc
+wait idle
+keys alt-s
+wait "Save / Export"
+keys ctrl-e
+wait "Writes a copy for sharing"
+expect "Your document stays unsaved."
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-10/copy.png
+wait "PNG image"
+keys enter
+wait "exported /tmp/acidtrip-flows/documents-10/copy.png"
+expect "● untitled"
+expect-file /tmp/acidtrip-flows/documents-10/copy.png
+# Again: it exists now.
+keys alt-s
+wait "Save / Export"
+keys ctrl-e
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-10/copy.png
+keys enter
+wait "Export over it?"
+shot ask_export
+keys n
+wait idle
+expect-not "Export over it?"
+expect "Save / Export"
+expect "copy.png"
+keys esc
+wait idle
+expect-not "Save / Export"
+# Save mode over an existing file: no, then yes.
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-10/taken.ans
+keys enter
+wait "Save over it?"
+keys n
+wait idle
+expect "Save / Export"
+expect-file-contains /tmp/acidtrip-flows/documents-10/taken.ans "ORIGINAL"
+expect-no-file /tmp/acidtrip-flows/documents-10/taken.ans.bak
+keys enter
+wait "Save over it?"
+keys y
+wait "saved /tmp/acidtrip-flows/documents-10/taken.ans"
+expect-not "Save / Export"
+expect "taken.ans"
+expect-not "● "
+expect-file-contains /tmp/acidtrip-flows/documents-10/taken.ans "MINE NOW"
+expect-file-contains /tmp/acidtrip-flows/documents-10/taken.ans.bak "ORIGINAL"
+# Now it's this piece's file: Ctrl-S doesn't ask again.
+keys t
+keys down
+type MORE
+keys esc
+keys ctrl-s
+wait idle
+expect-not "Save over it?"
+expect-not "● taken.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-10/taken.ans "MORE"
+keys ctrl-q
+expect-exit 0 5s

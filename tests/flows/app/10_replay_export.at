@@ -1,0 +1,65 @@
+# Replay export: GIF and asciinema .cast land beside the saved piece, from a
+# paused and a playing replay. A piece with no edit log (.ans) gets the modem
+# reveal instead, which Esc stops, and drawing carries on.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 3 4 30 4
+wait idle
+drag 3 5 30 5
+wait idle
+keys ctrl-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/app-10/art.acid
+keys enter
+wait "saved"
+click-text "► replay"
+wait "REPLAY"
+click-text "↓ GIF"
+wait "wrote /tmp/acidtrip-flows/app-10/art-replay.gif"
+expect-file /tmp/acidtrip-flows/app-10/art-replay.gif
+keys space
+click-text "↓ .cast"
+wait "wrote /tmp/acidtrip-flows/app-10/art-replay.cast"
+expect-file-contains /tmp/acidtrip-flows/app-10/art-replay.cast "\"version\""
+shot exported
+# exporting didn't leave the replay or dirty the piece
+expect "REPLAY"
+expect-not "● art"
+keys esc
+wait "replay off"
+# the same art as .ans: no edit log in that format
+keys ctrl-k
+type save as
+wait "▸Save as"
+keys enter
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/app-10/art.ans
+keys enter
+wait "saved"
+expect-file /tmp/acidtrip-flows/app-10/art.ans
+restart /tmp/acidtrip-flows/app-10/art.ans
+wait "art.ans" 10s
+click-text "► replay"
+wait "no edit history"
+shot reveal
+expect-not "REPLAY"
+# Esc stops the reveal: the whole piece shows and the brush paints
+keys esc
+wait idle
+expect "████████████████████████████"
+drag 3 8 20 8
+wait idle
+expect "● art.ans"
+# now there is a log (this session's): replay works, export goes beside it
+click-text "► replay"
+wait "REPLAY"
+click-text "↓ .cast"
+wait "wrote /tmp/acidtrip-flows/app-10/art-replay.cast"
+keys esc
+wait idle
+expect-not "REPLAY"

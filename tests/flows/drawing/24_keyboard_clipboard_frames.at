@@ -1,0 +1,131 @@
+# Keyboard only on an 80x24 terminal (no sidebar): select by Space-Space,
+# copy, paste and carry the float with the arrows, the terminal grows and
+# shrinks while the float is carried, Tab switches the stamp mode, stamp on
+# frame 1 and frame 2 (the status bar says which frame is showing, since
+# the frame strip is hidden), undo on frame 2 only, a paste onto a hidden
+# layer warns; save as .acid and reopen with both frames
+size 80 24
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+type "HELLO"
+keys esc
+wait idle
+expect-cell 0 1 "H"
+keys v home
+keys space
+wait "anchor set"
+keys right right right right
+keys space
+wait "selected 5x1"
+keys ctrl-c
+wait "copied 5x1"
+# the float starts at the cursor and follows the arrows
+keys down down down
+keys ctrl-v
+# (the stamping hint is cut off at 80 columns)
+wait "click or"
+expect-cell 4 4 "H"
+keys right right
+wait idle
+expect-cell 6 4 "H"
+expect-cell 10 4 "O"
+expect-cell 4 4 " "
+# the terminal grows and shrinks under the float: it stays where it was
+size 100 30
+wait "TOOLS"
+wait idle
+expect-cell 6 4 "H"
+expect "click or"
+size 80 24
+wait idle
+expect-not "TOOLS"
+expect-cell 6 4 "H"
+keys tab
+wait "Select: opaque"
+keys space
+wait "stamped"
+keys esc
+wait "done stamping"
+expect-cell 6 4 "H"
+expect-not "F1/"
+# a second frame: the status bar starts showing which frame is up
+keys alt-f
+wait "frame 2/2"
+expect "F2/2"
+keys down down down down down
+keys ctrl-v
+wait "click or"
+keys space
+wait "stamped"
+keys esc
+wait "done stamping"
+expect-cell 6 9 "H"
+expect-cell 10 9 "O"
+# back on frame 1 the second stamp is not there
+keys alt-left
+wait "F1/2"
+expect-cell 6 9 " "
+expect-cell 6 4 "H"
+keys alt-right
+wait "F2/2"
+expect-cell 6 9 "H"
+# undo on frame 2 takes back its stamp and leaves frame 1 alone
+keys ctrl-z
+wait "undo: Stamp"
+expect-cell 6 9 " "
+expect "F2/2"
+keys alt-left
+wait "F1/2"
+expect-cell 6 4 "H"
+keys alt-right
+wait "F2/2"
+# a paste onto a hidden layer warns and stamps nothing
+keys alt-shift-n
+wait "L2/2"
+keys ctrl-l
+wait "M merge down"
+keys v
+wait idle
+keys esc
+wait idle
+keys up up
+keys ctrl-v
+wait idle
+keys space
+wait "Layer 2 is hidden"
+keys esc
+wait idle
+keys ctrl-l
+wait "M merge down"
+keys v
+wait idle
+keys esc
+wait idle
+expect-cell 6 7 " "
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-24/frames.acid"
+keys enter
+# (an 80-column status bar shortens the long path to its name, and the
+# read-outs leave no room for all of that)
+wait "saved …/frames"
+expect-file /tmp/acidtrip-flows/drawing-24/frames.acid
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-24/frames.acid
+wait "Welcome" 10s
+keys esc
+wait idle
+# the .acid file reopens on the frame and layer it was saved on
+expect "F2/2"
+expect "L2/2"
+keys alt-left
+wait "F1/2"
+expect-cell 0 1 "H"
+expect-cell 6 4 "H"
+expect-cell 10 4 "O"
+expect-cell 6 9 " "

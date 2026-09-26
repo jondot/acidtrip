@@ -1,0 +1,5 @@
+---
+source: crates/acidtrip-io/tests/format_exports.rs
+expression: "esc(Format::Mirc)"
+---
+"\u{3}04,02A\u{3}08,01█\u{3}09,05▀\u{3}00,01<&\u{3}15,01 \u{f}\n\u{3}15,01 \u{3}10,12░\u{3}15,01    \u{f}\n"

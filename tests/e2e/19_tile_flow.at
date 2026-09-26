@@ -1,0 +1,27 @@
+# Tile drawing flow: erase → pick tile → paint; right-drag erases; shift+arrows draw
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# paint a row of ▓ with the mouse (pick glyph 3 from the sidebar bar)
+click 100 21
+drag 2 3 30 3
+# switch to the eraser, erase part of it
+keys e
+drag 10 3 15 3
+# click a tile in the bar: must come back to the brush and paint
+click 102 21
+wait "brush '█'"
+drag 2 5 30 5
+# right-drag erases without switching tools
+mouse down right 20 5
+mouse drag right 25 5
+mouse up right 25 5
+# keyboard pen: shift+arrows draw a trail with the current tile
+keys 4
+keys shift-down shift-down shift-down shift-right shift-right shift-right
+wait idle
+shot tile_flow
+expect "▓▓▓▓▓▓▓▓"
+expect "Brush"

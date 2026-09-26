@@ -1,0 +1,133 @@
+# One long session undone and redone step by step across tools, layers and
+# frames: each undo names its step, shows the frame it touches, and after an
+# undone merge the merged layer is the active one again (drawing goes back
+# onto it, not onto the layer below)
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# 1 brush, 2 text, 3 add layer, 4 rect on it, 5 add layer, 6 fill line, 7 merge
+keys b
+drag 2 3 10 3
+wait idle
+keys t
+click 2 5
+type HI
+keys esc
+wait idle
+keys alt-shift-n
+wait idle
+keys r
+drag 20 3 30 7
+wait idle
+keys alt-shift-n
+wait idle
+keys l
+drag 40 3 50 3
+wait idle
+expect "L3/3"
+keys ctrl-l
+wait "M merge down"
+keys m
+wait idle
+keys esc
+wait idle
+expect "L2/2"
+# 8 a second frame with its own art
+keys alt-f
+wait idle
+expect "2/2"
+keys b
+drag 2 10 10 10
+wait idle
+expect-cell 5 10 "█"
+# undo back through all of it
+keys ctrl-z
+wait "undo: Brush"
+expect-cell 5 10 " "
+keys ctrl-z
+wait "undo: Add frame"
+expect-not "FRAMES 2/2"
+expect-cell 5 3 "█"
+keys ctrl-z
+wait "undo: Merge down"
+expect "L3/3"
+expect-cell 45 3 "█"
+# drawing now lands on Layer 3 again: hiding it hides the new stroke
+keys b
+drag 60 3 62 3
+wait idle
+keys ctrl-l
+wait "M merge down"
+expect "Layer 3"
+keys v
+wait "○ hidden"
+keys esc
+wait idle
+expect-cell 61 3 " "
+expect-cell 45 3 " "
+expect-cell 20 4 "█"
+keys ctrl-z
+wait "undo: Layer properties"
+expect-cell 61 3 "█"
+keys ctrl-z
+wait "undo: Brush"
+expect-cell 61 3 " "
+# the merge's redo was dropped by the new stroke; keep undoing
+keys ctrl-z
+wait "undo: Line"
+expect-cell 45 3 " "
+keys ctrl-z
+wait "undo: Add layer"
+expect "L2/2"
+keys ctrl-z
+wait "undo: Rect"
+expect-cell 20 4 " "
+keys ctrl-z
+wait "undo: Add layer"
+expect "L1/1"
+keys ctrl-z
+wait "undo: Type"
+expect-cell 2 5 " "
+keys ctrl-z
+wait "undo: Brush"
+expect-cell 5 3 " "
+keys ctrl-z
+wait "nothing to undo"
+# and all the way forward again
+keys ctrl-y ctrl-y ctrl-y ctrl-y ctrl-y ctrl-y
+wait idle
+keys ctrl-y
+wait "redo: Brush"
+expect "L3/3"
+expect-cell 5 3 "█"
+expect-cell 2 5 "H"
+expect-cell 20 4 "█"
+expect-cell 45 3 "█"
+expect-cell 61 3 "█"
+keys ctrl-y
+wait "redo: Layer properties"
+expect-cell 45 3 " "
+keys ctrl-y
+wait "nothing to redo"
+keys ctrl-z
+wait "undo: Layer properties"
+expect-cell 45 3 "█"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-21/undo.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-21/undo.ans"
+expect-file /tmp/acidtrip-flows/drawing-21/undo.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-21/undo.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 5 3 "█"
+expect-cell 2 5 "H"
+expect-cell 20 3 "█"
+expect-cell 61 3 "█"

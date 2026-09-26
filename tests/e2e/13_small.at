@@ -1,0 +1,11 @@
+# Minimum terminal size renders without the sidebar
+size 80 24
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+shot small
+drag 2 2 20 5
+keys ctrl-k
+wait "Commands"
+shot small_palette

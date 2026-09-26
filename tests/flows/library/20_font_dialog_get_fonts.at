@@ -1,0 +1,49 @@
+# Getting the TheDraw fonts from the Font dialog: with only the bundled
+# FIGlet fonts it offers a Get TheDraw fonts button. A click (offline here, so
+# no network) says why nothing came down and reopens the dialog; Ctrl-G does
+# the same from the keyboard. Once a TheDraw font is installed the button is
+# gone. The palette files the command under Tools.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-20/home
+env HOME /tmp/acidtrip-flows/library-20/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys f
+wait "Font text"
+wait "Get TheDraw fonts"
+expect "90s ANSI scene"
+shot offer
+click-text "Get TheDraw fonts"
+wait "offline: no downloads"
+wait "Font text"
+expect "Get TheDraw fonts"
+keys ctrl-g
+wait "offline: no downloads"
+wait "Font text"
+keys esc
+wait idle
+expect-not "Font text"
+# The palette entry sits with the tools, not the AI.
+keys ctrl-k
+wait "Commands"
+type download more thedraw
+wait "Download more TheDraw fonts"
+expect "Tools"
+keys esc
+wait idle
+keys ctrl-q
+expect-exit 0 10s
+spawn fonts install crates/acidtrip-io/tests/fixtures/tdf/dream.tdf
+wait "installed Dream"
+expect-exit 0 10s
+spawn
+wait "Brush" 10s
+keys esc
+wait idle
+keys f
+wait "Font text"
+wait "Dream"
+expect-not "Get TheDraw fonts"
+shot installed

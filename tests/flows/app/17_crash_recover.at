@@ -1,0 +1,66 @@
+# A crash with unsaved edits on a saved file: the next start offers the
+# work back. "Later" keeps the file as saved and the offer for next time;
+# discarding drops it; a second crash offers again and restoring brings the
+# edits back onto the named file, dirty, so a save writes them. A clean quit
+# leaves nothing to recover.
+home-file config/config.toml "autosave_seconds = 1\n"
+size 120 40
+spawn /tmp/acidtrip-flows/app-17/piece.ans
+wait "piece.ans" 10s
+drag 3 3 30 3
+wait idle
+# a new file named on the command line saves straight to it
+keys ctrl-s
+wait "saved"
+expect-file /tmp/acidtrip-flows/app-17/piece.ans
+# an unsaved second stroke, autosaved, then the process dies
+drag 3 6 30 6
+wait idle
+expect "● piece.ans"
+wait-file ~/state/recovery/*.json 10s
+kill
+restart /tmp/acidtrip-flows/app-17/piece.ans
+wait "Recover unsaved work" 10s
+expect "piece.ans"
+shot recover_offer
+# Esc: later. The file as saved, only the first stroke
+keys esc
+wait idle
+expect-not "Recover unsaved work"
+expect "   ████████████████████████████"
+expect-not "● piece.ans"
+shot later
+keys ctrl-q
+expect-exit 0 5s
+# still offered next time; D discards it
+restart /tmp/acidtrip-flows/app-17/piece.ans
+wait "Recover unsaved work" 10s
+keys d
+wait "discarded recovery files"
+keys ctrl-q
+expect-exit 0 5s
+restart /tmp/acidtrip-flows/app-17/piece.ans
+wait "piece.ans" 10s
+expect-not "Recover unsaved work"
+# a second crash, and this time restore by clicking the button
+drag 3 8 20 8
+wait idle
+wait-file ~/state/recovery/*.json 10s
+kill
+restart /tmp/acidtrip-flows/app-17/piece.ans
+wait "Recover unsaved work" 10s
+click-text "restore"
+wait "recovered"
+shot restored
+expect "● piece.ans"
+expect "   ██████████████████ "
+keys ctrl-s
+wait "saved"
+keys ctrl-q
+expect-exit 0 5s
+# clean: nothing to recover, the saved file has both strokes
+restart /tmp/acidtrip-flows/app-17/piece.ans
+wait "piece.ans" 10s
+expect-not "Recover unsaved work"
+expect "   ██████████████████ "
+expect "   ████████████████████████████"

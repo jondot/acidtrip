@@ -1,0 +1,62 @@
+# Work on a file opened from the command line, crash, and restart on the
+# same file: the recovery dialog names it. "Later" (Esc) opens the file as
+# it is on disk; the next start restores the edit and a plain Ctrl-S writes
+# it back to the original .ans (with a .bak of the old one).
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-06/home
+write-file /tmp/acidtrip-flows/documents-06/home/config/config.toml "autosave_seconds = 1\n"
+spawn
+wait "Ctrl-K commands" 10s
+keys t
+type FIRST DRAFT
+keys esc
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-06/piece.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-06/piece.ans"
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-flows/documents-06/piece.ans
+wait "FIRST DRAFT" 10s
+keys t
+keys down
+type SECOND DRAFT
+keys esc
+wait "● piece.ans"
+wait 1500ms
+kill
+# Later: the dialog goes, the file is as saved.
+spawn /tmp/acidtrip-flows/documents-06/piece.ans
+wait "Recover unsaved work" 10s
+expect "/tmp/acidtrip-flows/documents-06/piece.ans"
+keys esc
+wait idle
+expect-not "Recover unsaved work"
+expect "FIRST DRAFT"
+expect-not "SECOND DRAFT"
+expect-not "● piece.ans"
+keys ctrl-q
+expect-exit 0 5s
+# Restore: the edit is back, dirty, and Ctrl-S saves over the original.
+spawn
+wait "Recover unsaved work" 10s
+keys enter
+wait "recovered — save it to keep it"
+expect "SECOND DRAFT"
+expect "● piece.ans"
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-06/piece.ans"
+expect-not "Save / Export"
+expect-not "● piece.ans"
+keys ctrl-q
+expect-exit 0 5s
+expect-file-contains /tmp/acidtrip-flows/documents-06/piece.ans "SECOND DRAFT"
+expect-file-contains /tmp/acidtrip-flows/documents-06/piece.ans.bak "FIRST DRAFT"
+# Saved means not offered again.
+spawn /tmp/acidtrip-flows/documents-06/piece.ans
+wait "SECOND DRAFT" 10s
+expect-not "Recover unsaved work"
+keys ctrl-q
+expect-exit 0 5s

@@ -1,0 +1,102 @@
+# The studio from the command palette, keyboard only: a non-art file and a
+# missing path are refused with clear errors, a real file opens straight in
+# the cutter; cut H and I, save, save the logo as a stencil with Ctrl-S, go to
+# My fonts, delete a letter and undo it, take the font to the Font tool; a
+# word with letters it lacks warns, one with none of them can't be stamped;
+# then the logo stencil from the studio stamps from N.
+size 120 40
+env HOME /tmp/acidtrip-flows/library-08/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+type harvest
+wait idle
+keys enter
+wait "Sourcing studio"
+wait idle
+# Not art.
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/README.md
+keys enter
+wait "README.md: no art files in it"
+# Not there: the path is named once.
+keys ctrl-u
+type /nonexistent/x.ans
+keys enter
+wait "/nonexistent/x.ans: no such file"
+expect-not "x.ans: /nonexistent"
+# A real file: straight to cutting.
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/DRM-TUTO.ANS
+keys enter
+wait "Cutting" 10s
+wait idle
+keys b
+drag 8 9 14 18
+wait "SELECTED"
+type H
+wait "LETTERS 1"
+drag 40 9 46 18
+wait "SELECTED"
+type I
+wait "LETTERS 2"
+keys enter
+wait "now has 4 letters"
+# The logo below as a stencil.
+drag 3 26 80 34
+wait "SELECTED"
+keys ctrl-s
+wait "stencil “Dr. Dream logo” saved"
+# My fonts: the font, its letters, a sample.
+keys ctrl-f
+wait "MY FONTS  1"
+wait idle
+expect "Sample › HI"
+shot my_fonts
+keys x
+wait "deleted “H”"
+expect "3 of 62 letters"
+keys u
+wait idle
+expect "4 of 62 letters"
+# To the Font tool on it.
+keys enter
+wait "Font text"
+wait idle
+expect "Dr. Dream logo"
+keys ctrl-u
+type HIX
+wait "no X in this font"
+shot missing_x
+keys ctrl-u
+type XYZ
+wait idle
+keys enter
+wait "nothing to stamp — this font has no X, Y, Z"
+expect "Font text"
+keys ctrl-u
+type hi
+wait idle
+expect-not "no h"
+keys enter
+wait "click or Space to stamp"
+keys space
+wait "stamped"
+keys esc
+wait "done stamping"
+# The studio's stencil.
+keys n
+wait "Stencils"
+type dream
+wait idle
+expect "▸Dr. Dream logo"
+keys enter
+wait "click or Space to stamp"
+click 5 15
+wait "stamped"
+keys esc
+wait "done stamping"
+shot stamped

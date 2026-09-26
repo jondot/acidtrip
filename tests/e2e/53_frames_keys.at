@@ -1,0 +1,48 @@
+# Animation frames from the keyboard and the command palette
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# Alt-F adds a frame and opens the panel
+keys alt-f
+wait "FRAMES 2/2"
+# Alt-Shift-F duplicates the frame shown
+keys alt-shift-f
+wait "FRAMES 3/3"
+# > and < step through the frames, wrapping around
+keys >
+wait "FRAMES 1/3"
+keys <
+wait "FRAMES 3/3"
+keys alt-left
+wait "FRAMES 2/3"
+keys alt-right
+wait "FRAMES 3/3"
+# the palette knows every frame command
+keys ctrl-k
+wait "Command"
+type move frame earlier
+keys enter
+wait "FRAMES 2/3"
+keys ctrl-k
+type faster
+keys enter
+wait "9 fps"
+# Alt-Shift-P plays and stops
+keys alt-shift-p
+wait "■ stop"
+keys alt-shift-p
+wait "▶ play"
+# each frame op is one undo step
+keys ctrl-z
+wait "undo: Frame rate"
+keys ctrl-z
+wait "undo: Move frame"
+keys ctrl-z
+wait "undo: Duplicate frame"
+wait "FRAMES 2/2"
+keys ctrl-z
+wait "undo: Add frame"
+wait "FRAMES 1/1"
+shot frames_keys_undone

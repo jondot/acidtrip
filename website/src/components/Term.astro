@@ -1,0 +1,9 @@
+---
+// A blue terminal box around a <pre>. With `copy`, a copy button copies that text.
+interface Props { copy?: string }
+const { copy } = Astro.props;
+---
+<div class="term" data-copy={copy}>
+  {copy && <button class="copy" data-tip="Copy the command">copy</button>}
+  <slot />
+</div>

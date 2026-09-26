@@ -1,0 +1,114 @@
+# Mirror modes (m cycles off ↔ ↕ ✚, the sidebar chips switch them too),
+# erasing three ways (Erase tool, right-drag, Ctrl/Alt-drag for a one-button
+# mouse), a terminal resize in the middle of a brush stroke, undo, save, reopen
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys b m
+wait "mirror: left↔right"
+drag 2 3 6 3
+wait idle
+expect-cell 2 3 "█"
+expect-cell 6 3 "█"
+expect-cell 73 3 "█"
+expect-cell 77 3 "█"
+expect-cell 72 3 " "
+keys m
+wait "mirror: top↕bottom"
+drag 2 6 2 8
+wait idle
+expect-cell 2 18 "█"
+expect-cell 2 20 "█"
+expect-cell 77 18 " "
+keys m
+wait "mirror: both"
+click 10 10
+wait idle
+expect-cell 69 10 "█"
+expect-cell 10 16 "█"
+expect-cell 69 16 "█"
+# the "off" chip in the Brush panel, by mouse
+click 102 8
+wait "mirror: off"
+click 40 12
+wait idle
+expect-cell 39 12 " "
+expect-cell 40 14 " "
+# one mirrored stroke is one undo step
+keys ctrl-z
+wait "undo: Brush"
+keys ctrl-z
+wait "undo: Brush"
+expect-cell 69 16 " "
+expect-cell 10 10 " "
+expect-cell 2 18 "█"
+keys ctrl-y
+wait "redo: Brush"
+expect-cell 69 16 "█"
+# erase: the tool, then a right-drag, then Ctrl- and Alt-drag
+keys e
+wait "Erase tool"
+drag 2 3 4 3
+wait idle
+expect-cell 3 3 " "
+expect-cell 5 3 "█"
+mouse down right 73 3
+mouse drag right 77 3
+mouse up right 77 3
+wait idle
+expect-cell 75 3 " "
+keys b
+wait "Brush tool"
+mouse down left 2 6 ctrl
+mouse drag left 2 7 ctrl
+mouse up left 2 7 ctrl
+wait idle
+expect-cell 2 6 " "
+expect-cell 2 8 "█"
+mouse down left 10 16 alt
+mouse up left 10 16 alt
+wait idle
+expect-cell 10 16 " "
+expect-cell 69 16 "█"
+# a stroke across a terminal resize: continues, one undo step
+mouse down left 10 22
+mouse drag left 20 22
+wait idle
+size 100 30
+wait idle
+mouse drag left 30 23
+mouse up left 30 23
+wait idle
+expect-cell 15 22 "█"
+expect-cell 25 23 "█"
+keys ctrl-z
+wait "undo: Brush"
+expect-cell 15 22 " "
+expect-cell 25 23 " "
+keys ctrl-y
+wait "redo: Brush"
+expect-cell 15 22 "█"
+size 120 40
+wait "TOOLS"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-18/mirror.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-18/mirror.ans"
+expect-file /tmp/acidtrip-flows/drawing-18/mirror.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-18/mirror.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 5 3 "█"
+expect-cell 3 3 " "
+expect-cell 75 3 " "
+expect-cell 2 8 "█"
+expect-cell 69 16 "█"
+expect-cell 10 16 " "
+expect-cell 25 23 "█"

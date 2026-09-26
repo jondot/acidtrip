@@ -1,0 +1,64 @@
+# Studio cutter, free-form: box, shift-add and right-drag take-away shape a
+# selection; typing names it; the wand takes another; a letter chip reopens a
+# letter to rename, delete and undo; Enter saves the font.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-k
+wait "Commands"
+type harvest
+keys enter
+wait "Sourcing studio"
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/DRM-TUTO.ANS
+keys enter
+wait "Cutting" 10s
+wait idle
+# Box: a new selection, then shift adds a second box beside it.
+keys b
+drag 8 9 14 18
+wait "SELECTED"
+mouse down left 15 9 shift
+mouse drag left 21 18 shift
+mouse up left 21 18 shift
+wait idle
+expect "SELECTED  14×"
+shot boxed
+# The right button takes the right half away again.
+drag 15 9 21 18 right
+wait idle
+expect-not "SELECTED  14×"
+shot taken_away
+keys ctrl-z
+wait "SELECTED  14×"
+type A
+wait "LETTERS 1"
+# Another letter with one wand click.
+keys w
+click 40 13
+wait "now type the letter"
+type B
+wait "LETTERS 2"
+wait idle
+shot two
+# Click the A chip to edit it: rename it Z, reopen and delete it, undo the delete.
+click 88 7
+wait "editing “A”"
+shot editing
+type Z
+wait "Z 14×"
+click 88 7
+wait "editing “Z”"
+keys delete
+wait "LETTERS 1"
+keys ctrl-z
+wait "LETTERS 2"
+keys esc
+wait idle
+expect "Z 14×"
+shot renamed
+keys enter
+wait "now has" 5s
+wait idle
+shot saved

@@ -1,0 +1,17 @@
+---
+// A screenshot from the real editor (public/shots/NAME.png, made by
+// scripts/shots.sh), framed on the canvas; a click enlarges it. Renders
+// nothing when the shot doesn't exist, so a dropped shot drops cleanly.
+import { url } from '../lib/site';
+import { pngSize } from '../lib/rehype-acid.mjs';
+interface Props { name: string; alt: string; eager?: boolean }
+const { name, alt, eager = false } = Astro.props;
+const size = pngSize(`shots/${name}.png`);
+---
+{size && (
+  <figure>
+    <img class="shot" src={url(`/shots/${name}.png`)} width={size[0]} height={size[1]} alt={alt}
+         loading={eager ? 'eager' : 'lazy'} decoding="async" data-zoom data-tip="Click to enlarge" />
+    {Astro.slots.has('default') && <figcaption><slot /></figcaption>}
+  </figure>
+)}

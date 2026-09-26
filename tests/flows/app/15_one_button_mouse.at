@@ -1,0 +1,73 @@
+# One mouse button does everything: past the welcome, pick a tool, a color
+# and a character, draw, undo, open and run a command from the palette,
+# answer dialogs, and quit, without a single key except a file name.
+size 120 40
+spawn
+wait "Welcome" 10s
+click 50 20
+wait idle
+expect-not "Welcome"
+# rectangle tool, filled, the ▓ character, light red: all by click
+click-text "□"
+wait "RECT"
+click-text "filled"
+wait idle
+click-text "▒ ▓ █"
+wait idle
+click 106 16
+wait idle
+shot picked
+drag 5 5 25 10
+wait idle
+shot rect
+expect "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+click-text "acidtrip"
+wait "Commands"
+shot palette
+# the wheel moves the selection; a click on a row runs it: Undo
+mouse scroll down 60 20
+wait idle
+click-text "Undo  ·Edit"
+wait "undo: Rect"
+expect-not "Commands"
+expect-not "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+click-text "acidtrip"
+wait "Commands"
+click-text "Redo  ·Edit"
+wait "redo: Rect"
+expect "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+# New document by click: the form's ok, then the unsaved-work question's no
+click-text "acidtrip"
+wait "Commands"
+click-text "New document…"
+wait "New document"
+click-text "⏎  ok"
+wait "N/Esc  no"
+shot confirm
+click-text "N/Esc  no"
+wait idle
+expect "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+# Save: the name is the only thing typed; the dialog's ok is clicked
+click-text "acidtrip"
+wait "Commands"
+click-text "Save  ·File"
+wait "Save as"
+shot save
+# the path field by click, the name typed, the save button clicked
+click-text "Save as"
+keys ctrl-u
+type /tmp/acidtrip-flows/app-15/mouse.ans
+wait idle
+click-text "⏎  save"
+wait "saved"
+expect-file /tmp/acidtrip-flows/app-15/mouse.ans
+expect "mouse.ans"
+# a big tool from the tools strip: its panel takes over the sidebar
+click-text "◐"
+wait "FILTERS"
+shot filters_tool
+# quit from the palette: saved, so no question
+click-text "acidtrip"
+wait "Commands"
+click-text "Quit  ·File"
+expect-exit 0 5s

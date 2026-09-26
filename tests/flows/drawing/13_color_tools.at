@@ -1,0 +1,116 @@
+# Color tools on one piece: shade steps a glyph denser/lighter (right-click
+# and the one-button chip), colorize keeps glyphs, the eyedropper picks and
+# hands back the tool, recolor swaps one color everywhere, filters preview
+# then Esc leaves the art alone, mirror paints both sides; undo each
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# a filled red box
+click 106 15
+wait "red"
+keys r
+wait "RECT"
+click 108 7
+drag 5 3 20 8
+wait idle
+expect-cell 10 5 "█" fg=4
+# a white ░ trail
+click 115 16
+wait "white"
+keys b
+keys 1
+wait idle
+drag 5 12 15 12
+wait idle
+expect-cell 8 12 "░" fg=15
+# shade: click is denser, right-click lighter
+keys s
+wait "Shade tool"
+click 8 12
+wait idle
+expect-cell 8 12 "▒"
+click 8 12
+wait idle
+expect-cell 8 12 "▓"
+click 8 12 right
+wait idle
+expect-cell 8 12 "▒"
+# one button: the "▼ lighter" chip makes a plain click lighten
+click 108 7
+wait idle
+click 8 12
+wait idle
+expect-cell 8 12 "░"
+# colorize in green: glyphs stay, ink changes
+keys c
+wait "Colorize"
+click 100 15
+wait "green"
+drag 5 12 10 12
+wait idle
+expect-cell 5 12 "░" fg=2
+expect-cell 8 12 "░" fg=2
+expect-cell 12 12 "░" fg=15
+# eyedropper: pick the red, the tool comes back
+keys i
+click 10 5
+wait "picked"
+expect "Colorize"
+expect-cell 11 12 "░" fg=15
+drag 11 12 12 12
+wait idle
+expect-cell 11 12 "░" fg=4
+shot picked
+# recolor: red -> blue, everywhere on the layer
+keys shift-c
+wait "Recolor"
+click 10 5
+wait idle
+click 97 17
+wait "blue"
+shot recolor
+click 95 12
+wait idle
+shot recolored
+expect "97 cells changed"
+expect-cell 10 5 "█" fg=1
+expect-cell 11 12 "░" fg=1
+expect-cell 5 12 "░" fg=2
+keys ctrl-z
+wait "undo: Recolor"
+expect-cell 10 5 "█" fg=4
+keys ctrl-y
+wait "redo: Recolor"
+# filters: Tab previews presets, Esc drops the preview, Enter applies
+keys shift-f
+wait "Filters"
+keys tab
+wait "Vivid"
+keys esc
+wait "filter preview off"
+expect "Original 1/43"
+keys enter
+wait "nothing to change"
+keys tab tab tab tab
+wait "Dramatic"
+keys enter
+wait "Filter Dramatic:"
+keys ctrl-z
+wait "undo: Filter Dramatic"
+expect-cell 10 5 "█" fg=1
+# mirror left-right: one stroke paints both sides
+keys b
+wait "BRUSH"
+keys m
+wait "mirror: left↔right"
+drag 2 20 6 20
+wait idle
+expect-cell 2 20 "█" fg=1
+expect-cell 77 20 "█" fg=1
+expect-cell 73 20 "█" fg=1
+keys ctrl-z
+wait "undo: Brush"
+expect-cell 77 20 " "
+shot end

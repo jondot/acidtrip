@@ -1,0 +1,54 @@
+# Replay: draw three strokes, then watch them come back. The sidebar's
+# "► replay" button opens the replay panel; the scrubber is clicked and
+# dragged with the left button; leaving shows the live piece again.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 2 3 30 3
+drag 2 5 30 5
+drag 2 7 30 7
+# ... and one that gets undone.
+drag 2 9 30 9
+keys ctrl-z
+wait idle
+shot drawn
+click 114 1
+wait "REPLAY"
+wait "step"
+shot started
+# Drag the scrubber back to the start: nothing drawn yet.
+mouse down left 110 6
+mouse drag left 100 6
+mouse drag left 96 6
+mouse up left 96 6
+wait idle
+expect "step 0/"
+expect "blank canvas"
+shot scrubbed_start
+# A click halfway along it: some strokes are back.
+click 107 6
+wait idle
+shot scrubbed_middle
+# Step forward with the keys and hide the undone stroke.
+keys end
+wait idle
+expect "undo brush"
+click 104 9
+wait "undone work is hidden"
+expect-not "undo brush"
+shot hide_undone
+# Speed chips.
+click 99 8
+wait "replay speed 1×"
+# Play from the start; clicking the canvas pauses.
+keys home
+click 93 6
+click 60 20
+wait idle
+# Esc goes back to drawing; the live piece is untouched.
+keys esc
+wait "back to the live piece"
+expect-not "REPLAY"
+shot live

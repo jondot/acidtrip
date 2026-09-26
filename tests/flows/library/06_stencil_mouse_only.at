@@ -1,0 +1,71 @@
+# One mouse button (the stencil's name is the only thing typed): paint a bar,
+# select it with the Select tool, save it with the SELECT panel's ♣, pick it
+# in the Stencil tool's chooser by clicking it twice, stamp it with clicks,
+# finish by picking a tool, then reopen the chooser and delete it with its
+# button, and close it with its button.
+size 120 40
+env HOME /tmp/acidtrip-flows/library-06/home
+spawn
+wait "Welcome" 10s
+click 60 30
+wait idle
+expect-not "╭ Welcome"
+# Brush, one stroke.
+click 99 2
+wait "BRUSH"
+drag 2 4 12 4
+wait idle
+# Select tool, box over the stroke, ♣ in its panel.
+click 93 2
+wait "SELECT"
+drag 1 4 13 4
+wait "selected 13x1"
+click 115 8
+wait "Stencil name"
+type bar one
+keys enter
+wait "saved stencil \"bar one\""
+wait idle
+# The Stencil tool (♣ in TOOLS) opens the chooser.
+click 102 3
+wait "Stencils"
+wait idle
+shot chooser
+expect "bar one"
+expect "⏎  stamp"
+# Built-ins can't be deleted: the button is there but does nothing to them.
+click 16 34
+wait idle
+expect "Single box"
+# One click picks ours, a second click on it takes it to stamp.
+click 8 19
+wait idle
+expect "source: drawn"
+click 8 19
+wait "click or Space to stamp"
+click 30 12
+wait "stamped"
+click 30 16
+wait idle
+# Picking a tool puts it down; the next click draws with the brush.
+click 99 2
+wait "BRUSH"
+wait idle
+shot stamped
+expect "Brush tool"
+expect-not "click or Space to stamp"
+# Back to the chooser, ours again, delete it with its button.
+click 102 3
+wait "Stencils"
+wait idle
+click 8 19
+wait "source: drawn"
+click 16 34
+wait "deleted stencil bar one"
+wait idle
+expect-not "▸bar one"
+shot deleted
+# Its close button.
+click 29 34
+wait idle
+expect-not "╭ Stencils"

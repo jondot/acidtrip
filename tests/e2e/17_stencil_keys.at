@@ -1,0 +1,19 @@
+# Stencil placement: mouse click, then keyboard (arrows + Space/Enter)
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys n
+wait "Stencils"
+type double box
+keys enter
+wait "click or Space to stamp"
+click 5 3
+keys right right right right right right right right right right right right right right right right right right right right
+keys space
+keys down down down down down down down
+keys enter
+keys esc
+wait idle
+expect "done stamping"
+shot stencils_placed

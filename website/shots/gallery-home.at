@@ -1,0 +1,8 @@
+# The gallery home.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys ctrl-f
+wait idle
+shot gallery-home

@@ -1,0 +1,5 @@
+---
+source: crates/acidtrip-io/tests/format_exports.rs
+expression: "esc(Format::Pcb)"
+---
+"@X1CA@X0E�@X4A�@X0F<&\r\n@X07 @X93�\u{1a}"

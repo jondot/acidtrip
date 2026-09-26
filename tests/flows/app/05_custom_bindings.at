@@ -1,0 +1,73 @@
+# Custom bindings in config.toml: a command on a plain letter works as a
+# tool key and never eats that letter while typing; a command on a key the
+# tools use wins; mistakes are reported at start (all of them counted), and
+# Reload settings applies an edited file without a restart.
+home-file config/config.toml "[keymap.bindings]\nhelp = [\"h\"]\nsave_as = [\"tab\"]\nbogus_action = [\"x\"]\nundo = [\"ctrl-z\", \"hyper-banana\"]\n"
+size 120 40
+spawn
+wait "80x25" 10s
+# both mistakes are reported, and it still starts
+wait "unknown action \"bogus_action\" (+1 more)"
+shot start_warning
+# h is now Help (it was the pixel tool)
+keys h
+wait "Help"
+keys esc
+wait idle
+expect " Brush "
+# Tab is now Save as (it was "cycle tool option")
+keys tab
+wait "Save as"
+keys esc
+wait idle
+expect-not "Save as"
+# the valid half of a partly bad list still works: Ctrl-Z undoes
+drag 3 4 20 4
+wait idle
+expect "██████████████████"
+keys ctrl-z
+wait idle
+expect-not "██████████████████"
+# in the text tool, h types an h
+keys t
+wait " TYPE "
+click 5 8
+type hhh
+wait idle
+expect "hhh"
+expect-not "Help ─"
+keys esc
+wait idle
+keys ctrl-z
+wait idle
+# the palette shows the custom key
+keys ctrl-k
+type help & keys
+wait "▸Help & keys"
+shot palette_custom
+keys esc
+wait idle
+# edit the file (a clean one) and reload: h is the pixel tool again
+home-file config/config.toml "[keymap]\npreset = \"modern\"\n"
+keys ctrl-k
+type reload
+wait "▸Reload settings"
+keys enter
+wait "settings reloaded"
+keys b
+wait " Brush "
+keys h
+wait idle
+expect-not "Help ─"
+expect " Pixel"
+# a broken file on reload: an error, and the keys in use stay
+home-file config/config.toml "[keymap\npreset = "
+keys ctrl-k
+type reload
+wait "▸Reload settings"
+keys enter
+wait "config.toml error at line 1"
+expect "settings unchanged"
+shot reload_error
+keys b
+wait " Brush "

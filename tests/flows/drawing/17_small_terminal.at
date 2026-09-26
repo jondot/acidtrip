@@ -1,0 +1,91 @@
+# An 80x24 terminal: the sidebar starts hidden (Ctrl-B squeezes it in beside
+# a narrower canvas, Ctrl-B again hides it and the whole canvas shows from
+# its left edge again), the canvas scrolls to the cursor at
+# the bottom row and corner, warnings are shown whole in the narrow status
+# bar, dialogs fit; then the terminal grows and the sidebar comes back
+size 80 24
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-not "TOOLS"
+# keyboard to the last row: the view follows
+keys down down down down down down down down down down down down down down down down down down down down down down down down
+wait idle
+expect "0,24"
+keys 4
+wait idle
+keys right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right right
+wait idle
+keys 4
+wait idle
+expect-cell 0 22 "█" fg=15
+expect "79,24"
+keys up up up up up up up up up up up up up up up up up up up up up up up up
+wait idle
+expect "79,0"
+keys 4
+wait idle
+expect-cell 79 1 "█"
+keys ctrl-b
+wait "TOOLS"
+keys ctrl-b
+wait idle
+expect-not "TOOLS"
+expect-cell 79 1 "█"
+# draw with the mouse at the top, select it, block menu fits
+drag 5 5 20 5
+wait idle
+expect-cell 12 5 "█" fg=15
+keys v
+drag 3 4 22 6
+wait "selected 20x3"
+keys enter
+wait "Block 20x3"
+expect "Save selection as stencil"
+keys o
+wait idle
+expect-cell 3 4 "┌"
+expect-cell 22 6 "┘"
+# a locked layer: the warning fits in 80 columns
+keys ctrl-l
+wait "M merge down"
+keys l
+wait "■ locked"
+keys esc
+wait idle
+keys b
+drag 5 10 9 10
+wait "Background is locked: unlock it in LAYERS (≡ panel) to draw on it"
+expect-cell 7 10 " "
+expect-not "80x25"
+keys ctrl-z
+wait "undo: Layer properties"
+expect "80x25"
+# grow the terminal: the sidebar is back, the art is where it was
+size 120 40
+wait "TOOLS"
+expect-cell 12 5 "█" fg=15
+expect-cell 3 4 "┌"
+keys ctrl-b
+wait idle
+expect-not "TOOLS"
+keys ctrl-b
+wait "TOOLS"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-17/small.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-17/small.ans"
+expect-file /tmp/acidtrip-flows/drawing-17/small.ans
+keys ctrl-q
+expect-exit
+size 80 24
+spawn /tmp/acidtrip-flows/drawing-17/small.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 12 5 "█" fg=15
+expect-cell 79 1 "█" fg=15
+expect-cell 0 22 " "

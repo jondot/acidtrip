@@ -1,0 +1,76 @@
+# The EXPORT panel on a .acid, by mouse: add a row, change its format to
+# SVG in the row editor (SVG has no scale, so the name loses "@2x"),
+# cancel a second change with Esc, export both
+# files, undo/redo the format change, save; reopen and the rows are back.
+# Removing the row there is one undo step too.
+size 120 40
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type PANEL ART
+keys esc
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-09/p.acid
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-09/p.acid"
+keys ctrl-e
+wait "EXPORT 1"
+click 95 29
+wait "EXPORT 2"
+expect "p@2x"
+expect "● p.acid"
+# Row 2's format: SVG, kept.
+click 100 29
+wait "Export row 2"
+click 37 18
+wait "writes p.svg"
+shot editor
+click 32 28
+wait idle
+expect-not "Export row 2"
+expect "SVG ▾"
+# A change that's cancelled leaves the row alone.
+click 100 29
+wait "Export row 2"
+click 43 18
+wait "Format  GIF image"
+keys esc
+wait idle
+expect-not "Export row 2"
+expect "SVG ▾"
+expect "Export 2 files"
+click 100 32
+wait "exported"
+expect-file /tmp/acidtrip-flows/documents-09/p.png /tmp/acidtrip-flows/documents-09/p.svg
+expect-file-contains /tmp/acidtrip-flows/documents-09/p.svg "<svg"
+# Undo the format change, redo it.
+keys ctrl-z
+wait idle
+expect-not "SVG ▾"
+keys ctrl-y
+wait "SVG ▾"
+keys ctrl-s
+wait idle
+expect-not "● p.acid"
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-flows/documents-09/p.acid
+wait "Ctrl-K commands" 10s
+keys esc
+keys ctrl-e
+wait "EXPORT 2"
+expect "SVG ▾"
+shot reopened
+# Remove row 2 (−), then undo brings it back.
+click 118 29
+wait "EXPORT 1"
+expect-not "SVG ▾"
+expect "● p.acid"
+keys ctrl-z
+wait "EXPORT 2"
+expect-not "● p.acid"
+keys ctrl-q
+expect-exit 0 5s

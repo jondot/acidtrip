@@ -1,0 +1,68 @@
+# Starting from the command line. A corrupt .acid says why it didn't open
+# (the first-run welcome doesn't hide it) and gives an untitled piece that isn't
+# bound to the broken file. Two files: the first opens and it says so. A
+# name that doesn't exist yet: a clean piece that Ctrl-S writes there.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-15/home
+write-file /tmp/acidtrip-flows/documents-15/broken.acid "this is not an acid file"
+write-file /tmp/acidtrip-flows/documents-15/one.ans "FIRST FILE"
+write-file /tmp/acidtrip-flows/documents-15/two.ans "SECOND FILE"
+spawn /tmp/acidtrip-flows/documents-15/broken.acid
+wait "Welcome to acidtrip" 10s
+keys esc
+wait "can't open broken.acid: not an .acid file, or it is damaged"
+shot corrupt
+expect "untitled"
+keys t
+type SAFE
+keys esc
+keys ctrl-s
+wait "Save / Export"
+expect-not "broken.acid"
+keys esc
+wait idle
+expect-file-contains /tmp/acidtrip-flows/documents-15/broken.acid "this is not an acid file"
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s
+# Two files.
+spawn /tmp/acidtrip-flows/documents-15/one.ans /tmp/acidtrip-flows/documents-15/two.ans
+# "Quit anyway" kept the untitled work for recovery; let it go.
+wait "Recover unsaved work"
+expect "acidtrip edits one file at a time — opened one.ans"
+keys d
+wait "discarded recovery files"
+expect-not "Recover unsaved work"
+expect "FIRST FILE"
+expect-not "SECOND FILE"
+expect "one.ans"
+keys ctrl-q
+expect-exit 0 5s
+# A new name.
+spawn /tmp/acidtrip-flows/documents-15/fresh.ans
+wait "fresh.ans"
+expect-not "● fresh.ans"
+expect-no-file /tmp/acidtrip-flows/documents-15/fresh.ans
+keys t
+type BRAND NEW
+keys esc
+wait "● fresh.ans"
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-15/fresh.ans"
+expect-not "Save / Export"
+expect-file-contains /tmp/acidtrip-flows/documents-15/fresh.ans "BRAND NEW"
+keys ctrl-q
+expect-exit 0 5s
+# A new name in a folder that isn't there yet: Ctrl-S makes the folder.
+spawn /tmp/acidtrip-flows/documents-15/nodir/deeper/x.ans
+wait "x.ans"
+keys t
+type KEEP ME
+keys esc
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-15/nodir/deeper/x.ans"
+expect-not "● x.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-15/nodir/deeper/x.ans "KEEP ME"
+keys ctrl-q
+expect-exit 0 5s

@@ -1,0 +1,59 @@
+# Pattern brush: a selection becomes the pattern (colors and all), ★ save
+# keeps it in the library, the browser shows every pattern as a swatch and
+# deletes saved ones. All with the left mouse button.
+size 140 44
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# Paint a little red motif with the brush
+click 118 2
+wait "BRUSH"
+click 127 15
+drag 2 3 5 3
+drag 2 4 3 4
+# Select it, switch to the pattern tool, "use selection"
+click 113 2
+wait "SELECT"
+drag 1 2 6 4
+wait idle
+click 125 3
+wait "bricks"
+mouse move 118 10
+wait "paint with the selection as a pattern"
+click 118 10
+wait "painting with the selection"
+expect "• selection 6x3"
+drag 10 12 60 12
+wait idle
+expect "██    ██    ██    ██"
+shot from_selection
+# ★ save names it; the panel marks it as yours
+click 133 10
+wait "Pattern name"
+type "red blox"
+keys enter
+wait "saved pattern red blox"
+expect "★ red blox"
+# The name opens the browser: every pattern as a swatch
+click 125 5
+wait "Patterns"
+expect "★ red blox"
+expect "honeycomb"
+shot browser
+# Pick another one with two clicks, then come back and delete ours
+click 36 12
+click 36 12
+wait "Pattern: bricks"
+click 125 5
+wait "Patterns"
+click 100 27
+wait "red blox · 6x3 · saved"
+click 105 32
+wait "Delete the pattern"
+click 41 23
+wait "deleted pattern red blox"
+expect-not "★ red blox"
+keys esc
+wait idle
+shot deleted

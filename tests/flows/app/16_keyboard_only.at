@@ -1,0 +1,83 @@
+# The keyboard alone: past the welcome, move the cursor and draw with
+# Shift+arrows, stamp glyphs with digits, type text, change colors in the
+# Colors dialog, run commands from the palette with arrows, add and rename a
+# layer, save, reopen, and quit, never touching the mouse.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys pgdn
+wait idle
+expect "Welcome"
+keys esc
+wait idle
+expect-not "Welcome"
+# cursor to 2,2 then a Shift+Right line of the brush glyph
+keys right right down down
+wait "2,2"
+keys shift-right shift-right shift-right shift-right shift-right shift-right
+wait "8,2"
+shot line
+# a digit stamps its glyph at the cursor
+keys down
+keys 1 2 3 4
+wait idle
+shot stamps
+expect "░▒▓█"
+# text: T, type, Esc back
+keys t
+wait "Text"
+keys down
+type HELLO
+wait "HELLO"
+keys esc
+wait idle
+keys b
+wait "Brush"
+# colors: the dialog by the palette, arrows change fg, Enter keeps it
+keys ctrl-k
+type colors
+wait "▸"
+shot colors_palette
+keys enter
+wait "Colors"
+keys up up
+keys enter
+wait idle
+expect-not "╭ Colors"
+shot after_colors
+# a layer by the palette: Add layer, then rename it by the Layers dialog
+keys ctrl-k
+type add layer
+wait "▸Add layer"
+keys enter
+wait "L2/2"
+keys ctrl-k
+type layers
+wait "▸"
+keys enter
+wait "Layers"
+shot layers
+keys r
+wait "Layer name"
+keys ctrl-u
+type ink
+keys enter
+wait "ink"
+keys esc
+wait idle
+expect-not "Layer name"
+# save, restart, everything is back
+keys ctrl-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/app-16/keys.acid
+keys enter
+wait "saved"
+restart /tmp/acidtrip-flows/app-16/keys.acid
+wait "keys.acid" 10s
+expect "HELLO"
+expect "░▒▓█"
+expect "L2/2"
+expect "ink"
+keys ctrl-q
+expect-exit 0 5s

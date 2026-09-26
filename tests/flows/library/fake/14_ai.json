@@ -1,0 +1,16 @@
+[
+  {"text": "Saying hello.", "tools": [
+    {"tool": "draw_box", "input": {"x": 2, "y": 2, "w": 20, "h": 3, "style": "double", "fg": 14, "bg": 1, "filled": true}},
+    {"tool": "put_text", "input": {"x": 4, "y": 3, "text": "HELLO FROM AI", "fg": 15, "bg": 1}}
+  ]},
+  {"text": "Said hello."},
+  {"tool": "put_text", "input": {"x": 4, "y": 8, "text": "PARTIAL ONE", "fg": 12}},
+  {"tool": "put_text", "input": {"x": 4, "y": 9, "text": "NEVER ONE", "fg": 12}, "delay_ms": 20000},
+  {"tool": "put_text", "input": {"x": 4, "y": 10, "text": "PARTIAL TWO", "fg": 10}},
+  {"tool": "put_text", "input": {"x": 4, "y": 11, "text": "NEVER TWO", "fg": 10}, "delay_ms": 20000},
+  {"tool": "put_text", "input": {"x": 12, "y": 14, "text": "IN THE BLOCK", "fg": 11}},
+  {"text": "Wrote in the block."},
+  {"content": [{"type": "text", "text": "I can't help with that."}], "stop_reason": "refusal"},
+  {"tool": "no_such_tool", "input": {}},
+  {"text": "That tool doesn't exist, sorry."}
+]

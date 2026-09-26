@@ -1,0 +1,36 @@
+[package]
+name = "acidtrip-io"
+description = "File formats, exports, fonts, stencils, versions and library storage for acidtrip"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+acidtrip-core.workspace = true
+icy_parser_core = { git = "https://github.com/mkrueger/icy_tools", rev = "d96b59a" }
+icy_sauce = "0.4"
+bstr = "1"
+retrofont = "0.2"
+anyhow.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+image.workspace = true
+png.workspace = true
+gif.workspace = true
+zstd.workspace = true
+blake3.workspace = true
+directories.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+minijinja = "2"
+tempfile.workspace = true
+ureq = "3"
+zip = "6"
+sha2 = "0.10"
+
+[dev-dependencies]
+insta.workspace = true
+roxmltree = "0.20"

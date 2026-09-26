@@ -1,0 +1,56 @@
+# Sourcing studio with Claude (a fake API): Claude reads a logo and prefills the
+# cutter, the cut becomes a font, My fonts shows its coverage, Claude draws the
+# missing letters, a bad letter is deleted, and the font goes to the Font tool.
+size 120 40
+fake-claude tests/e2e/fake/32_studio.json
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-k
+wait "Commands"
+type harvest
+keys enter
+wait "Sourcing studio"
+expect "Claude is on"
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/DRM-TUTO.ANS
+keys enter
+wait "Cutting" 10s
+keys esc
+wait "10 candidates"
+keys down a
+wait "Cutting" 10s
+wait idle
+expect "Claude reads"
+expect "chrome"
+shot claude_read
+keys enter
+wait "now has"
+wait idle
+shot cut_done
+keys ctrl-f
+wait "MY FONTS"
+wait idle
+expect "10 of 62 letters"
+shot my_fonts
+keys a
+wait "Claude drew" 20s
+wait idle
+expect "drawn by Claude"
+expect-claude-calls 3
+shot my_fonts_drawn
+expect-not "unknown artist"
+# Click a drawn letter (Q), then the delete button under it.
+click 66 7
+wait "“Q” drawn by Claude"
+click 52 38
+wait "deleted “Q”"
+wait idle
+expect "61 of 62 letters"
+shot letter_deleted
+# The font goes to the Font tool, selected and ready to type.
+keys enter
+wait "Font text"
+wait idle
+expect "Dr. Dream chrome"
+shot font_tool

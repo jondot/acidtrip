@@ -1,0 +1,40 @@
+# The sourcing studio cutting letters out of the sunset title; then My fonts.
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-k
+wait "Commands"
+type harvest
+keys enter
+wait "Sourcing studio"
+keys ctrl-u
+type sunset.ans
+keys enter
+wait "Cutting" 10s
+wait idle
+keys b
+drag 8 8 16 14
+wait "SELECTED"
+type a
+wait "LETTERS 1"
+drag 18 8 26 14
+wait "SELECTED"
+type c
+wait "LETTERS 2"
+drag 28 8 30 14
+wait "SELECTED"
+type i
+wait "LETTERS 3"
+drag 32 8 40 14
+wait "SELECTED"
+wait idle
+mouse move 60 36
+wait idle
+shot studio-cutter
+type d
+wait "LETTERS 4"
+keys enter
+wait "now has"
+keys ctrl-f
+wait idle
+shot my-fonts

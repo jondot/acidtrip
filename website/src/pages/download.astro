@@ -1,0 +1,46 @@
+---
+import Canvas from '../layouts/Canvas.astro';
+import Heading from '../components/Heading.astro';
+import Term from '../components/Term.astro';
+import { url, GITHUB, INSTALL, RELEASES, FROM_SOURCE } from '../lib/site';
+---
+<Canvas id="download" description="Install acidtrip, the terminals it runs in, where its files live, and its command line.">
+  <Heading name="page-download" alt="DOWNLOAD" path="download.ans · install, terminals and the command line" />
+  <p class="lead">One line installs the binary for macOS or Linux, Intel or Arm. Then run it in your terminal.</p>
+
+  <h2 id="install">Install</h2>
+  <Term copy={INSTALL}><pre><span class="c">$</span> {INSTALL}
+<span class="c">$</span> acidtrip logo.ans</pre></Term>
+  <p>It puts <code>acidtrip</code> in <code>/usr/local/bin</code>, or <code>~/.local/bin</code> when that isn't writable. The binaries are also on the <a href={RELEASES} target="_blank" rel="noopener">releases page</a>, signed with cosign. To build from source you need Rust:</p>
+  <Term copy={FROM_SOURCE}><pre><span class="c">$</span> {FROM_SOURCE}</pre></Term>
+  <p>For the TheDraw fonts (about 1,200 font files, around 3,700 fonts), run this once:</p>
+  <Term copy="acidtrip fonts get"><pre><span class="c">$</span> acidtrip fonts get</pre></Term>
+  <div class="actions">
+    <a class="btn" href={GITHUB} target="_blank" rel="noopener" data-tip="The source on GitHub (opens a new tab)">github ↗</a>
+    <a class="btn alt" href={url('/docs/getting-started/')} data-tip="The first run, files and the canvas">▸ getting started</a>
+  </div>
+
+  <h2 id="terminals">Terminals</h2>
+  <p>Anything with truecolor and mouse input: iTerm2, kitty, WezTerm, Ghostty, Alacritty, or Terminal.app with fewer key combinations. Terminals that report exact mouse pixels (kitty, WezTerm, Ghostty, xterm) let the smart pen follow the pointer inside a cell.</p>
+
+  <h2 id="files">Files and config</h2>
+  <p><code>acidtrip paths</code> shows where things live. Set <code>ACIDTRIP_HOME</code> to keep everything in one directory. The config is created with comments on first run. <a href={url('/docs/keymaps-config/')}>docs/keymaps-config.ans</a> has the details.</p>
+
+  <h2 id="cli">The command line</h2>
+  <div class="tbl"><table>
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td><code>convert</code></td><td>between any formats: <code>acidtrip convert in.ans out.png</code></td></tr>
+    <tr><td><code>render</code></td><td>to PNG</td></tr>
+    <tr><td><code>replay</code></td><td>how an .acid piece was drawn, to GIF or .cast</td></tr>
+    <tr><td><code>mcp</code></td><td>stdio MCP server for Claude Code</td></tr>
+    <tr><td><code>harvest</code></td><td>fonts and stencils from scene art</td></tr>
+    <tr><td><code>fonts</code></td><td>list, preview, download or install TheDraw fonts</td></tr>
+    <tr><td><code>versions</code></td><td>list or restore a document's saved versions</td></tr>
+    <tr><td><code>paths</code></td><td>where the config, library and state live</td></tr>
+    <tr><td><code>keys</code></td><td>every action id with its keys</td></tr>
+  </table></div>
+  <p>Every flag is in <a href={url('/docs/cli/')}>docs/cli.ans</a>.</p>
+
+  <h2 id="credits">Credits</h2>
+  <p>ACiD Productions, for ACiDDraw. <a href="https://github.com/jeffreygnatek/ansidraw" target="_blank" rel="noopener">ansidraw</a>, whose MCP and half-block ideas shaped this project. <a href="https://github.com/mkrueger/icy_tools" target="_blank" rel="noopener">icy_tools</a>, for the ANSI parser, retrofont and icy_sauce. The VGA font is from <a href="https://www.ansilove.org" target="_blank" rel="noopener">libansilove</a>. The lettered headings and the font screenshots use TheDraw fonts from the <a href="https://github.com/tat3r/tdfiglet" target="_blank" rel="noopener">tdfiglet collection</a>; they belong to the scene artists who drew them. The art in the screenshots was drawn for this site with acidtrip. Licensed MIT OR Apache-2.0.</p>
+</Canvas>

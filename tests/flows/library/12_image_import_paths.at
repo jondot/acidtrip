@@ -1,0 +1,166 @@
+# Image import, keyboard only, unhappy first: a path that isn't there, a
+# file that isn't a picture, then a real PNG (drawn and exported here).
+# Presets, keep lines, a photo filter, Esc at each stage; import it as a
+# floating stamp, as a layer (undo it), and as a new document.
+size 120 40
+env HOME /tmp/acidtrip-flows/library-12/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# A small picture to import: a filled box and a word, saved as PNG.
+keys 4
+drag 2 2 30 8
+wait idle
+keys t
+click 4 12
+type ACID TRIP
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+type export as
+wait idle
+keys enter
+wait "Save / Export"
+wait idle
+shot export
+keys tab ctrl-u
+type /tmp/acidtrip-flows/library-12/sign.png
+keys enter
+wait "exported /tmp/acidtrip-flows/library-12/sign.png"
+wait idle
+shot exported
+expect-file /tmp/acidtrip-flows/library-12/sign.png
+keys ctrl-k
+wait "Commands"
+type import image
+wait idle
+keys enter
+wait "Import image"
+wait idle
+shot picker
+type /tmp/acidtrip-flows/library-12/nope.png
+keys enter
+wait "No image there"
+wait idle
+shot missing
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/README.md
+keys enter
+wait "not an image I can read"
+wait idle
+shot not_image
+keys ctrl-u
+type /tmp/acidtrip-flows/library-12/sign.png
+keys enter
+wait "PRESET" 60s
+wait idle
+shot options
+expect "looks like pixel art"
+expect "Scaling ‹ pixels ›"
+# Presets by number: photo brings smooth scaling and the Keep lines row.
+keys 1
+wait "Keep lines ‹"
+wait idle
+expect "Scaling ‹ smooth ›"
+expect "Keep lines ‹ off ›"
+keys up up up
+keys right
+wait "Keep lines ‹ 20% ›"
+keys right right right right right
+wait "Keep lines ‹ 100% ›"
+keys left
+wait "Keep lines ‹ 80% ›"
+wait idle
+shot lines
+# The photo filter, six rows up.
+keys up up up up up up
+keys right
+wait "Photo filter ‹ Vivid ›" 30s
+shot filter
+keys left
+wait "Photo filter ‹ Original ›" 30s
+keys left
+wait "Photo filter ‹ Ludwig ›" 30s
+keys right
+wait "Photo filter ‹ Original ›" 30s
+# o goes back to the file line; Esc there returns to the settings, kept.
+keys o
+wait "Image /tmp/acidtrip-flows/library-12/sign.png"
+keys esc
+wait "change…"
+expect "Keep lines ‹ 80% ›"
+# Import as a floating stamp, place it with Space.
+keys enter
+wait "click or Space to stamp" 30s
+expect-not "Import image"
+keys space
+wait "stamped"
+keys esc
+wait idle
+shot stamped
+keys ctrl-z
+wait "undo"
+# Again, as a new layer: undo takes the layer away.
+keys ctrl-k
+wait "Commands"
+type import image
+wait idle
+keys enter
+wait "Import image"
+type /tmp/acidtrip-flows/library-12/sign.png
+keys enter
+wait "change…" 30s
+expect "Into ‹ stamp (place it) ›"
+keys right
+wait "Into ‹ new layer ›"
+keys enter
+wait "imported sign as a layer" 30s
+wait idle
+expect "L2/2"
+shot layer
+keys ctrl-z
+wait "undo"
+wait idle
+expect "L1/1"
+# And as a new document.
+keys ctrl-k
+wait "Commands"
+type import image
+wait idle
+keys enter
+wait "Import image"
+type /tmp/acidtrip-flows/library-12/sign.png
+keys enter
+wait "change…" 30s
+keys left
+wait "Into ‹ new document ›"
+expect "Colors ‹ 16 VGA ›"
+keys enter
+wait idle
+wait "has unsaved changes. Discard them?"
+shot new_doc
+# No keeps the drawing.
+keys n
+wait idle
+expect "ACID TRIP"
+expect-not "Discard them?"
+keys ctrl-k
+wait "Commands"
+type import image
+wait idle
+keys enter
+wait "Import image"
+type /tmp/acidtrip-flows/library-12/sign.png
+keys enter
+wait "change…" 30s
+keys left
+wait "Into ‹ new document ›"
+keys enter
+wait "Discard them?"
+keys y
+wait "sign imported as a new document" 30s
+wait idle
+expect-not "ACID TRIP"
+shot imported_doc

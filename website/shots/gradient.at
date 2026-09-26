@@ -1,0 +1,21 @@
+# The gradient tool: fire, top to bottom, in shades; then its panel.
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+click 93 3
+wait "GRADIENT"
+click 99 8
+wait "fire"
+mouse down left 40 1
+mouse drag left 40 10
+mouse drag left 40 23
+mouse up left 40 23
+wait idle
+mouse move 60 30
+wait idle
+shot gradient
+mouse move 112 7
+wait "dither: the shade steps"
+wait idle
+shot gradient-panel

@@ -1,0 +1,7 @@
+[
+  {"text": "Drawing a framed sign.", "tools": [
+    {"tool": "draw_box", "input": {"x": 2, "y": 2, "w": 24, "h": 5, "style": "double", "fg": 14, "bg": 1, "filled": true}},
+    {"tool": "put_text", "input": {"x": 5, "y": 4, "text": "FAKE CLAUDE WAS HERE", "fg": 15, "bg": 1}}
+  ]},
+  {"text": "Added a framed sign that says FAKE CLAUDE WAS HERE."}
+]

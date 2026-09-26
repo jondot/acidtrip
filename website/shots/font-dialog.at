@@ -1,0 +1,24 @@
+# The font dialog with a TheDraw font, then the word stamped.
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys f
+wait "Font text"
+keys ctrl-u
+type ACID
+keys /
+type cyan
+wait idle
+shot font-dialog
+keys enter
+wait idle
+keys enter
+wait idle
+click 4 3
+wait idle
+keys esc
+wait idle
+mouse move 60 34
+wait idle
+shot font-stamped

@@ -1,0 +1,60 @@
+# New document over unsaved work: say no first (the work stays), then make
+# a 100x30 modern doc with kind, iCE and OK clicked, check the status bar;
+# undo can't bring the old piece back, and quitting the fresh doc doesn't ask.
+size 120 40
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+keys t
+type KEEP ME
+keys esc
+wait idle
+expect "● untitled"
+keys ctrl-n
+wait "New document"
+expect "Width 80"
+keys ctrl-u
+type 100
+keys tab ctrl-u
+type 30
+keys tab right
+expect "‹ modern ›"
+keys enter
+wait "Discard them?"
+keys n
+wait idle
+expect-not "Discard them?"
+expect-not "New document"
+expect "KEEP ME"
+expect "80x25"
+expect "● untitled"
+# Again, and this time say yes. Width/height typed, kind and iCE by mouse.
+keys ctrl-n
+wait "New document"
+expect "‹ classic ›"
+keys ctrl-u
+type 100
+keys tab ctrl-u
+type 30
+click 38 17
+wait "‹ modern ›"
+click 30 18
+wait "[ ] off"
+shot form
+click 34 25
+wait "Discard them?"
+shot confirm
+keys y
+wait "new 100x30 Modern document"
+expect-not "KEEP ME"
+expect "100x30"
+expect "MODERN"
+expect "no iCE"
+expect-not "● untitled"
+# The new doc starts its own history: nothing to undo.
+keys ctrl-z
+wait "nothing to undo"
+expect-not "KEEP ME"
+# Clean, so Ctrl-Q quits at once.
+keys ctrl-q
+expect-exit 0 5s

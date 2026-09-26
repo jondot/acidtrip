@@ -1,0 +1,9 @@
+# SAUCE (Alt-D): title, author and group saved with the piece.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys alt-d
+wait "Sunset"
+wait idle
+shot sauce

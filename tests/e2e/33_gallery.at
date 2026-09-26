@@ -1,0 +1,91 @@
+# Gallery (offline): home rows, add a local folder, browse it as a grid, view a
+# piece full screen, save it to the collection, and open it as a document; the
+# sidebar panel, taking a part, and the Gallery | Studio tabs.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-f
+wait "Gallery"
+wait idle
+shot home
+expect "ACiD Productions"
+# Add the test corpus as a folder.
+keys +
+wait "Folder ›"
+type crates/acidtrip-io/tests/corpus
+keys enter
+wait "added"
+wait idle
+shot folder_added
+expect "Continue"
+# Open the folder: its pieces as a grid of posters.
+keys enter
+wait "corpus"
+wait idle
+shot folder_grid
+keys right enter
+wait "rows 1–"
+wait idle
+shot viewer
+keys c
+wait "saved"
+keys pagedown
+wait idle
+shot viewer_scrolled
+keys esc esc
+wait "My collection"
+wait idle
+shot home_collection
+# The collection piece: view it and open it as the document.
+keys up
+wait idle
+keys enter
+wait "open as document"
+keys enter
+wait "opened BF-TUTOR"
+wait idle
+expect "drawing like shit, lesson I"
+shot opened
+# The sidebar's GALLERY panel lists the pieces viewed: click a thumbnail to
+# select it, "✂ take" opens it to drag a box that becomes a floating paste.
+expect "GALLERY  1/2"
+click 100 30
+wait "GALLERY  2/2"
+wait idle
+shot sidebar_gallery
+click 94 33
+wait "takes it"
+wait idle
+drag 2 6 19 8
+wait "took 18x3"
+wait idle
+shot took_part
+expect "Ok.  Alot of peopl"
+keys esc
+wait idle
+# Gallery and the sourcing studio are tabs of one window: click one, or ^T.
+keys ctrl-f
+wait "▦ Gallery"
+wait "Continue"
+click 107 1
+wait "Find art"
+keys ctrl-t
+wait "Continue"
+keys esc
+wait idle
+# Back in the gallery: a folder piece goes to the sourcing studio.
+keys ctrl-f
+wait "Gallery"
+wait "Continue"
+keys down down
+wait idle
+keys enter
+wait "DRM-TUTO"
+keys right right right
+wait idle
+keys s
+wait "Sourcing studio"
+wait "Cutting" 10s
+wait idle
+shot studio

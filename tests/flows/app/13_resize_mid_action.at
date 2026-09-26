@@ -1,0 +1,74 @@
+# Resizing while things are open: a very wide terminal, then shrinking with
+# a dialog up (it stays centred and answerable), shrinking in the middle of a
+# drag (the stroke finishes, nothing panics), shrinking under the sidebar's
+# threshold and growing back (the sidebar returns), and a tiny terminal
+# that the app survives.
+size 220 50
+spawn
+wait "Welcome" 10s
+shot wide_welcome
+keys esc
+wait idle
+expect "TOOLS"
+drag 3 4 40 4
+wait idle
+expect "██████████████████████████████████████"
+# a dialog open when the terminal shrinks: still there, still clickable
+keys ctrl-n
+wait "New document"
+size 90 30
+wait idle
+shot dialog_after_shrink
+expect "New document"
+click-text "esc  cancel"
+wait idle
+expect-not "New document"
+# the palette open across a resize: the query survives
+keys ctrl-k
+type grid
+wait "▸Toggle grid"
+size 140 45
+wait idle
+expect "▸Toggle grid"
+keys esc
+wait idle
+# a drag that begins wide and ends after a shrink
+mouse down left 3 8
+mouse drag left 20 8
+size 100 30
+wait idle
+mouse drag left 30 8
+mouse up left 30 8
+wait idle
+shot after_drag_resize
+expect "████████████████████████████"
+# undo takes back the whole stroke as one
+keys ctrl-z
+wait "undo: Brush"
+expect-not "   ████████████████████████████ "
+keys ctrl-y
+wait "redo: Brush"
+# under 100 columns the sidebar goes, the canvas keeps drawing
+size 80 24
+wait idle
+expect-not "TOOLS"
+drag 3 12 20 12
+wait idle
+# help open while shrinking to tiny, then growing back
+keys ?
+wait "Help"
+size 30 10
+wait idle
+shot tiny
+size 120 40
+wait idle
+expect "Help"
+keys esc
+wait idle
+expect "TOOLS"
+expect "● untitled"
+shot back_to_normal
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s

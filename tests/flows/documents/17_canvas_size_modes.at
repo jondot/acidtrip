@@ -1,0 +1,81 @@
+# The size, kind and iCE chips in the status bar, by mouse. Canvas size:
+# a crop warns first (Esc leaves it), "fit art" then "+25 rows", resize;
+# undo and redo; saved as .ans the size comes back on reopen. Classic to
+# modern and iCE toggle from their chips and undo like any edit.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-17/home
+write-file /tmp/acidtrip-flows/documents-17/home/config/config.toml "autosave_seconds = 0\n"
+write-file /tmp/acidtrip-flows/documents-17/c.ans "LEFT                                                                  RIGHT"
+spawn /tmp/acidtrip-flows/documents-17/c.ans
+wait "Ctrl-K commands" 10s
+expect "80x25 CLASSIC"
+shot start
+click 21 39
+wait "art stays top-left"
+shot dialog
+keys ctrl-u
+type 40
+wait "cuts off 5 cells of art"
+keys esc
+wait idle
+expect-not "art stays top-left"
+expect "80x25"
+expect-not "● c.ans"
+# Fit the art, then 25 more rows, by mouse.
+click 21 39
+wait "art stays top-left"
+click 40 15
+wait "80×25 → 75×1"
+click 55 15
+wait "80×25 → 75×26"
+expect "keeps all the art"
+shot fit
+click 31 29
+wait "canvas 75×26 (Ctrl-Z undoes)"
+expect "75x26"
+expect "● c.ans"
+keys ctrl-z
+wait "80x25"
+keys ctrl-y
+wait "75x26"
+# 75 columns in an .ans: asked, since other viewers assume 80.
+keys ctrl-s
+wait "width 75 ≠ 80"
+shot width_warning
+keys y
+wait "saved /tmp/acidtrip-flows/documents-17/c.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-17/c.ans "SAUCE00"
+# Kind and iCE chips.
+click 27 39
+wait "Modern document"
+expect "75x26 MODERN"
+click 34 39
+wait "iCE colors on"
+expect "MODERN iCE"
+keys ctrl-z
+wait "MODERN no iCE"
+keys ctrl-z
+wait "75x26 CLASSIC"
+expect-not "● c.ans"
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-flows/documents-17/c.ans
+wait "Ctrl-K commands" 10s
+# The width comes back; blank rows below the art are not kept in an .ans.
+expect "75x25 CLASSIC"
+expect "LEFT"
+expect "RIGHT"
+# A crop by keys: the warning, then the count in the message; undo.
+click 21 39
+wait "art stays top-left"
+keys ctrl-u
+type 40
+wait "cuts off 5 cells of art"
+keys enter
+wait "canvas 40×25 — cropped 5 cells"
+expect-not "RIGHT"
+keys ctrl-z
+wait "RIGHT"
+expect "75x25"
+keys ctrl-q
+expect-exit 0 5s

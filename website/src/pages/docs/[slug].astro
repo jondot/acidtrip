@@ -1,0 +1,34 @@
+---
+// A doc, open as a file: lettered heading, a chip row of its sections,
+// the Markdown, then prev / next.
+import Canvas from '../../layouts/Canvas.astro';
+import Heading from '../../components/Heading.astro';
+import { docEntries, pages, url } from '../../lib/site';
+import { render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const docs = await docEntries();
+  return docs.map((entry, i) => ({ params: { slug: entry.id }, props: { entry, prev: docs[i - 1], next: docs[i + 1] } }));
+}
+
+const { entry, prev, next } = Astro.props;
+const { Content } = await render(entry);
+const me = (await pages()).find((p) => p.id === entry.id)!;
+const link = (e: typeof entry) => url(`/docs/${e.id}/`);
+---
+<Canvas id={entry.id} description={entry.data.description}>
+  <Heading name={`doc-${entry.id}`} alt={entry.data.title} path={`docs/${entry.id}.ans · ${entry.data.title}`} />
+  <p class="lead">{entry.data.description}</p>
+  {me.sections.length > 1 && (
+    <nav class="toc" aria-label="On this page">
+      <span class="lbl">on this page</span>
+      {me.sections.map((s) => <a class="chip" href={`#${s.id}`}>{s.label.toLowerCase()}</a>)}
+    </nav>
+  )}
+  <div class="rule" aria-hidden="true"></div>
+  <Content />
+  <nav class="prevnext" aria-label="More docs">
+    {prev && <a href={link(prev)} data-tip={`${prev.data.title}: ${prev.data.description}`}><span class="k">‹ prev</span> docs/{prev.id}.ans</a>}
+    {next && <a class="next" href={link(next)} data-tip={`${next.data.title}: ${next.data.description}`}><span class="k">next ›</span> docs/{next.id}.ans</a>}
+  </nav>
+</Canvas>

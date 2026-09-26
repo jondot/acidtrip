@@ -1,0 +1,66 @@
+# The ? key sheet: open by ?, by the palette, by Alt-H; scroll it with keys
+# and the wheel; any other key closes it without acting; it lists the live
+# keymap; on a small terminal it still fits and scrolls.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ?
+wait "Help"
+expect "DRAW"
+expect "FILE & SHARE"
+expect "Ctrl-K"
+shot help_top
+# arrows and the wheel scroll it down to the last section
+keys pgdn pgdn pgdn
+wait idle
+shot help_scrolled
+expect "Help"
+mouse scroll down 50 20
+mouse scroll up 50 20
+wait idle
+expect "Help"
+# a drawing key closes it and does NOT switch tool
+keys l
+wait idle
+expect-not "any other key closes"
+expect "Brush"
+# from the palette
+keys ctrl-k
+type help
+wait "▸Help & keys"
+keys enter
+wait "any other key closes"
+keys esc
+wait idle
+expect-not "any other key closes"
+# Alt-H is the other key
+keys alt-h
+wait "any other key closes"
+# a click on the canvas closes it and paints nothing
+click 10 10
+wait idle
+expect-not "any other key closes"
+expect-not "● untitled"
+# small terminal: the sheet fits the screen and still scrolls
+size 80 24
+wait idle
+keys ?
+wait "Help"
+shot help_small
+expect "╰"
+keys pgdn pgdn pgdn pgdn pgdn pgdn
+wait idle
+shot help_small_end
+expect "Keymap preset: Modern"
+expect "Help"
+keys esc
+wait idle
+expect-not "any other key closes"
+# back at full size, drawing works
+size 120 40
+wait idle
+drag 3 4 12 4
+wait idle
+expect "██████████"

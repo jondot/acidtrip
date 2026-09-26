@@ -1,0 +1,74 @@
+# Frames and playback across the app: open the FRAMES panel from the layers
+# strip, draw two frames, play; Esc stops playing (not the tool); the palette
+# and help open over a playing animation; a canvas click stops it and does
+# not paint; the frames survive a save and restart.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+drag 3 3 20 3
+wait idle
+click-text "▸ frames"
+wait "FRAMES"
+shot frames_panel
+keys ctrl-k
+type duplicate frame
+wait "▸Duplicate frame"
+keys enter
+wait idle
+drag 3 5 20 5
+wait idle
+shot two_frames
+keys ctrl-k
+type play stop
+wait "▸Play / stop the animation"
+keys enter
+wait "■ stop"
+shot playing
+# Esc stops playing and nothing else
+keys esc
+wait "stopped playing"
+expect "FRAMES"
+expect "Brush"
+# the palette over a playing animation, then help; each closes cleanly
+keys ctrl-k
+type play stop
+wait "▸Play / stop the animation"
+keys enter
+wait "■ stop"
+# (a playing screen is never idle: wait on text, not on quiet)
+keys ctrl-k
+wait "Commands"
+keys esc
+keys ?
+wait "Help"
+keys esc
+wait "■ stop"
+expect-not "Help ─"
+# a click on the canvas stops it and doesn't paint
+click 40 15
+wait "stopped playing on this frame"
+expect "▶ play"
+wait idle
+expect-not "                                        █"
+keys ctrl-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/app-19/anim.acid
+keys enter
+wait "saved"
+restart /tmp/acidtrip-flows/app-19/anim.acid
+wait "anim.acid" 10s
+wait "FRAMES"
+shot reopened
+# the next click draws as usual
+click 40 15
+wait idle
+expect "                                        █"
+# playback stopped on whichever frame was showing; both frames must survive
+expect "/2       ▶ play"
+click-text "▶"
+wait "■ stop"
+keys esc
+wait "stopped playing"

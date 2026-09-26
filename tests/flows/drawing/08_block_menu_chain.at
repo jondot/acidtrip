@@ -1,0 +1,125 @@
+# Block menu chain on one selection: justify left/right/center, rotate,
+# outline, fill, delete block (shift left), crop; undo walks back each one
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys t
+click 10 3
+type "AB"
+click 10 4
+type "CDEF"
+click 30 3
+type "X"
+keys esc
+wait idle
+keys v
+drag 5 2 20 6
+wait idle
+keys enter
+wait "Block 16x5"
+shot menu
+keys l
+wait idle
+expect-cell 5 3 "A"
+expect-cell 5 4 "C"
+expect-cell 10 3 " "
+expect-cell 30 3 "X"
+shot left
+keys enter
+wait "Block 16x5"
+keys g
+wait idle
+expect-cell 19 3 "A"
+expect-cell 20 3 "B"
+expect-cell 20 4 "F"
+expect-cell 5 3 " "
+shot right
+keys enter
+wait "Block 16x5"
+keys n
+wait idle
+expect-cell 12 3 "A"
+expect-cell 11 4 "C"
+shot center
+keys enter
+wait "Rotate selection 180"
+click 30 11
+wait idle
+expect-cell 11 4 "F"
+expect-cell 12 5 "B"
+expect-cell 13 5 "A"
+expect-cell 12 3 " "
+shot rot
+keys enter
+wait "Block 16x5"
+keys o
+wait idle
+expect-cell 5 2 "┌"
+expect-cell 20 6 "┘"
+expect-cell 11 4 "F"
+shot outline
+keys enter
+wait "Block 16x5"
+keys f
+wait idle
+expect-cell 5 2 "█"
+expect-cell 12 4 "█"
+expect-cell 21 4 " "
+shot fill
+keys enter
+wait "Block 16x5"
+keys d
+wait idle
+expect-cell 14 3 "X"
+expect-cell 5 2 " "
+expect-cell 30 3 " "
+shot delblock
+keys enter
+wait "Block 16x5"
+keys k
+wait "cropped to 16x5"
+expect "16x5 CLASSIC"
+expect-cell 9 2 "X"
+shot crop
+# undo walks back through every block operation
+keys ctrl-z
+wait "undo: Crop"
+expect "80x25 CLASSIC"
+expect-cell 14 3 "X"
+keys ctrl-z
+wait "undo: Delete block"
+expect-cell 30 3 "X"
+expect-cell 5 2 "█"
+keys ctrl-z
+wait "undo: Fill"
+expect-cell 5 2 "┌"
+keys ctrl-z
+wait "undo: Outline"
+expect-cell 5 2 " "
+expect-cell 11 4 "F"
+keys ctrl-z
+wait "undo: Rotate"
+expect-cell 12 3 "A"
+keys ctrl-z
+wait "undo: Justify"
+expect-cell 19 3 "A"
+keys ctrl-z
+wait "undo: Justify"
+expect-cell 5 3 "A"
+keys ctrl-z
+wait "undo: Justify"
+expect-cell 10 3 "A"
+expect-cell 10 4 "C"
+shot undone
+# the crop is gone with its selection: the block menu has nothing to act on
+keys v
+wait idle
+keys ctrl-k
+wait idle
+type "crop canvas"
+wait "Crop canvas to selection"
+keys enter
+wait "select an area first"
+expect "80x25 CLASSIC"

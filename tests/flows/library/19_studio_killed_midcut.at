@@ -1,0 +1,118 @@
+# The app killed in the middle of cutting (SIGKILL, no chance to save):
+# a saved font and a stencil kept from the cutter survive intact, a letter
+# cut but not saved is gone, and everything still works after the restart:
+# the font stamps, the stencil stamps, the cutter adds to the same font.
+size 80 24
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-19/home
+env HOME /tmp/acidtrip-flows/library-19/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+type harvest
+wait idle
+keys enter
+wait "Sourcing studio"
+wait idle
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/DRM-TUTO.ANS
+keys enter
+wait "Cutting" 10s
+wait idle
+# Wand the first shape, call it D, save the font.
+keys w
+click 22 12
+wait "SELECTED  19×8"
+type D
+wait "LETTERS 1"
+keys enter
+wait "now has 2 letters"
+wait idle
+# Wand the logo, keep it as a stencil.
+click 33 12
+wait "SELECTED  42×9"
+keys ctrl-s
+wait "stencil “Dr. Dream logo” saved (42×9)"
+# Cut M but don't save it, then the app dies.
+type M
+wait "LETTERS 2"
+kill
+expect-exit
+# Restart: the font has D (not M), the stencil is there.
+spawn
+wait "Ctrl-K commands" 10s
+wait idle
+keys f
+wait "Font text"
+wait idle
+keys /
+type dream
+wait idle
+expect "cut from art"
+keys esc
+wait idle
+keys ctrl-u
+type DM
+wait idle
+expect "no M in this font"
+# Stamp it with Enter, then the stencil.
+keys enter
+wait idle
+expect-not "Font text"
+keys esc
+wait idle
+keys n
+wait "Stencils"
+wait idle
+expect "Dr. Dream logo"
+keys enter
+wait idle
+expect-not "Stencils"
+keys space
+wait idle
+keys esc
+wait idle
+# The cutter adds M to the same font.
+keys ctrl-k
+wait "Commands"
+type harvest
+wait idle
+keys enter
+wait "Sourcing studio"
+wait idle
+keys ctrl-u
+type crates/acidtrip-io/tests/corpus/DRM-TUTO.ANS
+keys enter
+wait "Cutting" 10s
+wait idle
+keys w
+click 33 12
+wait "SELECTED  42×9"
+type M
+wait "LETTERS 1"
+keys enter
+wait "now has 4 letters"
+wait idle
+keys ctrl-c
+wait idle
+expect-not "Sourcing studio"
+keys f
+wait "Font text"
+wait idle
+keys /
+type dream
+wait idle
+keys esc
+wait idle
+keys ctrl-u
+type DM
+wait idle
+expect-not "in this font"
+keys esc
+wait idle
+keys ctrl-q
+wait "Quit anyway?"
+keys y
+expect-exit 0 5s

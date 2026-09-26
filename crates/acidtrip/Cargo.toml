@@ -1,0 +1,40 @@
+[package]
+name = "acidtrip"
+description = "A modern terminal ANSI art editor in the spirit of ACiDDraw"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+readme = "../../README.md"
+
+[[bin]]
+name = "acidtrip"
+path = "src/main.rs"
+
+[dependencies]
+acidtrip-core.workspace = true
+acidtrip-io.workspace = true
+acidtrip-ai.workspace = true
+acidtrip-net.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+image.workspace = true
+ratatui = "0.30"
+crossterm = { version = "0.29", features = ["osc52"] }
+ratatui-image = { version = "11", default-features = false, features = ["crossterm", "image-defaults"] }
+arboard = "3"
+clap = { version = "4", features = ["derive"] }
+unicode-width = "0.2"
+line_drawing.workspace = true
+libc = "0.2"
+base64 = "0.23"
+
+[dev-dependencies]
+base64 = "0.23"
+tempfile.workspace = true
+acidtrip-harness = { path = "../acidtrip-harness" }
+serde_json.workspace = true

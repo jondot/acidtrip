@@ -1,0 +1,21 @@
+# Open real scene art, scroll, preview, modem playback, share menu
+size 120 40
+spawn crates/acidtrip-io/tests/corpus/LDA-ANSIACADEMY.ANS
+wait "LDA-ANSIACADEMY.ANS" 10s
+keys esc
+wait idle
+shot art
+mouse scroll down 20 20
+mouse scroll down 20 20
+mouse scroll down 20 20
+shot art_scrolled
+keys alt-e
+wait "Share"
+shot share
+keys esc
+keys ctrl-k
+type modem
+keys enter
+wait 1500ms
+shot playback
+keys esc

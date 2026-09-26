@@ -1,0 +1,90 @@
+# Remix a piece from a local folder: add the folder in the Gallery, browse
+# its grid, view a piece, open it as a document, draw on it, save the remix,
+# quit, start again with the same library: the folder and the piece are
+# still there ("Continue"), and the saved file opens with the edit.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/library-01/home
+env HOME /tmp/acidtrip-flows/library-01/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-f
+wait "Local folders"
+wait idle
+# A path that isn't a folder is refused and the field stays open to fix it.
+keys +
+wait "Folder ›"
+type crates/acidtrip-io/tests/corpus/BF-TUTOR.ANS
+keys enter
+wait "is not a folder"
+expect "Folder › crates/acidtrip-io/tests/corpus/BF-TUTOR.ANS"
+shot not_a_folder
+# Esc leaves the folder field without closing the gallery.
+keys esc
+wait idle
+expect "Local folders"
+expect-not "Folder ›"
+keys +
+wait "Folder ›"
+type crates/acidtrip-io/tests/corpus/nope
+keys enter
+wait "is not a folder"
+keys backspace backspace backspace backspace backspace
+keys enter
+wait "added"
+# Kept as an absolute path, so it still works from another directory.
+expect "added /"
+wait idle
+expect "Continue"
+# Open the folder card: a grid of its pieces.
+keys enter
+wait "⏎  view"
+wait idle
+shot grid
+keys right enter
+wait "rows 1–"
+wait idle
+shot viewer
+expect "open as document"
+# Enter opens it as an untitled document.
+keys enter
+wait "opened "
+wait idle
+shot opened
+expect "drawing like shit, lesson I"
+# Remix: type a tag in the top-left corner.
+keys t
+type REMIXED
+keys esc
+wait idle
+expect "REMIXED"
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/library-01/remix.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/library-01/remix.ans"
+expect-file /tmp/acidtrip-flows/library-01/remix.ans
+keys ctrl-q
+expect-exit 0 5s
+# Restart with the same library: the folder and the piece come back.
+spawn
+wait "Ctrl-K commands" 10s
+wait idle
+keys ctrl-f
+wait "Continue"
+wait idle
+expect "BF-TUTOR"
+expect "corpus"
+shot home_after_restart
+keys esc
+wait idle
+expect-not "Continue"
+keys ctrl-q
+expect-exit 0 5s
+# The remix opens with the edit.
+spawn /tmp/acidtrip-flows/library-01/remix.ans
+wait "REMIXED" 10s
+expect "drawing like shit"
+shot reopened

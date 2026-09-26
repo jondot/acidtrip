@@ -1,0 +1,42 @@
+# Filters, mouse only: pick the tool, browse presets, drag a slider, apply, undo
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# the Filters button in the tools grid (third row)
+click 93 4
+wait "FILTERS"
+expect "Original 1/43"
+# red from the palette, then paint with the brush
+click 108 29
+click 99 2
+wait "Brush"
+drag 2 3 30 3
+drag 2 5 30 8
+click 93 4
+wait "FILTERS"
+# › steps to the next preset, ‹ back
+click 118 6
+wait "2/43"
+click 92 6
+wait "Original 1/43"
+# drag saturation all the way down: the canvas previews it live
+drag 110 13 103 13
+wait "saturation -100"
+shot filters_preview
+# the canvas goes back while the mouse is held on it
+mouse down left 10 3
+wait "showing the original"
+shot filters_compare
+mouse up left 10 3
+# ✓ apply is one undo step
+click 94 23
+wait "cells changed"
+shot filters_applied
+keys ctrl-z
+wait "undo: Filter Original"
+# the reset button zeroes the sliders
+click 104 23
+wait "filter reset"
+expect-not "-100"

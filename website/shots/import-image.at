@@ -1,0 +1,16 @@
+# Import the sunset picture as art: the import preview.
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+type "Import image"
+keys enter
+wait "Images here"
+type "sunset.png"
+wait "sunset.png"
+keys enter
+wait "PRESET" 20s
+wait idle
+shot import-image

@@ -1,0 +1,42 @@
+# Draw together, all by mouse: the ⇄ chip in the status bar opens the
+# TOGETHER panel, Host this drawing starts a session (its ticket, with Copy,
+# and who's here in their colors), End session leaves. Localhost only
+# (ACIDTRIP_NET_LOCAL=1), so no internet is needed.
+size 120 40
+env ACIDTRIP_NET_LOCAL 1
+env USER ada
+# Hosting copies the ticket; over "ssh" that goes to the terminal (OSC 52),
+# not to the clipboard of the machine running the tests.
+env SSH_TTY /dev/null
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# The chip has a tip, and one click opens the panel.
+mouse move 45 39
+wait idle
+wait "Draw together" 5s
+click 45 39
+wait "TOGETHER"
+expect "Host this drawing"
+expect "paste a ticket"
+shot panel
+click 96 6
+wait "Copy" 10s
+wait "ada (you)"
+expect "hosting"
+wait "ticket copied"
+expect "send the ticket"
+expect "End session"
+expect "⇄ 1"
+# Drawing while hosting works as ever.
+drag 10 5 30 5
+wait idle
+mouse move 100 6
+wait idle
+expect "Copy the session ticket"
+shot hosting
+click 94 10
+wait "session ended"
+expect "Host this drawing"
+shot ended

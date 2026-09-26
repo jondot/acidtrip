@@ -1,0 +1,36 @@
+# Import image with a photo filter: the Filters presets run on the picture first
+size 120 40
+# a picture to import: render scene art to PNG
+spawn convert crates/acidtrip-io/tests/corpus/LDA-ANSIACADEMY.ANS /tmp/acidtrip-e2e/44_art.png
+expect-exit 0 20s
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-k
+wait "Commands"
+type "Import image"
+keys enter
+wait "Images here"
+type "/tmp/acidtrip-e2e/44_art.png"
+wait "44_art.png"
+keys enter
+wait "PRESET" 20s
+wait "Photo filter" 20s
+wait idle
+shot import_original
+# › on the Photo filter row steps through the presets
+click 25 18
+wait "‹ Vivid ›"
+click 25 18
+click 25 18
+click 25 18
+click 25 18
+click 25 18
+click 25 18
+wait "‹ Mono ›" 20s
+wait idle
+shot import_mono
+# ‹ steps back
+click 19 18
+wait "‹ Dramatic Cool ›"

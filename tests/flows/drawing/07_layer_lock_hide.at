@@ -1,0 +1,123 @@
+# Locked and hidden layers: drawing on them warns (nothing silently lost),
+# the Layers dialog locks/hides/marks reference with one mouse button,
+# merging into a locked layer is refused, undo restores the flags
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys b
+drag 5 5 15 5
+wait idle
+expect-cell 10 5 "█"
+keys alt-shift-n
+wait "L2/2"
+keys ctrl-l
+wait "V show/hide"
+expect "□ lock"
+shot dialog
+# lock Layer 2 with one click on its chip
+click 60 16
+wait "■ locked"
+keys esc
+wait idle
+# every way of drawing on it warns and changes nothing
+drag 5 8 15 8
+wait "Layer 2 is locked: unlock it in LAYERS"
+expect-cell 10 8 " "
+keys t
+click 30 10
+type "abc"
+wait idle
+expect "Layer 2 is locked"
+expect-cell 30 10 " "
+keys esc
+keys b
+keys 4
+wait "Layer 2 is locked"
+keys r
+drag 40 3 50 7
+wait "Layer 2 is locked"
+expect-cell 40 3 " "
+keys g
+click 60 15
+wait "Layer 2 is locked"
+expect-cell 60 15 " "
+shot locked
+# unlock, then hide it: drawing on a hidden layer warns too
+keys ctrl-l
+wait "V show/hide"
+click 59 16
+wait "□ lock"
+click 50 16
+wait "○ hidden"
+keys esc
+wait idle
+keys b
+drag 5 8 15 8
+wait "Layer 2 is hidden: show it in LAYERS"
+expect-cell 10 8 " "
+# show it again: now the stroke lands
+keys ctrl-l
+wait "V show/hide"
+click 50 16
+wait "◉ visible"
+keys esc
+wait idle
+drag 5 8 15 8
+wait idle
+expect-cell 10 8 "█"
+# lock the Background from its chip, then try to merge Layer 2 into it
+keys ctrl-l
+wait "V show/hide"
+click 60 20
+wait "■ locked"
+click 70 15
+wait idle
+keys m
+wait "Background is locked: unlock it to merge into it"
+expect "Layer 2"
+# undo the Background lock, and the merge goes through
+keys esc
+wait idle
+keys ctrl-z
+wait "undo: Layer properties"
+keys ctrl-l
+wait "V show/hide"
+expect-not "■ locked"
+keys m
+wait idle
+expect-not "Layer 2"
+keys esc
+wait "L1/1"
+expect-cell 10 8 "█"
+expect-cell 10 5 "█"
+keys ctrl-z
+wait "undo: Merge"
+# undo brings the merged layer back as the active one
+wait "L2/2"
+# mark Layer 2 as reference: it stays on screen but is not saved
+keys ctrl-l
+wait "V show/hide"
+click 70 15
+keys f
+wait "■ reference"
+keys esc
+wait idle
+expect-cell 10 8 "█"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-07/ref.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-07/ref.ans"
+expect-file /tmp/acidtrip-flows/drawing-07/ref.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-07/ref.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 10 5 "█"
+expect-cell 10 8 " "
+shot reopened

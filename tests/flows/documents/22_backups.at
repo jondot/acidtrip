@@ -1,0 +1,94 @@
+# Backups before a save writes over a file, in each mode the config
+# offers. "bak" keeps the one before; "numbered" keeps every one; "none"
+# keeps nothing. Saving over some other file you picked is backed up too,
+# while an export and a first save have nothing to back up.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-22/home
+write-file /tmp/acidtrip-flows/documents-22/home/config/config.toml "autosave_seconds = 0\n"
+write-file /tmp/acidtrip-flows/documents-22/b.ans "ONE"
+spawn /tmp/acidtrip-flows/documents-22/b.ans
+wait "Ctrl-K commands" 10s
+expect "ONE"
+keys t
+type TWO
+keys esc
+wait "● b.ans"
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-22/b.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-22/b.ans.bak "ONE"
+expect-file-contains /tmp/acidtrip-flows/documents-22/b.ans "TWO"
+# The next save moves the backup along to what was on disk.
+keys t
+type 3
+keys esc
+wait "● b.ans"
+keys ctrl-s
+wait "  b.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-22/b.ans.bak "TWO"
+expect-file-not-contains /tmp/acidtrip-flows/documents-22/b.ans.bak "TWO3"
+expect-file-contains /tmp/acidtrip-flows/documents-22/b.ans "TWO3"
+expect-no-file /tmp/acidtrip-flows/documents-22/b.ans.001
+# An export writes a new file and backs nothing up.
+keys alt-s
+wait "Save / Export"
+keys ctrl-e
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-22/b.txt
+keys enter
+wait "exported /tmp/acidtrip-flows/documents-22/b.txt"
+expect-no-file /tmp/acidtrip-flows/documents-22/b.txt.bak
+keys ctrl-q
+expect-exit 0 5s
+# Numbered: every save keeps the one before, in order.
+write-file /tmp/acidtrip-flows/documents-22/home/config/config.toml "autosave_seconds = 0\nbackup = 'numbered'\n"
+spawn /tmp/acidtrip-flows/documents-22/b.ans
+wait "Ctrl-K commands" 10s
+keys t
+type A
+keys esc
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-22/b.ans"
+keys t
+type B
+keys esc
+wait "● b.ans"
+keys ctrl-s
+wait "  b.ans"
+# A reopened piece starts typing at the top left: TWO3, AWO3, ABO3.
+expect-file-contains /tmp/acidtrip-flows/documents-22/b.ans.001 "TWO3"
+expect-file-contains /tmp/acidtrip-flows/documents-22/b.ans.002 "AWO3"
+expect-file-contains /tmp/acidtrip-flows/documents-22/b.ans "ABO3"
+expect-no-file /tmp/acidtrip-flows/documents-22/b.ans.003
+# The .bak from before is left as it was.
+expect-file-contains /tmp/acidtrip-flows/documents-22/b.ans.bak "TWO"
+expect-file-not-contains /tmp/acidtrip-flows/documents-22/b.ans.bak "TWO3"
+# Save as over another file, after saying yes: that file is backed up.
+write-file /tmp/acidtrip-flows/documents-22/other.ans "OTHER"
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-22/other.ans
+keys enter
+wait "already exists."
+keys y
+wait "saved /tmp/acidtrip-flows/documents-22/other.ans"
+expect "  other.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-22/other.ans.001 "OTHER"
+expect-file-contains /tmp/acidtrip-flows/documents-22/other.ans "ABO3"
+keys ctrl-q
+expect-exit 0 5s
+# None: no backups at all.
+write-file /tmp/acidtrip-flows/documents-22/home/config/config.toml "autosave_seconds = 0\nbackup = 'none'\n"
+write-file /tmp/acidtrip-flows/documents-22/n.ans "KEEP"
+spawn /tmp/acidtrip-flows/documents-22/n.ans
+wait "Ctrl-K commands" 10s
+keys t
+type X
+keys esc
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-22/n.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-22/n.ans "EEP"
+expect-file-not-contains /tmp/acidtrip-flows/documents-22/n.ans "KEEP"
+expect-no-file /tmp/acidtrip-flows/documents-22/n.ans.bak /tmp/acidtrip-flows/documents-22/n.ans.001
+keys ctrl-q
+expect-exit 0 5s

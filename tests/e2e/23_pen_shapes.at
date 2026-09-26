@@ -1,0 +1,26 @@
+# Smart pen fits the tile set; shapes follow the brush glyph
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys p
+wait "Pen"
+# a wavy stroke with the blocks set
+mouse down left 3 3
+mouse drag left 10 5
+mouse drag left 18 8
+mouse drag left 26 6
+mouse drag left 34 3
+mouse drag left 42 6
+mouse up left 42 6
+# smart ellipse with a solid block: half-block circle
+keys 4
+keys o
+drag 48 2 70 14
+# smart rect with the double-line box set: switch to set 2, pick ═
+keys ] ] ] ] ] ] ] ] ] ] ] ] ] ] ] ]
+keys r
+click 101 16
+drag 4 12 30 20
+wait idle
+shot pen_shapes

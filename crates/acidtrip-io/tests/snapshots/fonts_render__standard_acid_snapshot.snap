@@ -1,0 +1,9 @@
+---
+source: crates/acidtrip-io/tests/fonts_render.rs
+expression: plain(&c)
+---
+     _       ____   _   ____
+    / \     / ___| (_) |  _ \
+   / _ \   | |     | | | | | |
+  / ___ \  | |___  | | | |_| |
+ /_/   \_\  \____| |_| |____/

@@ -1,0 +1,92 @@
+# Stencils and font text: stamp a built-in box twice (undo takes one back),
+# type big text with a FIGlet font and stamp it, save a selection as a new
+# stencil, find it by search and stamp it elsewhere; Esc and an empty save
+# name do nothing
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys n
+wait "Stencils"
+expect "Single box"
+keys enter
+wait "click or Space to stamp"
+click 20 10
+wait "stamped"
+expect-cell 20 10 "┌"
+expect-cell 29 13 "┘"
+click 50 10
+wait idle
+expect-cell 50 10 "┌"
+keys esc
+wait "done stamping"
+keys ctrl-z
+wait "undo: Stamp"
+expect-cell 50 10 " "
+expect-cell 20 10 "┌"
+# font text: typing replaces the sample text
+keys f
+wait "Font text"
+type "HI"
+wait idle
+expect "Text HI"
+expect-not "ACiDHI"
+keys enter
+wait "click or Space to stamp"
+click 5 20
+wait "stamped"
+keys esc
+wait "done stamping"
+shot font
+expect-cell 6 21 "|"
+expect-cell 18 24 "|"
+# save the box as a stencil from the Select panel's club chip
+keys v
+drag 20 10 29 13
+wait "selected 10x4"
+click 114 8
+wait "Stencil name"
+keys esc
+wait idle
+expect-not "Stencil name"
+expect-not "saved stencil"
+click 114 8
+wait "Stencil name"
+type "my box"
+keys enter
+wait "saved stencil \"my box\""
+keys esc
+wait idle
+keys n
+wait "Stencils"
+type "my box"
+wait idle
+expect "source: drawn"
+keys enter
+wait "click or Space to stamp"
+click 60 16
+wait "stamped"
+keys esc
+wait "done stamping"
+expect-cell 60 16 "┌"
+expect-cell 69 19 "┘"
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-14/stamps.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-14/stamps.ans"
+expect-file /tmp/acidtrip-flows/drawing-14/stamps.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-14/stamps.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 20 10 "┌"
+expect-cell 60 16 "┌"
+expect-cell 69 19 "┘"
+expect-cell 6 21 "|"
+expect-cell 50 10 " "
+shot reopened

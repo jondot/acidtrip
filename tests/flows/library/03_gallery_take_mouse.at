@@ -1,0 +1,86 @@
+# One mouse button only (the folder path is the one thing typed): open the
+# Gallery from the sidebar, add a folder with its card and button, click a
+# piece open, take a part with a dragged box, stamp it twice, finish by
+# picking a tool, take a second part straight from the sidebar's ✂ take,
+# then send the piece to the sourcing studio from the sidebar and leave it.
+size 120 40
+env HOME /tmp/acidtrip-flows/library-03/home
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# Sidebar GALLERY panel, empty so far: its "gallery" button.
+expect "art you view in the Gallery"
+click 95 31
+wait "Local folders"
+wait idle
+# The selected "Add folder" card: one click opens the folder field.
+click 10 15
+wait "Folder ›"
+type crates/acidtrip-io/tests/corpus
+# "⏎ add folder" in the button bar.
+click 5 38
+wait "added"
+wait idle
+# The folder card is selected now: a click opens its grid.
+click 10 15
+wait "⏎  view"
+wait idle
+# Click selects the second piece, a second click views it.
+click 35 6
+wait idle
+click 35 6
+wait "rows 1–"
+wait idle
+expect "BF-TUTOR"
+# "✂ take a part", then a box over three rows of the font sample.
+click 30 37
+wait "drag a box"
+wait idle
+expect "take what's shown"
+drag 15 29 26 31
+wait "took 12x3 from BF-TUTOR"
+wait idle
+shot took
+expect-not "Gallery ─"
+# Two stamps with plain clicks.
+click 20 10
+wait "stamped"
+click 40 20
+wait idle
+# Picking a tool puts the part down for good: the next click draws.
+click 99 2
+wait "BRUSH"
+wait idle
+shot stamped
+# The sidebar remembers the piece: ✂ take goes straight to the box.
+expect "BF-TUTOR"
+click 94 33
+wait "drag a box"
+wait idle
+# Cancel the box with its button: still viewing, not taking.
+click 32 38
+wait "open as document"
+wait idle
+click 30 37
+wait "drag a box"
+drag 2 5 12 5
+wait "took 11x1 from BF-TUTOR"
+wait idle
+click 2 24
+wait "stamped"
+click 99 2
+wait idle
+expect "drawing l "
+# Studio from the sidebar: the piece opens in the sourcing studio.
+click 111 33
+wait "Studio"
+wait idle
+shot studio
+expect "BF-TUTOR"
+expect "Cutting “ASCII tutorial”"
+# Its close button: back to the drawing, the stamps still there.
+click 62 38
+wait idle
+expect-not "Sourcing studio"
+expect "$P²\"^\" gggg"

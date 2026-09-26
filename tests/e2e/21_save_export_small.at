@@ -1,0 +1,30 @@
+# Save / Export at 80x24: mouse mode switch, typed extension, export-only ext refused in Save
+size 80 24
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-s
+wait "Save / Export"
+expect "acidtrip (everything)"
+shot small_save
+# Click the Export button (row 1 is the toggle).
+click 13 1
+wait "Writes a copy"
+expect "PNG image"
+shot small_export
+# Click the Save button again.
+click 5 1
+wait "Keeps working"
+# Typing an export-only extension in Save mode is refused with a hint.
+keys tab tab ctrl-u
+type /tmp/acidtrip-e2e/small.png
+keys enter
+wait "Switch to Export"
+shot small_refused
+# Typing a save format's extension selects it.
+keys ctrl-u
+type /tmp/acidtrip-e2e/small.xb
+wait "›XBin"
+expect "small.xb"
+shot small_typed_ext
+keys esc

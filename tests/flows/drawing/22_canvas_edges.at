@@ -1,0 +1,96 @@
+# Text and line/column edits at the canvas edges: typing past column 79
+# and Enter on the last row warn instead of silently overwriting; inserting
+# a line or column pushes the edge off with a warning (and undo brings it
+# back); deletes at the top-left corner; save and reopen
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# nothing at the edges yet: a plain note
+keys alt-i
+wait "inserted a line at row 0"
+expect-not "fell off"
+keys alt-shift-i
+wait "inserted a column at 0"
+expect-not "fell off"
+keys t
+click 76 3
+type ABCD
+wait "end of the line (80 columns): the next letter replaces this one"
+expect-cell 76 3 "A"
+expect-cell 79 3 "D"
+type E
+wait idle
+expect-cell 79 3 "E"
+keys backspace
+wait idle
+expect-cell 78 3 " "
+expect-cell 79 3 "E"
+# the last row: Enter stays and says how to get more rows
+click 0 25
+type BOTTOM
+keys enter
+wait "last row: make the canvas taller with the 80x25 chip below"
+expect "0,24"
+type X
+wait idle
+expect-cell 0 25 "X"
+expect-cell 1 25 "O"
+keys ctrl-z
+wait "undo: Type"
+expect-cell 0 25 "B"
+# inserting a line at the last row pushes BOTTOM off: a warning, undo restores
+keys esc
+wait "Brush tool"
+keys alt-i
+wait "inserted a line at row 24: the bottom row fell off the canvas (undo brings it back)"
+expect-cell 0 25 " "
+keys ctrl-z
+wait "undo: Insert line"
+expect-cell 0 25 "B"
+# a column at x=78 pushes E off the right edge (a Text click only moves the cursor)
+keys t
+click 78 3
+wait idle
+keys alt-shift-i
+wait "the right column fell off the canvas"
+expect-cell 79 3 " "
+expect-cell 78 3 " "
+keys ctrl-z
+wait "undo: Insert column"
+expect-cell 79 3 "E"
+# deletes at the top-left corner pull the art in
+click 0 1
+type TOP
+keys esc
+wait idle
+click 0 1
+keys alt-shift-y
+wait "deleted column 0"
+expect-cell 0 1 "O"
+expect-cell 75 3 "A"
+keys alt-y
+wait "deleted row 0"
+expect-cell 0 1 " "
+expect-cell 75 2 "A"
+expect-cell 78 2 "E"
+expect-cell 0 24 "O"
+expect-cell 0 25 " "
+keys ctrl-s
+wait "Save"
+keys tab ctrl-u
+type "/tmp/acidtrip-flows/drawing-22/edges.ans"
+keys enter
+wait "saved /tmp/acidtrip-flows/drawing-22/edges.ans"
+expect-file /tmp/acidtrip-flows/drawing-22/edges.ans
+keys ctrl-q
+expect-exit
+spawn /tmp/acidtrip-flows/drawing-22/edges.ans
+wait "Welcome" 10s
+keys esc
+wait idle
+expect-cell 75 2 "A"
+expect-cell 78 2 "E"
+expect-cell 0 24 "O"
+expect "OTTOM"

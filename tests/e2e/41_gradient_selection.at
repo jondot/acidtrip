@@ -1,0 +1,32 @@
+# Gradient in a Modern document: fills only the selection, smooth truecolor,
+# the ⇄ chip runs the ramp the other way
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-n
+wait "New document"
+keys down down right
+keys enter
+wait "Modern"
+keys v
+drag 6 4 50 18
+wait "selected"
+keys d
+wait "in the selection"
+click 104 7
+wait "smooth"
+click 117 6
+wait "⇄"
+click 115 8
+wait "rainbow"
+drag 6 4 50 18
+wait idle
+shot gradient_smooth
+# half blocks on a diagonal
+click 98 7
+wait "half blocks"
+drag 6 18 50 4
+wait idle
+expect "▀"
+shot gradient_halves

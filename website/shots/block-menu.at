@@ -1,0 +1,11 @@
+# The block menu over a selection of the sun.
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys v
+drag 26 14 54 23
+wait idle
+keys enter
+wait idle
+shot block-menu

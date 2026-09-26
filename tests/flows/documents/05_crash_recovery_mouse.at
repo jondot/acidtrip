@@ -1,0 +1,53 @@
+# A crash (SIGKILL) after autosave: the next start offers the piece, and
+# the recovery is answered with the mouse (click the row, click "discard
+# all"). Then: edit a saved file, let autosave run, undo back to the saved
+# state, crash again: nothing stale is offered.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-05/home
+write-file /tmp/acidtrip-flows/documents-05/home/config/config.toml "autosave_seconds = 1\n"
+spawn
+wait "Ctrl-K commands" 10s
+keys t
+type CRASH ONE
+keys esc
+wait "CRASH ONE"
+wait 1500ms
+kill
+spawn
+wait "Recover unsaved work" 10s
+expect "untitled"
+shot dialog
+click 30 19
+wait idle
+expect "Recover unsaved work"
+click 40 22
+wait "discarded recovery files"
+expect-not "Recover unsaved work"
+expect-not "CRASH ONE"
+# A saved file, edited, autosaved, then undone back to what's on disk.
+keys t
+type SAVED TEXT
+keys esc
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-05/art.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-05/art.ans"
+keys t
+keys down
+type LATER
+keys esc
+wait "● art.ans"
+wait 1500ms
+keys ctrl-z
+wait idle
+expect-not "LATER"
+expect-not "● art.ans"
+wait 1500ms
+kill
+spawn
+wait "Ctrl-K commands" 10s
+expect-not "Recover unsaved work"
+keys ctrl-q
+expect-exit 0 5s

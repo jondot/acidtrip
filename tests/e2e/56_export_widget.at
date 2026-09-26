@@ -1,0 +1,48 @@
+# EXPORT panel (Figma-style): set up two rows with the mouse, pick a folder,
+# press Export, and both files are written.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+keys t
+type EXPORT ME
+keys esc
+keys ctrl-e
+wait "EXPORT"
+expect "Whole piece"
+expect "Export 1 file"
+shot widget_open
+# The folder: click it and type one.
+click 100 30
+wait "Export to folder"
+keys ctrl-u
+type /tmp/acidtrip-e2e/widget
+keys enter
+wait "exports go to /tmp/acidtrip-e2e/widget"
+# + add export: a 2x PNG comes next.
+click 95 29
+wait "Export 2 files"
+expect "untitled@2x"
+# The new row's scale chip steps it to 3x (the name follows).
+click 93 29
+wait "untitled@3x"
+# The first row's format chip opens its editor: pick SVG, keep.
+click 113 28
+wait "Export row 1"
+expect "PNG image"
+shot widget_row_editor
+click 37 18
+wait "SVG image"
+expect "writes untitled.svg"
+keys enter
+wait "SVG ▾"
+# The big button writes every row, silently overwriting.
+click 105 32
+wait "exported"
+expect "untitled.svg"
+shot widget_exported
+expect-file /tmp/acidtrip-e2e/widget/untitled.svg /tmp/acidtrip-e2e/widget/untitled@3x.png
+# One undo step per edit: the format change comes back off.
+keys ctrl-z
+wait idle
+expect-not "SVG ▾"

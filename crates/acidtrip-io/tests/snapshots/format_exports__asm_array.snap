@@ -1,0 +1,12 @@
+---
+source: crates/acidtrip-io/tests/format_exports.rs
+expression: "text(Format::AsmArray, &o)"
+---
+; Tiny <test> 6x2 char/attribute pairs (acidtrip)
+ACIDART_WIDTH  EQU 6
+ACIDART_HEIGHT EQU 2
+ACIDART_LENGTH EQU 24
+
+AcidArt LABEL BYTE
+    DB 041h,01Ch,0DBh,00Eh,0DFh,04Ah,03Ch,00Fh,026h,00Fh,020h,007h
+    DB 020h,007h,0B0h,093h,020h,007h,020h,007h,020h,007h,020h,007h

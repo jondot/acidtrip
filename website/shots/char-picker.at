@@ -1,0 +1,8 @@
+# The character picker (Alt-K).
+spawn sunset.acid
+wait "sunset.acid" 10s
+keys esc
+wait idle
+keys alt-k
+wait idle
+shot char-picker

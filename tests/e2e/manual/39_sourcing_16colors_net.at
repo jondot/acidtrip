@@ -1,0 +1,60 @@
+# MANUAL (network; not run by cargo test): browse 16colo.rs → 1997 → twi-9703, load it, cut the Abraxas logo.
+size 120 40
+env ACIDTRIP_OFFLINE ""
+spawn
+wait "Welcome" 10s
+keys esc
+keys ctrl-k
+wait "Commands"
+type harvest
+keys enter
+wait "Sourcing studio"
+# The browser fills itself: years, then 1996's packs.
+wait "1997" 30s
+wait " packs" 30s
+wait idle
+shot browse_open
+keys tab
+keys down
+wait "1997: " 30s
+keys enter
+type twi-97
+wait "twi-9703"
+keys down down
+wait "art files ·" 20s
+wait idle
+shot browse
+keys enter
+wait "candidates" 120s
+wait idle
+shot pack_candidates
+keys down
+wait idle
+keys enter
+wait "Cutting"
+type abraxas
+wait "7 letters"
+wait idle
+shot abraxas_auto
+# By hand: drag the b|r split right, nudge r|a with the keyboard.
+keys esc
+drag 24 12 27 12
+wait idle
+keys tab right
+wait idle
+shot abraxas_manual
+keys enter
+wait "glyphs:" 5s
+wait idle
+shot abraxas_committed
+keys esc esc esc esc
+wait idle
+keys f
+wait "Font text"
+keys /
+type stygian
+keys enter
+keys ctrl-u
+type sabbras
+wait idle
+shot abraxas_font_new_word

@@ -1,0 +1,87 @@
+# Saving somewhere acidtrip can't write: a file where a folder should be,
+# a folder that won't take new files, a folder typed without a name. Each
+# is said inside Save / Export with the path still there to fix, and
+# nothing is written. Then a folder turns read-only under a saved piece:
+# Ctrl-S says why, the piece stays unsaved, and quitting still asks.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-21/home
+write-file /tmp/acidtrip-flows/documents-21/home/config/config.toml "autosave_seconds = 0\n"
+write-file /tmp/acidtrip-flows/documents-21/blocker "not a folder"
+write-file /tmp/acidtrip-flows/documents-21/ro/keep.txt "kept"
+chmod 555 /tmp/acidtrip-flows/documents-21/ro
+spawn
+wait "Ctrl-K commands" 10s
+keys t
+type NOWHERE
+keys esc
+wait "● untitled"
+keys ctrl-s
+wait "Save / Export"
+keys tab ctrl-u
+type /dev/null/x.ans
+keys enter
+wait "/dev/null is a file, not a folder."
+expect "Save / Export"
+expect "/dev/null/x.ans"
+# A file of ours in the way.
+keys ctrl-u
+type /tmp/acidtrip-flows/documents-21/blocker/x.ans
+keys enter
+# Long messages wrap inside the dialog.
+wait "documents-21/blocker is a"
+expect "file, not a folder."
+expect-file-contains /tmp/acidtrip-flows/documents-21/blocker "not a folder"
+# A read-only folder, with and without a missing folder under it.
+keys ctrl-u
+type /tmp/acidtrip-flows/documents-21/ro/x.ans
+keys enter
+wait "Can't write in"
+expect "documents-21/ro. Pick"
+expect "another folder."
+keys ctrl-u
+type /tmp/acidtrip-flows/documents-21/ro/sub/x.ans
+keys enter
+wait idle
+expect "Can't write in"
+expect "documents-21/ro. Pick"
+expect-no-file /tmp/acidtrip-flows/documents-21/ro/x.ans /tmp/acidtrip-flows/documents-21/ro/sub
+# A folder with no file name.
+keys ctrl-u
+type /tmp/acidtrip-flows/documents-21/ro
+keys enter
+wait "That's a folder. Add a file name."
+shot still_open
+# Somewhere fine at last.
+keys ctrl-u
+type /tmp/acidtrip-flows/documents-21/ok/n.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-21/ok/n.ans"
+expect-not "Save / Export"
+expect "  n.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-21/ok/n.ans "NOWHERE"
+# The folder goes read-only under the saved piece.
+keys t
+type 2
+keys esc
+wait "● n.ans"
+chmod 555 /tmp/acidtrip-flows/documents-21/ok
+keys ctrl-s
+wait "save failed: can't write in"
+expect "permission denied"
+expect-not ".tmp"
+shot save_failed
+expect "● n.ans"
+expect-file-not-contains /tmp/acidtrip-flows/documents-21/ok/n.ans "NOWHERE2"
+keys ctrl-q
+wait "Quit anyway?"
+keys n
+wait idle
+# Writable again: the same Ctrl-S goes through.
+chmod 755 /tmp/acidtrip-flows/documents-21/ok
+chmod 755 /tmp/acidtrip-flows/documents-21/ro
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-21/ok/n.ans"
+expect "  n.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-21/ok/n.ans "NOWHERE2"
+keys ctrl-q
+expect-exit 0 5s

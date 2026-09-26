@@ -1,0 +1,54 @@
+# Pattern brush (W, ▦): its own sidebar panel with a live preview. Brush
+# strokes, rectangles and bucket fills with a repeating tile that lines up on
+# the canvas grid, so separate strokes join; right-drag erases.
+size 140 44
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+# The tool button explains itself; the panel shows the pattern by name
+mouse move 125 3
+wait "Pattern — paint with a repeating tile"
+click 125 3
+wait "bricks"
+expect "use selection"
+# Size + is a chip with a tip; one click makes the brush wider
+mouse move 132 7
+wait "bigger brush"
+click 132 7
+wait "Pattern: size 3"
+# Two separate strokes: the bricks join with no seam
+drag 4 4 30 4
+drag 20 6 50 6
+wait idle
+expect "███████ ███"
+shot strokes
+# Right-drag erases the same cells
+drag 40 6 50 6 right
+wait idle
+shot erased
+# Rect mode, then › steps to the next pattern (a box-line wall)
+mouse move 135 5
+wait "next pattern"
+click 128 6
+wait "Pattern: bricks · rect"
+click 135 5
+wait "wall"
+drag 4 12 35 20
+wait idle
+expect "───┬───┴───┬───┴"
+shot rect
+# Fill mode, checkers: click an empty area and the bucket fills around the art
+click 134 6
+wait "Pattern: wall · fill"
+click 135 5
+wait "checkers"
+click 60 22
+wait idle
+expect "████    ████"
+shot fill
+# Each fill is one undo step
+keys ctrl-z
+wait idle
+expect-not "████    ████"
+expect "───┬───┴"

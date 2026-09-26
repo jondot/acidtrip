@@ -1,0 +1,116 @@
+# Colored art saved through Save As into each classic binary/ANSI format
+# in turn (the typed extension picks the format), then every file reopened
+# from the command line: text on both rows is back, the tab is clean.
+size 120 40
+spawn
+wait "Ctrl-K commands" 10s
+keys esc
+# Colored text on two rows, so every format has attributes to carry.
+keys ctrl-down ctrl-down ctrl-down
+keys t
+type ROUND TRIP
+keys esc
+keys ctrl-right ctrl-right
+keys t
+keys down
+type SECOND ROW
+keys esc
+wait idle
+# Save as .ans: the tab moves to the new file.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-11/art.ans
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-11/art.ans"
+expect "art.ans"
+expect-not "● "
+# Save as .xb: the tab moves to the new file.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-11/art.xb
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-11/art.xb"
+expect "art.xb"
+expect-not "● "
+# Save as .bin: the tab moves to the new file.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-11/art.bin
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-11/art.bin"
+expect "art.bin"
+expect-not "● "
+# Save as .adf: the tab moves to the new file.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-11/art.adf
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-11/art.adf"
+expect "art.adf"
+expect-not "● "
+# Save as .idf: the tab moves to the new file.
+keys alt-s
+wait "Save / Export"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/documents-11/art.idf
+keys enter
+wait "saved /tmp/acidtrip-flows/documents-11/art.idf"
+expect "art.idf"
+expect-not "● "
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-11/art.ans
+spawn /tmp/acidtrip-flows/documents-11/art.ans
+wait "Ctrl-K commands" 10s
+keys esc
+wait "ROUND TRIP"
+expect "SECOND ROW"
+expect "art.ans"
+expect-not "● "
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-11/art.xb
+spawn /tmp/acidtrip-flows/documents-11/art.xb
+wait "Ctrl-K commands" 10s
+keys esc
+wait "ROUND TRIP"
+expect "SECOND ROW"
+expect "art.xb"
+expect-not "● "
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-11/art.bin
+spawn /tmp/acidtrip-flows/documents-11/art.bin
+wait "Ctrl-K commands" 10s
+keys esc
+wait "ROUND TRIP"
+expect "SECOND ROW"
+expect "art.bin"
+expect-not "● "
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-11/art.adf
+spawn /tmp/acidtrip-flows/documents-11/art.adf
+wait "Ctrl-K commands" 10s
+keys esc
+wait "ROUND TRIP"
+expect "SECOND ROW"
+expect "art.adf"
+expect-not "● "
+keys ctrl-q
+expect-exit 0 5s
+expect-file /tmp/acidtrip-flows/documents-11/art.idf
+spawn /tmp/acidtrip-flows/documents-11/art.idf
+wait "Ctrl-K commands" 10s
+keys esc
+wait "ROUND TRIP"
+expect "SECOND ROW"
+expect "art.idf"
+expect-not "● "
+shot reopened_idf
+keys ctrl-q
+expect-exit 0 5s

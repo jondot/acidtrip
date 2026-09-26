@@ -1,0 +1,74 @@
+# SAUCE on an .ans: fill it in (Esc first throws the typing away), OK by
+# mouse, save; the record is in the file and comes back on reopen. Undo
+# takes the edit back. Turning "attach" off saves the file without it.
+size 120 40
+env ACIDTRIP_HOME /tmp/acidtrip-flows/documents-16/home
+write-file /tmp/acidtrip-flows/documents-16/home/config/config.toml "autosave_seconds = 0\n"
+write-file /tmp/acidtrip-flows/documents-16/s.ans "SAUCY"
+spawn /tmp/acidtrip-flows/documents-16/s.ans
+wait "Ctrl-K commands" 10s
+expect "SAUCY"
+keys alt-d
+wait "Separate comment lines with |"
+shot empty
+keys ctrl-u
+type THROWN AWAY
+keys esc
+wait idle
+expect-not "Separate comment lines"
+expect-not "● s.ans"
+keys alt-d
+wait "Separate comment lines with |"
+expect-not "THROWN AWAY"
+keys ctrl-u
+type Night Drive
+keys tab ctrl-u
+type jondot
+keys tab ctrl-u
+type ACiD
+keys tab ctrl-u
+keys tab ctrl-u
+type first line | second line
+shot filled
+click 34 26
+wait "SAUCE updated"
+expect "● s.ans"
+keys ctrl-z
+wait idle
+expect-not "● s.ans"
+keys alt-d
+wait "Separate comment lines"
+expect-not "Night Drive"
+keys esc
+keys ctrl-y
+wait "● s.ans"
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-16/s.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-16/s.ans "SAUCE00Night Drive"
+expect-file-contains /tmp/acidtrip-flows/documents-16/s.ans "jondot"
+expect-file-contains /tmp/acidtrip-flows/documents-16/s.ans "COMNTfirst line"
+keys ctrl-q
+expect-exit 0 5s
+spawn /tmp/acidtrip-flows/documents-16/s.ans
+wait "Ctrl-K commands" 10s
+expect "SAUCY"
+expect-not "SAUCE00"
+keys alt-d
+wait "Separate comment lines"
+expect "Night Drive"
+expect "jondot"
+expect "ACiD"
+expect "first line | second line"
+shot reopened
+expect "[x] on"
+# Attach off, by keys: saved without the record.
+keys tab tab tab tab tab space
+wait "[ ] off"
+keys enter
+wait "SAUCE updated"
+keys ctrl-s
+wait "saved /tmp/acidtrip-flows/documents-16/s.ans"
+expect-file-contains /tmp/acidtrip-flows/documents-16/s.ans "SAUCY"
+expect-file-not-contains /tmp/acidtrip-flows/documents-16/s.ans "SAUCE00"
+keys ctrl-q
+expect-exit 0 5s
