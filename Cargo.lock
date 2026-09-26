@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "acidtrip"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "acidtrip-ai",
  "acidtrip-core",
@@ -31,7 +31,7 @@ dependencies = [
 
 [[package]]
 name = "acidtrip-ai"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "acidtrip-core",
  "acidtrip-io",
@@ -51,7 +51,7 @@ dependencies = [
 
 [[package]]
 name = "acidtrip-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "chrono",
  "image",
@@ -68,7 +68,7 @@ dependencies = [
 
 [[package]]
 name = "acidtrip-harness"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "acidtrip-core",
  "anyhow",
@@ -84,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "acidtrip-io"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "acidtrip-core",
  "anyhow",
@@ -115,7 +115,7 @@ dependencies = [
 
 [[package]]
 name = "acidtrip-net"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "acidtrip-core",
  "anyhow",
