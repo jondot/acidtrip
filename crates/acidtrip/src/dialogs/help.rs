@@ -11,7 +11,10 @@ use ratatui::widgets::{Paragraph, Wrap};
 use super::{Dialog, Outcome};
 use crate::actions::Action;
 use crate::app::App;
-use crate::ui::widgets::{centered, popup, theme};
+use crate::ui::widgets::{centered, hint_fits_border, popup, theme};
+
+const HINT: &str = "↑↓ PgDn scroll · any other key closes";
+const SHORT_HINT: &str = "↑↓ scroll · Esc closes";
 
 pub struct HelpDialog {
     welcome: bool,
@@ -112,7 +115,9 @@ impl Dialog for HelpDialog {
         // As tall as the screen allows; the width stays clear of the sidebar.
         let r = centered(area, 100, area.height.saturating_sub(4).clamp(34, 50));
         let title = if self.welcome { "Welcome to acidtrip" } else { "Help" };
-        let inner = popup(f, r, title, "↑↓ PgDn scroll · any other key closes");
+        // The short hint on a narrow terminal, so it keeps to the border.
+        let hint = [HINT, SHORT_HINT].into_iter().find(|h| hint_fits_border(h, r.width)).unwrap_or(SHORT_HINT);
+        let inner = popup(f, r, title, hint);
         let km = &app.keymap;
         let k = |a: Action| km.key_for(a).unwrap_or_default();
         let mut left = vec![];

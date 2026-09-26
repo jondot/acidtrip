@@ -1,0 +1,27 @@
+# The Layers dialog's key hint sits inside the dialog with a column of room
+# on both sides; on a narrow terminal it wraps between its keys instead of
+# running into the border.
+size 120 40
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+keys ctrl-l
+wait "M merge down"
+expect "V show/hide · L lock · F reference (no export) · R rename · M merge down   │"
+expect-not "merge down│"
+shot layers_wide
+keys esc
+wait idle
+size 60 20
+wait idle
+keys ctrl-l
+wait "M merge down"
+expect "│ V show/hide · L lock · F reference (no export) ·"
+expect "│ R rename · M merge down"
+expect-not "╰hift"
+shot layers_narrow
+keys esc
+wait idle
+keys ctrl-q
+expect-exit 0 5s

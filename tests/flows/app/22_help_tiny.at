@@ -1,0 +1,31 @@
+# Help at 30x10: the hint on its bottom border fits whole (a shorter one
+# stands in for the long one), nothing on the border is clipped, and the
+# sheet still scrolls and closes.
+size 30 10
+spawn
+wait 1s
+keys esc
+wait idle
+keys ?
+wait "Help"
+expect "↑↓ scroll · Esc closes"
+expect-not "any other key"
+expect-not "roll · any"
+shot help_tiny
+keys pgdn
+wait idle
+expect "↑↓ scroll · Esc closes"
+keys esc
+wait idle
+expect-not "Esc closes"
+# wide enough, the long hint is back
+size 100 30
+wait idle
+keys ?
+wait "Help"
+expect "↑↓ PgDn scroll · any other key closes"
+shot help_wide
+keys esc
+wait idle
+keys ctrl-q
+expect-exit 0 5s

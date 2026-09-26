@@ -55,14 +55,107 @@ pub fn popup(f: &mut Frame, area: Rect, title: &str, hint: &str) -> Rect {
         .border_style(Style::new().fg(theme::ACCENT))
         .title(Span::styled(format!(" {title} "), Style::new().fg(theme::ACCENT).add_modifier(Modifier::BOLD)))
         .style(Style::new().bg(theme::PANEL).fg(theme::TEXT));
-    // No hint, no gap in the border.
-    if !hint.is_empty() {
+    // No hint, no gap in the border. A hint too long for the border (a
+    // narrow terminal) goes inside, wrapped, rather than lose its end.
+    let on_border = hint_fits_border(hint, area.width);
+    if !hint.is_empty() && on_border {
         block = block
             .title_bottom(Line::from(Span::styled(format!(" {hint} "), Style::new().fg(theme::DIM))).right_aligned());
     }
-    let inner = block.inner(area);
+    let mut inner = block.inner(area);
     f.render_widget(block, area);
+    if !hint.is_empty() && !on_border {
+        inner = hint_inside(f, inner, hint);
+    }
     inner
+}
+
+/// Whether ` hint ` fits the bottom border of a popup `width` wide, between
+/// its corners.
+pub fn hint_fits_border(hint: &str, width: u16) -> bool {
+    unicode_width::UnicodeWidthStr::width(hint) + 2 + 2 <= width as usize
+}
+
+/// Draws `hint` wrapped in the bottom rows of `inner`, a cell of padding on
+/// each side; returns what is left above it.
+pub fn hint_inside(f: &mut Frame, inner: Rect, hint: &str) -> Rect {
+    let rows = wrap_hint(hint, inner.width.saturating_sub(2) as usize);
+    let n = (rows.len() as u16).min(inner.height.saturating_sub(1));
+    let y = inner.bottom() - n;
+    for (k, row) in rows.into_iter().take(n as usize).enumerate() {
+        f.render_widget(
+            Paragraph::new(Span::styled(row, Style::new().fg(theme::DIM))),
+            Rect::new(inner.x + 1, y + k as u16, inner.width.saturating_sub(2), 1),
+        );
+    }
+    Rect { height: inner.height - n, ..inner }
+}
+
+/// `text` word-wrapped to rows of at most `width` columns; a word longer
+/// than a row is broken inside.
+pub fn wrap_words(text: &str, width: usize) -> Vec<String> {
+    use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+    let width = width.max(1);
+    let mut rows: Vec<String> = vec![];
+    let mut cur = String::new();
+    for word in text.split(' ') {
+        let sep = usize::from(!cur.is_empty());
+        if cur.width() + sep + word.width() <= width {
+            if sep == 1 {
+                cur.push(' ');
+            }
+            cur.push_str(word);
+            continue;
+        }
+        if !cur.is_empty() {
+            rows.push(std::mem::take(&mut cur));
+        }
+        for c in word.chars() {
+            if cur.width() + c.width().unwrap_or(0) > width {
+                rows.push(std::mem::take(&mut cur));
+            }
+            cur.push(c);
+        }
+    }
+    if !cur.is_empty() || rows.is_empty() {
+        rows.push(cur);
+    }
+    rows
+}
+
+/// A key hint ("a · b · c") broken into rows of at most `width` columns,
+/// between its " · " parts where it can, between words where it must.
+pub fn wrap_hint(hint: &str, width: usize) -> Vec<String> {
+    use unicode_width::UnicodeWidthStr;
+    let width = width.max(1);
+    let mut rows: Vec<String> = vec![];
+    let mut cur = String::new();
+    let parts: Vec<&str> = hint.split(" · ").collect();
+    for (i, part) in parts.iter().enumerate() {
+        let joined = if cur.is_empty() { part.to_string() } else { format!("{cur} · {part}") };
+        // Room for the " ·" a row broken after it ends in.
+        let tail = if i + 1 < parts.len() { 2 } else { 0 };
+        if joined.width() + tail <= width {
+            cur = joined;
+            continue;
+        }
+        if !cur.is_empty() {
+            rows.push(std::mem::take(&mut cur) + " ·");
+        }
+        // One part wider than a row: break it between words.
+        for word in part.split(' ') {
+            let joined = if cur.is_empty() { word.to_string() } else { format!("{cur} {word}") };
+            if joined.width() <= width || cur.is_empty() {
+                cur = joined;
+            } else {
+                rows.push(std::mem::replace(&mut cur, word.to_string()));
+            }
+        }
+    }
+    if !cur.is_empty() {
+        rows.push(cur);
+    }
+    rows
 }
 
 /// Single-line text input with a cursor.
@@ -460,6 +553,31 @@ pub fn wrap(text: &str, width: usize) -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hints_wrap_between_parts() {
+        let h = "↑↓ select · N new · D duplicate · Esc close";
+        assert_eq!(wrap_hint(h, 80), vec![h.to_string()]);
+        assert_eq!(wrap_hint(h, 24), vec!["↑↓ select · N new ·", "D duplicate · Esc close"]);
+        // A part wider than a row breaks between words.
+        assert_eq!(wrap_hint("any other key closes", 10), vec!["any other", "key closes"]);
+        for row in wrap_hint("V show/hide · L lock · F reference (not exported) · R rename", 20) {
+            assert!(unicode_width::UnicodeWidthStr::width(row.as_str()) <= 20, "{row}");
+        }
+    }
+
+    #[test]
+    fn words_wrap_and_long_ones_break() {
+        assert_eq!(wrap_words("one two three", 7), vec!["one two", "three"]);
+        assert_eq!(wrap_words("/a/very/long/path", 6), vec!["/a/ver", "y/long", "/path"]);
+        assert_eq!(wrap_words("", 5), vec![""]);
+    }
+
+    #[test]
+    fn long_hints_leave_the_border() {
+        assert!(hint_fits_border("↑↓ scroll · Esc closes", 30));
+        assert!(!hint_fits_border("↑↓ PgDn scroll · any other key closes", 30));
+    }
 
     #[test]
     fn fuzzy_prefers_substrings() {

@@ -13,7 +13,7 @@ use super::{Dialog, Outcome};
 use crate::actions::Action;
 use crate::app::App;
 use crate::ui::minimap;
-use crate::ui::widgets::{centered, popup, theme};
+use crate::ui::widgets::{centered, hint_inside, popup, theme};
 
 const ROW_H: u16 = 4;
 const THUMB_W: u16 = 20;
@@ -71,12 +71,10 @@ impl Dialog for LayersDialog {
         let h = (layers.len() as u16 * ROW_H + 5).min(area.height.saturating_sub(2)).max(12);
         let r = centered(area, 78, h);
         let inner = popup(f, r, "Layers", "↑↓ select · Shift-↑↓ move · N new · D duplicate · X delete · Esc close");
-        let keys = Line::from(Span::styled(
-            " V show/hide · L lock · F reference (not exported) · R rename · M merge down",
-            Style::new().fg(theme::DIM),
-        ));
-        f.render_widget(Paragraph::new(keys), Rect::new(inner.x, inner.bottom().saturating_sub(1), inner.width, 1));
-        let list_h = inner.height.saturating_sub(1);
+        // The key hint keeps a cell clear of the border on each side, and
+        // wraps between keys on a narrow terminal.
+        let list = hint_inside(f, inner, "V show/hide · L lock · F reference (no export) · R rename · M merge down");
+        let list_h = list.height;
         let per_page = (list_h / ROW_H).max(1) as usize;
         // Top layer first; keep the active one visible.
         let order: Vec<usize> = (0..layers.len()).rev().collect();
