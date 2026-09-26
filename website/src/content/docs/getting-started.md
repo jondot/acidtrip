@@ -44,8 +44,10 @@ Terminals that report exact mouse pixels (kitty, WezTerm, Ghostty, xterm and oth
 ## The screen
 
 - **The canvas** takes the left side. Drag with the mouse to paint.
-- **The sidebar** is a stack of panels: TOOLS, the active tool's options, COLORS, CHARACTERS, LAYERS, GALLERY and the MAP. Every option shows all its choices as chips you click, so nothing hides behind a key. <kbd>Ctrl-B</kbd> hides and shows it.
+- **The sidebar** is a stack of panels: TOOLS, the active tool's options, COLORS, CHARACTERS, LAYERS, GALLERY and the MAP. Every option shows all its choices as chips you click, so nothing hides behind a key. <kbd>Ctrl-B</kbd> hides and shows it. On a short terminal the panels that don't fit fold to a title bar (`▸ LAYERS  show`). Click one to open it, and the others fold to make room.
 - **The status bar** runs along the bottom. Hover over anything, in the sidebar or the status bar, and it says what that thing does and its key.
+
+A message too long for the status bar ends in `…`. Hover over it to read it whole, or click it for the message history. Palette › *Message history…* shows every message of the session.
 
 The status bar is clickable too. The canvas size (`80x25`) opens *Canvas size*. `CLASSIC` / `MODERN` switches the document kind, and `iCE` toggles iCE colors. <kbd>Ctrl-Z</kbd> undoes any of them.
 

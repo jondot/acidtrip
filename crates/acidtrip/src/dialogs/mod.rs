@@ -24,6 +24,7 @@ pub mod help;
 pub mod import;
 pub mod layers;
 pub mod library;
+pub mod messages;
 pub mod palette;
 pub mod patterns;
 pub mod playback;

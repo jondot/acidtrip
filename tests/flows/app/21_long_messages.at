@@ -1,0 +1,54 @@
+# A message longer than the room left in the status bar is cut short with
+# "…", and the bar stays one tidy row. Hovering the cut message shows it
+# whole above the bar (and keeps it from expiring), a click opens the
+# message history, and the palette reaches the same history.
+size 80 24
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+expect "T typ…"
+expect-not "draw with the mouse"
+shot cut
+# hover: the whole message, in a box over the bar
+mouse move 70 23
+wait "draw with the mouse"
+expect "click: message history"
+shot hover
+# it stays while the mouse is on it, well past its usual 8 seconds
+wait 9s
+expect "draw with the mouse"
+expect "T typ…"
+# a click opens the history, the message whole in it
+click 70 23
+wait "Messages"
+expect "Ctrl-K commands · ? help · T type · draw with the mouse"
+shot history
+keys esc
+wait idle
+expect-not "Messages"
+# the mouse leaves: the box goes with it
+mouse move 20 10
+wait idle
+expect-not "click: message history"
+# the palette: Message history…, with every message of the session
+keys ctrl-k
+type message history
+wait "▸Message history"
+keys enter
+wait "Messages"
+expect "draw with the mouse"
+shot history_palette
+keys esc
+wait idle
+# a message that fits is not cut and not a button
+size 160 30
+wait idle
+keys ctrl-k
+type toggle grid
+wait "▸Toggle grid"
+keys enter
+wait idle
+expect-not "…"
+keys ctrl-q
+expect-exit 0 5s

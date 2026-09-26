@@ -1,0 +1,72 @@
+# A 20-row terminal: the sidebar can't fit every panel, so the ones that
+# don't fit fold to their title bars instead of dropping out. A click on a
+# bar opens that panel (the others fold to make room), CHARACTERS and LAYERS
+# stay reachable and work, an asked-for panel opens first, and a taller
+# terminal brings the full sidebar back.
+size 120 20
+spawn
+wait "Welcome" 10s
+keys esc
+wait idle
+expect "COLORS"
+expect "▸ CHARACTERS"
+expect "▸ LAYERS"
+shot folded
+# the bar says what a click does
+mouse move 100 18
+wait "show the LAYERS panel"
+# layers: open, add one, it is used
+click-text "▸ LAYERS"
+wait "≡ panel"
+expect "Background"
+expect "▸ COLORS"
+expect-not "▸ LAYERS"
+shot layers_open
+click-text "+"
+wait "L2/2"
+shot layer_added
+# characters fit beside the layers, so they open too: pick a glyph there
+# and draw with it
+expect "blocks & shades"
+expect-not "▸ CHARACTERS"
+click 98 14
+wait idle
+drag 5 5 12 5
+wait idle
+expect "▒▒▒▒▒▒▒▒"
+# back to the colors
+click-text "▸ COLORS"
+wait idle
+expect-not "▸ COLORS"
+shot colors_open
+# the frames panel, asked for, opens first: the tool options fold to a bar
+keys ctrl-k
+type frames: animation
+wait "▸Frames"
+keys enter
+wait "FRAMES 1/1"
+expect "▸ BRUSH"
+expect "▸ LAYERS"
+shot frames_open
+click-text "▸ BRUSH"
+wait "paint the glyph"
+expect "▸ FRAMES"
+shot options_back
+# tall enough: every panel open, no bars
+size 120 40
+wait idle
+expect "CHARACTERS"
+expect "LAYERS"
+expect "FRAMES 1/1"
+expect-not "▸ LAYERS"
+expect-not "▸ CHARACTERS"
+shot tall
+keys ctrl-s
+wait "Save as"
+keys tab ctrl-u
+type /tmp/acidtrip-flows/app-23/short.ans
+keys enter
+wait "saved"
+expect-file /tmp/acidtrip-flows/app-23/short.ans
+keys ctrl-q
+expect-exit 0 5s

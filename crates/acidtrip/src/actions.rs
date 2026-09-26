@@ -204,6 +204,7 @@ actions! {
     // App
     CommandPalette => "palette", "Command palette", "App";
     Help => "help", "Help & keys", "App";
+    Messages => "messages", "Message history…", "App";
     Settings => "settings", "Open settings file", "App";
     ReloadConfig => "reload_config", "Reload settings", "App";
 }

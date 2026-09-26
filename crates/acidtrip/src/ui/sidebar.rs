@@ -59,6 +59,32 @@ pub enum LayerOp {
     Panel,
 }
 
+/// A panel under the tool options that folds to its title bar when the
+/// sidebar is too short for all of them.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Fold {
+    /// The active tool's options (or the Together / Replay panel there).
+    Options,
+    Colors,
+    Chars,
+    Frames,
+    Export,
+    Layers,
+}
+
+impl Fold {
+    pub fn name(self) -> &'static str {
+        match self {
+            Fold::Options => "OPTIONS",
+            Fold::Colors => "COLORS",
+            Fold::Chars => "CHARACTERS",
+            Fold::Frames => "FRAMES",
+            Fold::Export => "EXPORT",
+            Fold::Layers => "LAYERS",
+        }
+    }
+}
+
 /// A tool option chip.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Opt {
@@ -143,6 +169,10 @@ pub enum Hit {
     PatternStep(i32),
     /// Something in the EXPORT panel.
     Export(ExportHit),
+    /// A folded panel's title bar: opens it.
+    Unfold(Fold),
+    /// The status bar's message, when it had to be cut short.
+    Message,
 }
 
 /// The EXPORT panel's controls.
@@ -193,6 +223,9 @@ pub struct SidebarView<'a> {
     pub together: Option<&'a crate::together::Together>,
     /// The replay, while one is on screen.
     pub replay: Option<&'a ReplayView>,
+    /// The panel last opened from its folded title, kept open first when
+    /// the sidebar is too short for every panel.
+    pub open: Option<Fold>,
 }
 
 /// Where previews landed, so a graphics-capable terminal can paint real
@@ -306,22 +339,28 @@ pub fn draw(f: &mut Frame, area: Rect, v: &SidebarView, hits: &mut Vec<(Rect, Hi
     let mut p = Painter { f, hits, hover: v.hover, x0: inner.x + 1, y: inner.y, bottom: inner.bottom() };
 
     tools_panel(&mut p, v);
-    match (v.replay, v.together, v.art) {
-        (Some(r), _, _) => replay_panel(&mut p, r),
-        (None, Some(t), _) => {
-            let area = Rect::new(p.x0, p.y, INNER, OPTION_ROWS + 1);
-            super::together::panel(p.f, p.hits, p.hover, area, t);
-            p.y += OPTION_ROWS + 1;
-        }
-        (None, None, Some(board)) => art_panel(&mut p, v, board),
-        (None, None, None) if v.tools.tool == Tool::Pattern => pattern_panel(&mut p, v),
-        (None, None, None) if v.tools.tool == Tool::Gradient => gradient_panel(&mut p, v),
-        (None, None, None) if v.tools.tool == Tool::Filters => filters_panel(&mut p, v),
-        (None, None, None) if v.tools.tool == Tool::Recolor => recolor_panel(&mut p, v),
-        (None, None, None) => options_panel(&mut p, v),
+    // Rows the export and frames panels need, when open.
+    let export_h = if v.tab.export_panel { 1 + export_rows(v) } else { 0 };
+    let frames_h = if v.tab.frames_panel { 1 + FRAMES_ROWS } else { 0 };
+    let below = folds(v);
+    // A panel opened from its title that can't fit beside the options even
+    // with the rest folded: the options fold too, to one bar.
+    let fold_options = v.open.is_some_and(|f| {
+        below.contains(&f) && !p.room(OPTION_ROWS + 1 + fold_height(v, f) + below.len() as u16 - 1)
+    });
+    if fold_options {
+        fold_bar(&mut p, Fold::Options, &options_name(v));
+    } else {
+        options(&mut p, v);
+    }
+    // Too short for every panel below the options (layers at their
+    // smallest): the panels fold to their title bars, and a click opens one.
+    let mut out = Previews::default();
+    if fold_options || !p.room(7 + 5 + frames_h + export_h + 4) {
+        folded_panels(&mut p, v, &below, &mut out);
+        return out;
     }
     // An open EXPORT panel keeps its rows: colors and characters give way.
-    let export_h = if v.tab.export_panel { 1 + export_rows(v) } else { 0 };
     if p.room(8 + export_h) {
         p.gap();
         colors_panel(&mut p, v);
@@ -340,7 +379,6 @@ pub fn draw(f: &mut Frame, area: Rect, v: &SidebarView, hits: &mut Vec<(Rect, Hi
         p.gap();
         export_panel(&mut p, v);
     }
-    let mut out = Previews::default();
     let gallery_h = gallery_rows(v.recent);
     // Layers at their smallest (gap, header, one layer, buttons), then the
     // gallery, and the minimap keeps at least 4 rows under it.
@@ -372,6 +410,124 @@ pub fn draw(f: &mut Frame, area: Rect, v: &SidebarView, hits: &mut Vec<(Rect, Hi
         out.minimap = Some((area, g));
     }
     out
+}
+
+/// The active tool's options, or the Together / Replay panel in their place.
+fn options(p: &mut Painter, v: &SidebarView) {
+    match (v.replay, v.together, v.art) {
+        (Some(r), _, _) => replay_panel(p, r),
+        (None, Some(t), _) => {
+            let area = Rect::new(p.x0, p.y, INNER, OPTION_ROWS + 1);
+            super::together::panel(p.f, p.hits, p.hover, area, t);
+            p.y += OPTION_ROWS + 1;
+        }
+        (None, None, Some(board)) => art_panel(p, v, board),
+        (None, None, None) if v.tools.tool == Tool::Pattern => pattern_panel(p, v),
+        (None, None, None) if v.tools.tool == Tool::Gradient => gradient_panel(p, v),
+        (None, None, None) if v.tools.tool == Tool::Filters => filters_panel(p, v),
+        (None, None, None) if v.tools.tool == Tool::Recolor => recolor_panel(p, v),
+        (None, None, None) => options_panel(p, v),
+    }
+}
+
+/// What the options slot shows, for its folded bar.
+fn options_name(v: &SidebarView) -> String {
+    if v.replay.is_some() {
+        "REPLAY".into()
+    } else if v.together.is_some() {
+        "TOGETHER".into()
+    } else if v.art.is_some() {
+        "ART".into()
+    } else {
+        v.tools.tool.name().to_uppercase()
+    }
+}
+
+/// The panels under the options, top to bottom.
+fn folds(v: &SidebarView) -> Vec<Fold> {
+    let mut panels = vec![Fold::Colors, Fold::Chars];
+    if v.tab.frames_panel {
+        panels.push(Fold::Frames);
+    }
+    if v.tab.export_panel {
+        panels.push(Fold::Export);
+    }
+    panels.push(Fold::Layers);
+    panels
+}
+
+/// Rows a panel under the options takes open, without a gap.
+fn fold_height(v: &SidebarView, f: Fold) -> u16 {
+    match f {
+        Fold::Options => OPTION_ROWS + 1,
+        Fold::Colors => 6,
+        Fold::Chars => 4,
+        Fold::Frames => FRAMES_ROWS,
+        Fold::Export => export_rows(v),
+        // Header, one layer, the buttons; it takes what is left.
+        Fold::Layers => 3,
+    }
+}
+
+/// The panels below the options on a short sidebar: no gaps, each one open
+/// or folded to its title bar. The one last opened by a click stays open,
+/// then a panel that was asked for (export, frames), then the rest in
+/// order, while they fit; whatever is left folds.
+fn folded_panels(p: &mut Painter, v: &SidebarView, panels: &[Fold], out: &mut Previews) {
+    let open = unfolded(panels, v.open, p.bottom.saturating_sub(p.y), |f| fold_height(v, f));
+    for &f in panels {
+        if p.y >= p.bottom {
+            break;
+        }
+        if !open.contains(&f) {
+            fold_bar(p, f, f.name());
+            continue;
+        }
+        match f {
+            Fold::Colors => colors_panel(p, v),
+            Fold::Chars => chars_panel(p, v),
+            Fold::Frames => frames_panel(p, v),
+            Fold::Export => export_panel(p, v),
+            Fold::Layers => layers_panel(p, v, 0, out),
+            Fold::Options => options(p, v),
+        }
+    }
+}
+
+/// Which of `panels` open in `rows` rows, a folded one taking one row:
+/// `first`, then export and frames, then the rest in order.
+fn unfolded(panels: &[Fold], first: Option<Fold>, rows: u16, height: impl Fn(Fold) -> u16) -> Vec<Fold> {
+    let mut order: Vec<Fold> = first.into_iter().filter(|f| panels.contains(f)).collect();
+    for f in [Fold::Export, Fold::Frames].iter().chain(panels) {
+        if panels.contains(f) && !order.contains(f) {
+            order.push(*f);
+        }
+    }
+    let mut open = vec![];
+    let mut used = panels.len() as u16;
+    for f in order {
+        let h = height(f);
+        if used - 1 + h <= rows {
+            used += h - 1;
+            open.push(f);
+        }
+    }
+    open
+}
+
+/// A folded panel: its title bar alone, a click opens it.
+fn fold_bar(p: &mut Painter, f: Fold, name: &str) {
+    let hit = Hit::Unfold(f);
+    let bar = Style::new().bg(if p.hover == Some(hit) { theme::BORDER } else { theme::PANEL_HI });
+    let r = Rect::new(p.x0 - 1, p.y, INNER + 1, 1);
+    let pad = (INNER as usize).saturating_sub(2 + name.chars().count());
+    let line = Line::from(vec![
+        Span::styled(format!("  ▸ {name}"), Style::new().fg(theme::TEXT).add_modifier(Modifier::BOLD)),
+        Span::styled(format!("{:>pad$}", "show "), Style::new().fg(theme::ACCENT2)),
+    ]);
+    p.f.render_widget(Paragraph::new(line).style(bar), r);
+    p.hits.push((r, hit));
+    p.y += 1;
 }
 
 fn title(s: &str) -> Line<'static> {
@@ -1928,6 +2084,9 @@ pub fn tip(hit: Hit, ts: &ToolState, keymap: &Keymap, slot: Slot) -> String {
             format!("{}{}", a.title(), key(a))
         }
         Hit::Minimap => "click or drag to jump there".into(),
+        Hit::Unfold(Fold::Options) => "show the tool options (the panels below fold)".into(),
+        Hit::Unfold(f) => format!("show the {} panel (others fold to make room)", f.name()),
+        Hit::Message => "click for the message history".into(),
         Hit::Recent(_) => "recently viewed: click to select, click again to view it".into(),
         Hit::RecentStep(_) => "the next / previous recently viewed piece".into(),
         Hit::TakePart => "take a part: drag a box over the piece and it becomes a paste".into(),
@@ -1939,5 +2098,40 @@ pub fn tip(hit: Hit, ts: &ToolState, keymap: &Keymap, slot: Slot) -> String {
             if d < 0 { "previous" } else { "next" },
             key(if d < 0 { Action::ToolStyle } else { Action::ToolOption })
         ),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn h(f: Fold) -> u16 {
+        match f {
+            Fold::Colors => 6,
+            Fold::Chars => 4,
+            Fold::Frames => 5,
+            _ => 3,
+        }
+    }
+
+    #[test]
+    fn short_sidebars_open_what_fits_and_fold_the_rest() {
+        let panels = [Fold::Colors, Fold::Chars, Fold::Layers];
+        // Room for all three: nothing folds.
+        assert_eq!(unfolded(&panels, None, 13, h), panels.to_vec());
+        // Eight rows: colors first, the others fold to a bar each.
+        assert_eq!(unfolded(&panels, None, 8, h), vec![Fold::Colors]);
+        // A panel asked for comes first; what still fits opens with it.
+        assert_eq!(unfolded(&panels, Some(Fold::Layers), 8, h), vec![Fold::Layers, Fold::Chars]);
+        // Every panel keeps at least its bar.
+        assert!(unfolded(&panels, Some(Fold::Colors), 3, h).is_empty());
+    }
+
+    #[test]
+    fn an_open_frames_panel_comes_before_the_colors() {
+        let panels = [Fold::Colors, Fold::Chars, Fold::Frames, Fold::Layers];
+        assert_eq!(unfolded(&panels, None, 12, h), vec![Fold::Frames, Fold::Chars]);
+        // A panel not shown can't be asked for.
+        assert_eq!(unfolded(&panels[..2], Some(Fold::Frames), 7, h), vec![Fold::Colors]);
     }
 }

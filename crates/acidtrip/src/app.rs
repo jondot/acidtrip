@@ -30,6 +30,9 @@ use crate::tools_ctl::{self, Button, FloatSource, Floating, Tool, ToolState};
 use crate::ui::canvas::CanvasGeom;
 use crate::ui::sidebar::{Hit, LayerOp, Opt, Slot};
 
+/// Messages the message history keeps.
+pub const MSG_LOG_MAX: usize = 200;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Level {
     Info,
@@ -60,6 +63,9 @@ pub struct App {
     pub stencils: StencilLibrary,
     pub dialogs: Vec<Box<dyn Dialog>>,
     pub msg: Option<(String, Level, Instant)>,
+    /// Every message flashed this session, oldest first (capped): the
+    /// status bar cuts long ones short, the message history shows them whole.
+    pub msg_log: Vec<(String, Level, Instant)>,
     pub geom: CanvasGeom,
     pub sidebar_hits: Vec<(Rect, Hit)>,
     pub show_sidebar: bool,
@@ -110,6 +116,8 @@ pub struct App {
     /// When the mouse reached `side_hover`: a message flashed after that
     /// (the click's result) wins over the tip.
     pub side_hover_at: Instant,
+    /// The sidebar panel last opened from its folded title (short terminals).
+    pub side_open: Option<crate::ui::sidebar::Fold>,
     /// Art mode: the left hand types glyphs from the board, the right moves.
     pub artboard: acidtrip_io::artboard::ArtBoard,
     /// Pieces recently viewed in the Gallery (the sidebar's strip).
@@ -161,6 +169,7 @@ impl App {
             stencils,
             dialogs: vec![],
             msg: None,
+            msg_log: vec![],
             geom: CanvasGeom::default(),
             sidebar_hits: vec![],
             quit: false,
@@ -189,6 +198,7 @@ impl App {
             side_drag: None,
             side_hover: None,
             side_hover_at: Instant::now(),
+            side_open: None,
             artboard,
             recent,
             side_preview: None,
@@ -272,7 +282,17 @@ impl App {
     }
 
     pub fn flash(&mut self, text: impl Into<String>, level: Level) {
-        self.msg = Some((text.into(), level, Instant::now()));
+        let text = text.into();
+        let now = Instant::now();
+        match self.msg_log.last_mut() {
+            // The same news again (a key held down) is one entry.
+            Some(last) if last.0 == text && last.1 == level => last.2 = now,
+            _ => self.msg_log.push((text.clone(), level, now)),
+        }
+        if self.msg_log.len() > MSG_LOG_MAX {
+            self.msg_log.remove(0);
+        }
+        self.msg = Some((text, level, now));
     }
 
     /// No mouse button held (for hover previews).
@@ -795,7 +815,8 @@ impl App {
 
     fn sidebar_click(&mut self, hit: Hit, alt: bool, pos: (u16, u16)) {
         // Replay is a view: anything but its own panel (and views) goes back to drawing.
-        if self.replay_on() && !matches!(hit, Hit::Replay(_) | Hit::Act(_) | Hit::Minimap) {
+        let view = matches!(hit, Hit::Replay(_) | Hit::Act(_) | Hit::Minimap | Hit::Unfold(_) | Hit::Message);
+        if self.replay_on() && !view {
             self.replay = None;
         }
         match hit {
@@ -866,6 +887,8 @@ impl App {
                 self.flash("select an area first (V, drag)", Level::Warn)
             }
             Hit::Act(a) => self.run(a),
+            Hit::Unfold(f) => self.side_open = Some(f),
+            Hit::Message => self.run(Action::Messages),
             Hit::Minimap => self.minimap_jump(pos),
             Hit::UsedColor(c) => {
                 self.tools.fx.recolor.from = Some(c);
@@ -1487,6 +1510,15 @@ impl App {
     pub fn run(&mut self, a: Action) {
         use Action::*;
         self.replay_before(a);
+        // A panel just asked for opens first on a short sidebar, ahead of
+        // one opened from its folded title earlier (the options slot holds
+        // Replay and Together, so those leave the rest to the default).
+        match a {
+            Export => self.side_open = Some(crate::ui::sidebar::Fold::Export),
+            FramesPanel => self.side_open = Some(crate::ui::sidebar::Fold::Frames),
+            Replay | TogetherPanel => self.side_open = None,
+            _ => {}
+        }
         let (w, h) = (self.tab().doc.width(), self.tab().doc.height());
         match a {
             New => self.dialogs.push(Box::new(dialogs::forms::new_doc_dialog(self))),
@@ -2063,6 +2095,7 @@ impl App {
             }
             CommandPalette => self.dialogs.push(Box::new(dialogs::palette::CommandPalette::new(self))),
             Help => self.dialogs.push(Box::new(dialogs::help::HelpDialog::new())),
+            Messages => self.dialogs.push(Box::new(dialogs::messages::MessagesDialog::new())),
             Settings => self.open_settings(),
             ReloadConfig => self.reload_config(),
         }
@@ -2594,8 +2627,10 @@ impl App {
             }
             self.active = cur;
         }
+        // A message under the mouse (being read whole) stays.
         if let Some((_, _, at)) = &self.msg
             && at.elapsed() > Duration::from_secs(8)
+            && self.side_hover != Some(Hit::Message)
         {
             self.msg = None;
             changed = true;

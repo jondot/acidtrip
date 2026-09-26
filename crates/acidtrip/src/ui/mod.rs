@@ -119,12 +119,16 @@ fn draw_frame(f: &mut Frame, app: &mut App) {
             recent: &app.recent,
             together: app.together.panel.then_some(&app.together),
             replay: app.replay.as_ref(),
+            open: app.side_open,
         };
         let previews = sidebar::draw(f, side, &sv, &mut hits);
         app.sidebar_hits = hits;
         app.minimap_rect = previews.minimap.map(|(_, g)| g);
         previews_out = Some(previews);
     }
+    // Taken before the status bar too: a message shown whole above it may
+    // cover the minimap.
+    let snapshots = if app.thumbs.is_some() { snapshot(f, previews_out.as_ref()) } else { vec![] };
     let mut hits = vec![];
     draw_status(f, status, app, &mut hits);
     draw_top(f, top, app, &mut hits);
@@ -142,7 +146,6 @@ fn draw_frame(f: &mut Frame, app: &mut App) {
         }
     }
 
-    let snapshots = if app.thumbs.is_some() { snapshot(f, previews_out.as_ref()) } else { vec![] };
     // Dialogs draw bottom to top; each gets the full area.
     let mut dialogs = std::mem::take(&mut app.dialogs);
     let mut top = None;
@@ -362,8 +365,10 @@ fn draw_status(f: &mut Frame, area: Rect, app: &App, hits: &mut Vec<(Rect, Hit)>
         let st = if app.side_hover == Some(hit) { st.bg(theme::BORDER) } else { st };
         parts.push((Span::styled(text, st), Some(hit), 0));
     }
+    // The message under the mouse shows whole above the bar, not as a tip.
     let tip = app
         .side_hover
+        .filter(|h| *h != Hit::Message)
         .filter(|_| app.dialogs.is_empty() && app.mouse_idle())
         .filter(|_| app.msg.as_ref().is_none_or(|(_, _, at)| *at < app.side_hover_at))
         .map(|h| match h {
@@ -405,7 +410,16 @@ fn draw_status(f: &mut Frame, area: Rect, app: &App, hits: &mut Vec<(Rect, Hit)>
             parts.retain(|p| p.2 != order);
         }
         let room = (area.width as usize).saturating_sub(used(&parts));
-        parts.push((Span::styled(fit_message(m, room), Style::new().fg(c)), None, 0));
+        let shown = fit_message(m, room);
+        // Cut short, it is a button: hovering shows it whole, a click opens
+        // the message history.
+        let cut = shown != *m;
+        let hover = cut && app.side_hover == Some(Hit::Message) && app.dialogs.is_empty();
+        let st = if hover { Style::new().fg(c).bg(theme::BORDER) } else { Style::new().fg(c) };
+        parts.push((Span::styled(shown, st), cut.then_some(Hit::Message), 0));
+        if hover {
+            full_message(f, area, m, c);
+        }
     }
     let mut x = area.x;
     let mut spans = Vec::with_capacity(parts.len());
@@ -418,6 +432,34 @@ fn draw_status(f: &mut Frame, area: Rect, app: &App, hits: &mut Vec<(Rect, Hit)>
         spans.push(span);
     }
     f.render_widget(Paragraph::new(Line::from(spans)).style(Style::new().bg(theme::PANEL)), area);
+}
+
+/// A message too long for the status bar, whole, in a box just above it
+/// on the right (where the message sits).
+fn full_message(f: &mut Frame, status: Rect, m: &str, color: ratatui::style::Color) {
+    let screen = f.area();
+    let w = (unicode_width::UnicodeWidthStr::width(m) as u16 + 4).clamp(24, screen.width);
+    let rows = widgets::wrap_words(m, w.saturating_sub(4) as usize);
+    let hint = "click: message history";
+    let h = (rows.len() as u16 + 2).min(status.y.saturating_sub(screen.y));
+    if h < 3 {
+        return;
+    }
+    let r = Rect::new(screen.right() - w, status.y - h, w, h);
+    let mut block = Block::default()
+        .borders(ratatui::widgets::Borders::ALL)
+        .border_type(ratatui::widgets::BorderType::Rounded)
+        .border_style(Style::new().fg(theme::BORDER))
+        .style(Style::new().bg(theme::PANEL));
+    if widgets::hint_fits_border(hint, w) {
+        block = block
+            .title_bottom(Line::from(Span::styled(format!(" {hint} "), Style::new().fg(theme::DIM))).right_aligned());
+    }
+    let inner = block.inner(r);
+    f.render_widget(ratatui::widgets::Clear, r);
+    f.render_widget(block, r);
+    let lines: Vec<Line> = rows.into_iter().map(|t| Line::from(Span::styled(t, Style::new().fg(color)))).collect();
+    f.render_widget(Paragraph::new(lines), Rect { x: inner.x + 1, width: inner.width.saturating_sub(2), ..inner });
 }
 
 /// A status message that fits `room` columns: paths shrink to "…/name"
