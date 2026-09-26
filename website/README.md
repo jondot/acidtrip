@@ -73,9 +73,4 @@ It needs Pillow and the TheDraw fonts. Add a doc and rerun it to get that doc's 
 
 ## Deploy
 
-The site is the Vercel project `acidtrip` under the personal `jondots-projects` scope, live at https://acidtrip.vercel.app. From `website/`:
-
-    npx vercel link --project acidtrip --scope jondots-projects   # once
-    npx vercel deploy --prod --scope jondots-projects
-
-Always pass `--scope jondots-projects`; the CLI's default scope may be a team.
+`npm run build` writes a plain static site to `dist/`; any static host serves it. The live site is https://acidtrip.vercel.app.

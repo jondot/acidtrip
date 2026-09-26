@@ -11,8 +11,6 @@ break in combination.
 - `library/` gallery, studio, fonts, stencils, patterns, brushes, image import, AI
 - `app/` together, replay, command palette, keys, config, small terminals, one-button mouse
 
-`MATRIX.md` lists every flow: what it covers, and the bugs it found.
-
 Run them with `cargo test -p acidtrip --test flows`. `ACIDTRIP_FLOWS=drawing/`
 runs one area, `ACIDTRIP_FLOW_JOBS=1` runs them one at a time. Files a flow
 writes go under `/tmp/acidtrip-flows/<flow>/`. Screenshots land in
