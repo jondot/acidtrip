@@ -65,11 +65,15 @@ fi
 tar xzf "$TMPDIR/${BINARY}.tar.gz" -C "$TMPDIR"
 
 # Determine install directory
-# Prefer /usr/local/bin if writable, otherwise fall back to ~/.local/bin
-INSTALL_DIR="/usr/local/bin"
-if [ ! -w "$INSTALL_DIR" ] 2>/dev/null; then
-  INSTALL_DIR="${HOME}/.local/bin"
+# INSTALL_DIR wins if set; else /usr/local/bin if writable, else ~/.local/bin
+if [ -n "$INSTALL_DIR" ]; then
   mkdir -p "$INSTALL_DIR"
+else
+  INSTALL_DIR="/usr/local/bin"
+  if [ ! -w "$INSTALL_DIR" ] 2>/dev/null; then
+    INSTALL_DIR="${HOME}/.local/bin"
+    mkdir -p "$INSTALL_DIR"
+  fi
 fi
 
 mv "$TMPDIR/$BINARY" "$INSTALL_DIR/$BINARY"
