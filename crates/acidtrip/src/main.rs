@@ -16,6 +16,7 @@ mod term;
 mod together;
 mod tools_ctl;
 mod ui;
+mod window;
 
 use std::path::PathBuf;
 
@@ -26,6 +27,10 @@ use clap::{Parser, Subcommand};
 struct Cli {
     /// Files to open (.ans .xb .bin .adf .idf .tnd .pcb .avt .asc .acid, or a new file name).
     files: Vec<PathBuf>,
+    /// Open in a native window instead of the terminal (the default when
+    /// started without a terminal, e.g. from an app icon).
+    #[arg(long)]
+    window: bool,
     #[command(subcommand)]
     cmd: Option<Cmd>,
 }
@@ -70,6 +75,7 @@ enum Cmd {
 fn main() {
     let cli = Cli::parse();
     let result = match cli.cmd {
+        None if cli.window || !std::io::IsTerminal::is_terminal(&std::io::stdout()) => window::run(cli.files),
         None => run_editor(&cli.files),
         Some(Cmd::Convert(a)) => cli::convert(a),
         Some(Cmd::Render { input, output, scale }) => cli::convert(cli::ConvertArgs::png(input, output, scale)),
@@ -115,7 +121,16 @@ fn run_editor(files: &[PathBuf]) -> anyhow::Result<()> {
     }
     let mut app = app::App::new(files, guard.enhanced_keys, picker)?;
     app.cell_px = cell_px.map(|fs| (fs.width.max(1) as f32, fs.height.max(1) as f32));
-    // Scripted start (screenshots, demos): comma-separated action ids to run.
+    run_start_actions(&mut app);
+    let r = app.run_loop(&mut terminal, &mut app::TermInput);
+    app.autosave(false);
+    drop(terminal);
+    drop(guard);
+    r
+}
+
+/// Scripted start (screenshots, demos): `ACIDTRIP_RUN` = comma-separated action ids.
+fn run_start_actions(app: &mut app::App) {
     if let Ok(ids) = std::env::var("ACIDTRIP_RUN") {
         for id in ids.split(',').map(str::trim).filter(|s| !s.is_empty()) {
             match actions::Action::from_id(id) {
@@ -124,9 +139,4 @@ fn run_editor(files: &[PathBuf]) -> anyhow::Result<()> {
             }
         }
     }
-    let r = app.run_loop(&mut terminal);
-    app.autosave(false);
-    drop(terminal);
-    drop(guard);
-    r
 }

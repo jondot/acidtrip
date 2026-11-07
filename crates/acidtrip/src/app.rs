@@ -19,7 +19,8 @@ use acidtrip_io::{backup, exports, recovery, versions};
 use crossterm::event::{
     self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
 };
-use ratatui::DefaultTerminal;
+use ratatui::Terminal;
+use ratatui::backend::Backend;
 use ratatui::layout::Rect;
 
 use crate::actions::Action;
@@ -133,6 +134,28 @@ pub struct App {
     pub mouse_frac: (f32, f32),
     /// Draw together: the shared session, if any, and its panel.
     pub together: crate::together::Together,
+}
+
+/// Where input events come from: the terminal, or a native window.
+pub trait Input {
+    fn poll(&mut self, timeout: Duration) -> std::io::Result<bool>;
+    fn read(&mut self) -> std::io::Result<Event>;
+    /// The window was closed: leave the loop.
+    fn closed(&self) -> bool {
+        false
+    }
+}
+
+/// Events from the terminal via crossterm.
+pub struct TermInput;
+
+impl Input for TermInput {
+    fn poll(&mut self, timeout: Duration) -> std::io::Result<bool> {
+        event::poll(timeout)
+    }
+    fn read(&mut self) -> std::io::Result<Event> {
+        event::read()
+    }
 }
 
 impl App {
@@ -352,7 +375,10 @@ impl App {
 
     // ------------------------------------------------------------ loop
 
-    pub fn run_loop(&mut self, terminal: &mut DefaultTerminal) -> anyhow::Result<()> {
+    pub fn run_loop<B: Backend>(&mut self, terminal: &mut Terminal<B>, input: &mut impl Input) -> anyhow::Result<()>
+    where
+        B::Error: Send + Sync + 'static,
+    {
         let mut dirty = true;
         let mut last_draw = Instant::now();
         while !self.quit {
@@ -375,13 +401,13 @@ impl App {
                 dirty = false;
             }
             let timeout = if animating || self.together.active() { 30 } else { 100 };
-            if event::poll(Duration::from_millis(timeout))? {
-                self.handle_event(event::read()?);
+            if input.poll(Duration::from_millis(timeout))? {
+                self.handle_event(input.read()?);
                 dirty = true;
                 // Drain bursts (mouse drags) before redrawing.
                 let burst = Instant::now();
-                while burst.elapsed() < Duration::from_millis(12) && event::poll(Duration::ZERO)? {
-                    self.handle_event(event::read()?);
+                while burst.elapsed() < Duration::from_millis(12) && input.poll(Duration::ZERO)? {
+                    self.handle_event(input.read()?);
                     if self.quit {
                         break;
                     }
@@ -389,6 +415,9 @@ impl App {
             }
             dirty |= self.tick();
             dirty |= self.together_tick();
+            if input.closed() {
+                self.quit = true;
+            }
         }
         self.together_leave();
         Ok(())
