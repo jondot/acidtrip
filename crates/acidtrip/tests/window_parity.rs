@@ -53,6 +53,8 @@ impl Win {
             .env("ACIDTRIP_WINDOW_SNAP", &snap)
             .env("ACIDTRIP_NO_BLINK", "1")
             .env("ACIDTRIP_OFFLINE", "1")
+            // The harness terminal has no graphics: half-block previews on both.
+            .env("ACIDTRIP_GRAPHICS", "off")
             .env_remove("ANTHROPIC_API_KEY")
             .current_dir(home)
             .stdin(Stdio::null())

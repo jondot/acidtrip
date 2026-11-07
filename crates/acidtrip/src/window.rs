@@ -48,6 +48,8 @@ pub struct Frame {
     pub cells: Vec<Cell>,
     /// Cursor cell when the cursor is shown.
     pub cursor: Option<(u16, u16)>,
+    /// Pictures over the cells (thumbnails), in window pixels.
+    pub images: Vec<crate::ui::thumbs::Overlay>,
 }
 
 /// xterm index → RGB, 0-15 in ANSI order mapped to the VGA palette.
@@ -122,6 +124,17 @@ impl Frame {
                         );
                     }
                 }
+            }
+        }
+        for (r, pic) in &self.images {
+            let (w, h) = (r.width as u32 * CELL_W * scale, r.height as u32 * CELL_H * scale);
+            let (x, y) = (r.x as i64 * (CELL_W * scale) as i64, r.y as i64 * (CELL_H * scale) as i64);
+            if pic.dimensions() == (w, h) {
+                image::imageops::replace(&mut img, &**pic, x, y);
+            } else {
+                // Snapshots are 1x while pictures are made at window scale.
+                let fit = image::imageops::resize(&**pic, w.max(1), h.max(1), image::imageops::FilterType::Triangle);
+                image::imageops::replace(&mut img, &fit, x, y);
             }
         }
         img
@@ -234,6 +247,7 @@ impl Backend for GridBackend {
             rows: self.buf.area.height,
             cells: self.buf.content.clone(),
             cursor: self.cursor_shown.then_some((self.cursor.x, self.cursor.y)),
+            images: crate::ui::thumbs::take_overlays(),
         };
         if let Some(path) = &self.snap {
             let tmp = path.with_extension("tmp.png");
@@ -606,6 +620,7 @@ pub fn run(files: Vec<PathBuf>) -> anyhow::Result<()> {
                 let s = scale as f32;
                 app.cell_px = Some((CELL_W as f32 * s, CELL_H as f32 * s));
             }
+            app.thumbs = crate::ui::thumbs::Thumbs::native((CELL_W * scale, CELL_H * scale));
             crate::run_start_actions(&mut app);
             let r = app.run_loop(&mut terminal, &mut input);
             app.autosave(false);
@@ -632,4 +647,34 @@ pub fn run(files: Vec<PathBuf>) -> anyhow::Result<()> {
     };
     event_loop.run_app(&mut win)?;
     result.lock().unwrap().take().unwrap_or(Ok(()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pictures_paint_over_their_cells_at_any_scale() {
+        let mut buf = Buffer::empty(Rect::new(0, 0, 4, 2));
+        let red = image::Rgba([255, 0, 0, 255]);
+        // Made at window scale 2: 2x1 cells = 32x32 px.
+        let pic = Arc::new(image::RgbaImage::from_pixel(32, 32, red));
+        crate::ui::thumbs::overlay(&mut buf, Rect::new(1, 1, 2, 1), pic);
+        let frame = Frame {
+            cols: 4,
+            rows: 2,
+            cells: buf.content.clone(),
+            cursor: None,
+            images: crate::ui::thumbs::take_overlays(),
+        };
+        for scale in [1, 2] {
+            let img = frame.render(scale);
+            let (cw, ch) = (CELL_W * scale, CELL_H * scale);
+            assert_eq!(*img.get_pixel(cw, ch), red, "scale {scale}: picture's corner");
+            assert_eq!(*img.get_pixel(3 * cw - 1, 2 * ch - 1), red, "scale {scale}: picture's far corner");
+            assert_ne!(*img.get_pixel(cw - 1, ch), red, "scale {scale}: left of the picture");
+            assert_ne!(*img.get_pixel(3 * cw, ch), red, "scale {scale}: right of the picture");
+        }
+        assert!(crate::ui::thumbs::take_overlays().is_empty(), "taken once per frame");
+    }
 }

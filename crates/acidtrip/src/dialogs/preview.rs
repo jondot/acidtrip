@@ -24,6 +24,8 @@ pub struct PreviewDialog {
     total: usize,
     doc: acidtrip_core::Document,
     picker: Picker,
+    /// Native window: the render itself, painted over the cells at 1:1.
+    native: Option<((u32, u32), std::sync::Arc<image::RgbaImage>)>,
 }
 
 impl PreviewDialog {
@@ -31,14 +33,16 @@ impl PreviewDialog {
         let picker = app.picker.clone().unwrap_or_else(Picker::halfblocks);
         let doc = app.tab().doc.clone();
         let total = doc.canvas.used_height().max(1);
+        let native = app.thumbs.as_ref().and_then(|t| t.native_px()).map(|px| (px, Default::default()));
         let mut d = PreviewDialog {
             proto: None,
-            protocol_name: format!("{:?}", picker.protocol_type()),
+            protocol_name: if native.is_some() { "window".into() } else { format!("{:?}", picker.protocol_type()) },
             rows: 0,
             scroll: 0,
             total,
             doc,
             picker,
+            native,
         };
         d.rebuild(25);
         d
@@ -51,6 +55,10 @@ impl PreviewDialog {
         let h = self.rows.min(self.total.saturating_sub(self.scroll)).max(1);
         doc.canvas = crate::ui::minimap::crop_rows(&doc.canvas, self.scroll, h);
         let img = render_document(&doc, None, RenderOptions::default());
+        if let Some((_, native)) = &mut self.native {
+            *native = std::sync::Arc::new(img);
+            return;
+        }
         self.proto = Some(self.picker.new_resize_protocol(image::DynamicImage::ImageRgba8(img)));
     }
 }
@@ -81,7 +89,15 @@ impl Dialog for PreviewDialog {
         if want != self.rows {
             self.rebuild(want);
         }
-        if let Some(p) = &mut self.proto {
+        if let Some(((cw, ch), img)) = &self.native {
+            // One art cell per screen cell, the way the window draws text.
+            let cols = (img.width() / 8).min(body.width as u32);
+            let rows = (img.height() / 16).min(body.height as u32);
+            let r = Rect::new(body.x, body.y, cols as u16, rows as u16);
+            let crop = image::imageops::crop_imm(&**img, 0, 0, cols * 8, rows * 16).to_image();
+            let px = image::imageops::resize(&crop, cols * cw, rows * ch, image::imageops::FilterType::Nearest);
+            crate::ui::thumbs::overlay(f.buffer_mut(), r, std::sync::Arc::new(px));
+        } else if let Some(p) = &mut self.proto {
             f.render_stateful_widget(StatefulImage::default(), body, p);
         }
     }

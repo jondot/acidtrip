@@ -1,8 +1,12 @@
 //! Pixel-exact minimap and layer thumbnails through the terminal's graphics
 //! protocol (iTerm2 / kitty / sixel): the real VGA-font render, scaled down.
 //! Terminals without graphics keep the half-block previews in `minimap`.
+//! In the native window the pictures are plain pixels the window paints over
+//! the cell grid (`take_overlays`).
 
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use acidtrip_core::render::{CELL_H, CELL_W, RenderOptions, render_cells};
@@ -44,6 +48,8 @@ enum Rendered {
     /// iTerm2 inline image sized in *cells* (ratatui-image sizes iTerm2 images
     /// in px, which iTerm2 treats as points: 2x too big on Retina screens).
     Iterm2 { seq: String, size: Size },
+    /// Native window: the picture itself, sized to the area in window pixels.
+    Pixels(Arc<RgbaImage>),
 }
 
 struct Entry {
@@ -62,7 +68,10 @@ pub struct Source<'a> {
 }
 
 pub struct Thumbs {
-    picker: Picker,
+    /// None in the native window, which takes pixels directly.
+    picker: Option<Picker>,
+    /// Window pixels per cell (native window only).
+    native_px: (u32, u32),
     cache: HashMap<Slot, Entry>,
     last_build: Instant,
     /// A rebuild was skipped by the throttle; the app keeps redrawing until done.
@@ -112,12 +121,49 @@ impl Thumbs {
                 pk
             }
         };
-        Some(Thumbs { picker, cache: HashMap::new(), last_build: Instant::now() - THROTTLE, stale: false, base: None })
+        Some(Thumbs::with(Some(picker), (0, 0)))
+    }
+
+    /// The native window: pictures go to the window as pixels, `cell_px`
+    /// window pixels per cell. `ACIDTRIP_GRAPHICS=off` still turns them off.
+    pub fn native(cell_px: (u32, u32)) -> Option<Thumbs> {
+        let off = std::env::var("ACIDTRIP_GRAPHICS").is_ok_and(|v| v == "off" || v == "halfblocks");
+        (!off).then(|| Thumbs::with(None, cell_px))
+    }
+
+    /// Window pixels per cell when drawing straight into the native window.
+    pub fn native_px(&self) -> Option<(u32, u32)> {
+        self.picker.is_none().then(|| self.cell_px())
+    }
+
+    fn with(picker: Option<Picker>, native_px: (u32, u32)) -> Thumbs {
+        Thumbs {
+            picker,
+            native_px,
+            cache: HashMap::new(),
+            last_build: Instant::now() - THROTTLE,
+            stale: false,
+            base: None,
+        }
     }
 
     fn cell_px(&self) -> (u32, u32) {
-        let fs = self.picker.font_size();
-        (fs.width.max(1) as u32, fs.height.max(1) as u32)
+        match &self.picker {
+            Some(p) => {
+                let fs = p.font_size();
+                (fs.width.max(1) as u32, fs.height.max(1) as u32)
+            }
+            None => (self.native_px.0.max(1), self.native_px.1.max(1)),
+        }
+    }
+
+    fn encode(&self, img: RgbaImage, size: Size) -> Option<Rendered> {
+        let Some(picker) = &self.picker else { return Some(Rendered::Pixels(Arc::new(img))) };
+        if picker.protocol_type() == ProtocolType::Iterm2 {
+            Some(Rendered::Iterm2 { seq: iterm2_seq(&img, size), size })
+        } else {
+            picker.new_protocol(DynamicImage::ImageRgba8(img), size, Resize::Fit(None)).ok().map(Rendered::Proto)
+        }
     }
 
     /// Draw the minimap into `area`; returns click geometry.
@@ -220,14 +266,7 @@ impl Thumbs {
             let t0 = Instant::now();
             let img = build(self);
             let size = Size::new(key.rect.width, key.rect.height);
-            let rendered = if self.picker.protocol_type() == ProtocolType::Iterm2 {
-                Some(Rendered::Iterm2 { seq: iterm2_seq(&img, size), size })
-            } else {
-                self.picker
-                    .new_protocol(DynamicImage::ImageRgba8(img), size, Resize::Fit(None))
-                    .ok()
-                    .map(Rendered::Proto)
-            };
+            let rendered = self.encode(img, size);
             if let Ok(path) = std::env::var("ACIDTRIP_PERF_LOG") {
                 use std::io::Write;
                 if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(path) {
@@ -241,10 +280,7 @@ impl Thumbs {
         }
         self.stale |= !fresh && throttled;
         let e = self.cache.get(&slot)?;
-        match &e.img {
-            Rendered::Proto(p) => f.render_widget(Image::new(p), e.key.rect),
-            Rendered::Iterm2 { seq, size } => place(f.buffer_mut(), e.key.rect, seq, *size),
-        }
+        e.draw(f);
         Some(e.geom)
     }
 
@@ -304,14 +340,7 @@ impl Thumbs {
         if self.cache.get(&slot).is_none_or(|e| e.key != key) {
             let img = build(self);
             let size = Size::new(key.rect.width, key.rect.height);
-            let rendered = if self.picker.protocol_type() == ProtocolType::Iterm2 {
-                Some(Rendered::Iterm2 { seq: iterm2_seq(&img, size), size })
-            } else {
-                self.picker
-                    .new_protocol(DynamicImage::ImageRgba8(img), size, Resize::Fit(None))
-                    .ok()
-                    .map(Rendered::Proto)
-            };
+            let rendered = self.encode(img, size);
             match rendered {
                 Some(img) => {
                     self.cache.insert(slot, Entry { key, img, geom });
@@ -320,10 +349,7 @@ impl Thumbs {
             }
         }
         if let Some(e) = self.cache.get(&slot) {
-            match &e.img {
-                Rendered::Proto(p) => f.render_widget(Image::new(p), e.key.rect),
-                Rendered::Iterm2 { seq, size } => place(f.buffer_mut(), e.key.rect, seq, *size),
-            }
+            e.draw(f);
         }
     }
 
@@ -341,6 +367,40 @@ impl Thumbs {
     pub fn retain_layers(&mut self, n: usize) {
         self.cache.retain(|s, _| !matches!(s, Slot::Layer(i) if *i >= n));
     }
+}
+
+impl Entry {
+    fn draw(&self, f: &mut Frame) {
+        match &self.img {
+            Rendered::Proto(p) => f.render_widget(Image::new(p), self.key.rect),
+            Rendered::Iterm2 { seq, size } => place(f.buffer_mut(), self.key.rect, seq, *size),
+            Rendered::Pixels(img) => overlay(f.buffer_mut(), self.key.rect, img.clone()),
+        }
+    }
+}
+
+/// A picture over cells, in window pixels.
+pub type Overlay = (Rect, Arc<RgbaImage>);
+
+thread_local! {
+    /// Pictures placed this frame; the window backend takes them on flush.
+    static OVERLAYS: RefCell<Vec<Overlay>> = const { RefCell::new(Vec::new()) };
+}
+
+/// The pictures placed since the last call (the native window's flush).
+pub fn take_overlays() -> Vec<Overlay> {
+    OVERLAYS.with(|o| std::mem::take(&mut *o.borrow_mut()))
+}
+
+/// Blank the cells under `area` (so nothing stale shows through the
+/// picture's edges) and queue the picture for the window.
+pub fn overlay(buf: &mut ratatui::buffer::Buffer, area: Rect, img: Arc<RgbaImage>) {
+    for pos in area.intersection(buf.area).positions() {
+        if let Some(c) = buf.cell_mut(pos) {
+            c.reset();
+        }
+    }
+    OVERLAYS.with(|o| o.borrow_mut().push((area, img)));
 }
 
 /// Render a canvas with the VGA font at 1:1 (8x16 per cell). With
