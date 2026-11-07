@@ -27,6 +27,8 @@ acidtrip logo.ans     # open (or create) a file
 
 macOS and Linux, x86_64 and arm64. Any terminal with truecolor and a mouse works: iTerm2, kitty, WezTerm, Ghostty, Alacritty. To build from source instead, run `cargo install --git https://github.com/jondot/acidtrip acidtrip`.
 
+It is also a desktop app. The installer adds **Acidtrip.app** to `~/Applications` on macOS and an **acidtrip** entry to the applications menu on Linux (`--no-app` skips this). Started from the icon, it opens in its own window, with the same editor, the same keys and real-pixel thumbnails. `acidtrip --window` does the same from a shell. Releases also carry a macOS app zip and a Linux AppImage.
+
 <br>
 
 <p align="center"><img src="website/public/art/h-draw.png" alt="draw" height="56"></p>
@@ -80,6 +82,12 @@ Claude Code can draw straight into your open editor, live and undoable, with no 
 
 ```sh
 claude mcp add acidtrip -- acidtrip mcp
+```
+
+That works in the desktop window too: keep acidtrip open and watch Claude draw. For Claude Desktop, add it under `mcpServers` in its config, with the full path to the binary:
+
+```json
+{ "mcpServers": { "acidtrip": { "command": "/usr/local/bin/acidtrip", "args": ["mcp"] } } }
 ```
 
 <p align="center"><img src="website/public/art/h-gallery.png" alt="gallery" height="56"></p>

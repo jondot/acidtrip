@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=acidtrip
+GenericName=ANSI Art Editor
+Comment=Draw ANSI art the ACiDDraw way, with Claude drawing alongside
+Exec=acidtrip --window %F
+Icon=acidtrip
+Terminal=false
+Categories=Graphics;2DGraphics;RasterGraphics;
+Keywords=ansi;ascii;art;textmode;bbs;
+StartupWMClass=acidtrip

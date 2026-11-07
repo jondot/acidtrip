@@ -10,6 +10,7 @@ use std::num::NonZeroU32;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender, TryRecvError};
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -24,7 +25,7 @@ use ratatui::buffer::{Buffer, Cell};
 use ratatui::layout::{Position, Rect, Size};
 use ratatui::style::{Color, Modifier};
 use winit::application::ApplicationHandler;
-use winit::dpi::{PhysicalPosition, PhysicalSize};
+use winit::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
 use winit::event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy};
 use winit::keyboard::{Key, ModifiersState, NamedKey};
@@ -155,8 +156,14 @@ struct Shared {
     frame: Mutex<Frame>,
     /// Current size in cells.
     size: Mutex<(u16, u16)>,
-    /// Physical pixels per cell (for `window_size`).
-    scale: u32,
+    /// Window pixels per VGA pixel, fixed when the window opens.
+    scale: AtomicU32,
+}
+
+impl Shared {
+    fn scale(&self) -> u32 {
+        self.scale.load(Ordering::Relaxed).max(1)
+    }
 }
 
 /// A ratatui backend that keeps the screen in memory and hands finished
@@ -233,7 +240,7 @@ impl Backend for GridBackend {
 
     fn window_size(&mut self) -> std::io::Result<WindowSize> {
         let size = self.size()?;
-        let s = self.shared.scale;
+        let s = self.shared.scale();
         Ok(WindowSize {
             columns_rows: size,
             pixels: Size::new(size.width * (CELL_W * s) as u16, size.height * (CELL_H * s) as u16),
@@ -409,12 +416,25 @@ fn key_event(ev: &winit::event::KeyEvent, m: ModifiersState) -> Option<KeyEvent>
 
 // ----------------------------------------------------------------- window
 
+/// The app icon, for window managers that show one (X11, Wayland via the
+/// .desktop file; macOS takes it from the app bundle).
+fn icon() -> Option<winit::window::Icon> {
+    let img = image::load_from_memory(include_bytes!("../../../packaging/icon/acidtrip-64.png")).ok()?.to_rgba8();
+    let (w, h) = img.dimensions();
+    winit::window::Icon::from_rgba(img.into_raw(), w, h).ok()
+}
+
+/// Runs the app on its thread: backend, input, and the window's scale.
+type StartApp = Box<dyn FnOnce(GridBackend, WindowInput, u32) + Send>;
+
 struct WinApp {
     shared: Arc<Shared>,
     proxy: EventLoopProxy<UserEvent>,
     tx: Sender<Msg>,
     /// Handed to the app thread when the window exists.
-    start: Option<Box<dyn FnOnce(GridBackend, WindowInput) + Send>>,
+    start: Option<StartApp>,
+    /// `ACIDTRIP_WINDOW_SCALE`, else the monitor's scale factor.
+    scale_override: Option<u32>,
     rx: Option<Receiver<Msg>>,
     window: Option<Rc<Window>>,
     surface: Option<softbuffer::Surface<Rc<Window>, Rc<Window>>>,
@@ -433,7 +453,7 @@ impl WinApp {
     }
 
     fn mouse(&self, kind: MouseEventKind) {
-        let s = self.shared.scale as f64;
+        let s = self.shared.scale() as f64;
         let (cw, ch) = (CELL_W as f64 * s, CELL_H as f64 * s);
         let (x, y) = (self.cursor_px.x.max(0.0), self.cursor_px.y.max(0.0));
         let (column, row) = if self.pixel_mouse { (x as u16, y as u16) } else { ((x / cw) as u16, (y / ch) as u16) };
@@ -441,7 +461,7 @@ impl WinApp {
     }
 
     fn resized(&mut self, size: PhysicalSize<u32>) {
-        let s = self.shared.scale;
+        let s = self.shared.scale();
         let cols = (size.width / (CELL_W * s)).max(1) as u16;
         let rows = (size.height / (CELL_H * s)).max(1) as u16;
         let mut cur = self.shared.size.lock().unwrap();
@@ -463,7 +483,7 @@ impl WinApp {
         let (Some(w), Some(h)) = (NonZeroU32::new(size.width), NonZeroU32::new(size.height)) else { return };
         let _ = surface.resize(w, h);
         let frame = self.shared.frame.lock().unwrap().clone();
-        let img = frame.render(self.shared.scale);
+        let img = frame.render(self.shared.scale());
         let Ok(mut buf) = surface.buffer_mut() else { return };
         let bg = u32::from_be_bytes([0, DEFAULT_BG[0], DEFAULT_BG[1], DEFAULT_BG[2]]);
         let (iw, ih) = (img.width(), img.height());
@@ -488,12 +508,23 @@ impl ApplicationHandler<UserEvent> for WinApp {
         if self.window.is_some() {
             return;
         }
-        let s = self.shared.scale;
         let (cols, rows) = self.init_cells;
-        let attrs = Window::default_attributes()
-            .with_title("acidtrip")
-            .with_inner_size(PhysicalSize::new(cols as u32 * CELL_W * s, rows as u32 * CELL_H * s));
+        let mut attrs = Window::default_attributes().with_title("acidtrip").with_window_icon(icon());
+        attrs = match self.scale_override {
+            Some(s) => attrs.with_inner_size(PhysicalSize::new(cols as u32 * CELL_W * s, rows as u32 * CELL_H * s)),
+            // 8x16 points per cell: crisp at whole-number scale factors (Retina = 2).
+            None => attrs.with_inner_size(LogicalSize::new(cols as u32 * CELL_W, rows as u32 * CELL_H)),
+        };
+        #[cfg(all(unix, not(target_os = "macos")))]
+        {
+            // Matches the .desktop file, so docks group the window under its launcher.
+            use winit::platform::{wayland::WindowAttributesExtWayland, x11::WindowAttributesExtX11};
+            attrs = WindowAttributesExtX11::with_name(attrs, "acidtrip", "acidtrip");
+            attrs = WindowAttributesExtWayland::with_name(attrs, "acidtrip", "acidtrip");
+        }
         let window = Rc::new(el.create_window(attrs).expect("create window"));
+        let scale = self.scale_override.unwrap_or_else(|| (window.scale_factor().round() as u32).max(1));
+        self.shared.scale.store(scale, Ordering::Relaxed);
         let context = softbuffer::Context::new(window.clone()).expect("softbuffer context");
         let surface = softbuffer::Surface::new(&context, window.clone()).expect("softbuffer surface");
         self.window = Some(window.clone());
@@ -511,7 +542,7 @@ impl ApplicationHandler<UserEvent> for WinApp {
             let input = WindowInput { rx, pending: None, closed: false };
             std::thread::Builder::new()
                 .name("acidtrip-app".into())
-                .spawn(move || start(backend, input))
+                .spawn(move || start(backend, input, scale))
                 .expect("spawn app thread");
         }
     }
@@ -573,7 +604,7 @@ impl ApplicationHandler<UserEvent> for WinApp {
             WindowEvent::MouseWheel { delta, .. } => {
                 let lines = match delta {
                     MouseScrollDelta::LineDelta(_, y) => y as f64,
-                    MouseScrollDelta::PixelDelta(p) => p.y / (CELL_H * self.shared.scale) as f64,
+                    MouseScrollDelta::PixelDelta(p) => p.y / (CELL_H * self.shared.scale()) as f64,
                 };
                 self.scroll_acc += lines;
                 while self.scroll_acc >= 1.0 {
@@ -603,16 +634,16 @@ fn env_size() -> Option<(u16, u16)> {
 pub fn run(files: Vec<PathBuf>) -> anyhow::Result<()> {
     let event_loop = EventLoop::<UserEvent>::with_user_event().build()?;
     let proxy = event_loop.create_proxy();
-    // Integer scale keeps the VGA font crisp. Default 2 (most screens are HiDPI now).
-    let scale = std::env::var("ACIDTRIP_WINDOW_SCALE").ok().and_then(|v| v.parse().ok()).unwrap_or(2u32).max(1);
+    // Whole-number scales keep the VGA font crisp.
+    let scale_override = std::env::var("ACIDTRIP_WINDOW_SCALE").ok().and_then(|v| v.parse::<u32>().ok()).map(|s| s.max(1));
     let pixel_mouse = std::env::var("ACIDTRIP_PIXEL_MOUSE").map_or(true, |v| v != "0");
     let init_cells = env_size().unwrap_or((160, 50));
-    let shared = Arc::new(Shared { frame: Mutex::new(Frame::default()), size: Mutex::new(init_cells), scale });
+    let shared = Arc::new(Shared { frame: Mutex::new(Frame::default()), size: Mutex::new(init_cells), scale: AtomicU32::new(1) });
     let (tx, rx) = mpsc::channel();
     let result: Arc<Mutex<Option<anyhow::Result<()>>>> = Arc::new(Mutex::new(None));
     let result2 = result.clone();
     let exit_proxy = proxy.clone();
-    let start = Box::new(move |backend: GridBackend, mut input: WindowInput| {
+    let start = Box::new(move |backend: GridBackend, mut input: WindowInput, scale: u32| {
         let r = (|| -> anyhow::Result<()> {
             let mut terminal = ratatui::Terminal::new(backend)?;
             let mut app = app::App::new(&files, true, None)?;
@@ -634,6 +665,7 @@ pub fn run(files: Vec<PathBuf>) -> anyhow::Result<()> {
         proxy,
         tx,
         start: Some(start),
+        scale_override,
         rx: Some(rx),
         window: None,
         surface: None,

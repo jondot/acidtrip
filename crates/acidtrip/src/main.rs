@@ -73,7 +73,8 @@ enum Cmd {
 }
 
 fn main() {
-    let cli = Cli::parse();
+    // Older macOS hands apps started from Finder a -psn_ process serial number.
+    let cli = Cli::parse_from(std::env::args_os().filter(|a| !a.to_string_lossy().starts_with("-psn_")));
     let result = match cli.cmd {
         None if cli.window || !std::io::IsTerminal::is_terminal(&std::io::stdout()) => window::run(cli.files),
         None => run_editor(&cli.files),
