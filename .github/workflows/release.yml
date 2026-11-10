@@ -68,8 +68,8 @@ jobs:
         env:
           TARGET: ${{ matrix.target }}
 
-      # tar.gz (binary + desktop launcher), plus Acidtrip-<target>.zip on
-      # macOS and acidtrip-<target>.AppImage on Linux.
+      # tar.gz (binary + desktop launcher), plus acidtrip-app-<target>.zip on
+      # macOS and acidtrip-app-<target>.AppImage on Linux.
       - name: Package
         shell: bash
         run: scripts/package.sh ${{ matrix.target }}
@@ -81,13 +81,13 @@ jobs:
           tar tzf dist/acidtrip-$t.tar.gz
           case $t in
             *apple-darwin)
-              unzip -l dist/Acidtrip-$t.zip
+              unzip -l dist/acidtrip-app-$t.zip
               plutil -lint packaging/macos/Info.plist ;;
             x86_64-unknown-linux-gnu)
-              chmod +x dist/acidtrip-$t.AppImage
-              dist/acidtrip-$t.AppImage --appimage-extract-and-run --version ;;
+              chmod +x dist/acidtrip-app-$t.AppImage
+              dist/acidtrip-app-$t.AppImage --appimage-extract-and-run --version ;;
             *linux*)
-              test -s dist/acidtrip-$t.AppImage ;;
+              test -s dist/acidtrip-app-$t.AppImage ;;
           esac
 
       - name: Upload artifact
@@ -165,8 +165,8 @@ jobs:
 
             Or download for your platform below:
 
-            - **macOS app:** `Acidtrip-<target>.zip`, unzip and drag `Acidtrip.app` to Applications. It is not notarized: the first time, right-click it and choose Open (or run `xattr -dr com.apple.quarantine Acidtrip.app`).
-            - **Linux app:** `acidtrip-<target>.AppImage`, `chmod +x` it and double-click.
+            - **macOS app:** `acidtrip-app-<target>.zip`, unzip and drag `Acidtrip.app` to Applications. It is not notarized: the first time, right-click it and choose Open (or run `xattr -dr com.apple.quarantine Acidtrip.app`).
+            - **Linux app:** `acidtrip-app-<target>.AppImage`, `chmod +x` it and double-click.
             - **Command line:** `acidtrip-<target>.tar.gz`, unpack it and put `acidtrip` on your `PATH`.
 
             ## Verify a download
