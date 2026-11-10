@@ -25,9 +25,20 @@ This needs a clean tree on `main`. It bumps the workspace `version` in
    | `x86_64-unknown-linux-gnu` | `ubuntu-latest` |
    | `aarch64-unknown-linux-gnu` | `ubuntu-latest` (cross via `gcc-aarch64-linux-gnu`) |
 
-   Each job produces `acidtrip-<target>.tar.gz`.
+   Each job runs `scripts/package.sh <target>`, which writes to `dist/`:
 
-2. **release** signs every `tar.gz` with cosign. Signing is keyless through sigstore and needs `id-token: write`. It writes a `.sig` and a `.crt` for each archive. It then creates the GitHub Release with generated notes and uploads the archives and signatures.
+   - `acidtrip-<target>.tar.gz`: the binary plus its launcher. That is
+     `Acidtrip.app` on macOS, and `share/` (the `.desktop` file and icons) on
+     Linux. `install.sh` installs both.
+   - `Acidtrip-<target>.zip` (macOS): the app bundle on its own, ad-hoc signed.
+     It is not notarized, so users right-click and choose Open the first time.
+   - `acidtrip-<target>.AppImage` (Linux), built with appimagetool. The aarch64
+     job uses the aarch64 runtime.
+
+   The bundle sources live in `packaging/`. Run
+   `packaging/icon/make-icon.py` to regenerate the icons.
+
+2. **release** signs every archive, app zip and AppImage with cosign. Signing is keyless through sigstore and needs `id-token: write`. It writes a `.sig` and a `.crt` for each archive. It then creates the GitHub Release with generated notes and uploads the archives and signatures.
 
 No secrets are needed: `GITHUB_TOKEN` is provided automatically, and the
 workflow requests `contents: write` and `id-token: write`.

@@ -4,6 +4,13 @@ on:
   push:
     tags:
       - 'v*'
+  # Dry run: build and package every target (nothing is published) when the
+  # packaging changes.
+  pull_request:
+    paths:
+      - '.github/workflows/release.yml'
+      - 'scripts/package.sh'
+      - 'packaging/**'
 
 jobs:
   build:
@@ -42,22 +49,53 @@ jobs:
       - name: Build
         run: cargo build --release --locked -p acidtrip --target ${{ matrix.target }}
 
+      - name: Fetch appimagetool
+        if: runner.os == 'Linux'
+        run: |
+          base=https://github.com/AppImage
+          curl -fsSL -o "$RUNNER_TEMP/appimagetool" "$base/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x "$RUNNER_TEMP/appimagetool"
+          echo "APPIMAGETOOL=$RUNNER_TEMP/appimagetool" >> $GITHUB_ENV
+          arch=${TARGET%%-*}
+          if [ "$arch" != x86_64 ]; then
+            curl -fsSL -o "$RUNNER_TEMP/runtime-$arch" "$base/type2-runtime/releases/download/continuous/runtime-$arch"
+            echo "APPIMAGE_RUNTIME=$RUNNER_TEMP/runtime-$arch" >> $GITHUB_ENV
+          fi
+        env:
+          TARGET: ${{ matrix.target }}
+
+      # tar.gz (binary + desktop launcher), plus Acidtrip-<target>.zip on
+      # macOS and acidtrip-<target>.AppImage on Linux.
       - name: Package
         shell: bash
+        run: scripts/package.sh ${{ matrix.target }}
+
+      - name: Smoke test
+        shell: bash
         run: |
-          cd target/${{ matrix.target }}/release
-          tar czf ../../../acidtrip-${{ matrix.target }}.tar.gz acidtrip
-          cd ../../..
+          t=${{ matrix.target }}
+          tar tzf dist/acidtrip-$t.tar.gz
+          case $t in
+            *apple-darwin)
+              unzip -l dist/Acidtrip-$t.zip
+              plutil -lint packaging/macos/Info.plist ;;
+            x86_64-unknown-linux-gnu)
+              chmod +x dist/acidtrip-$t.AppImage
+              dist/acidtrip-$t.AppImage --appimage-extract-and-run --version ;;
+            *linux*)
+              test -s dist/acidtrip-$t.AppImage ;;
+          esac
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: acidtrip-${{ matrix.target }}
-          path: acidtrip-${{ matrix.target }}.tar.gz
+          path: dist/*
 
   release:
     name: Create Release
     needs: build
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -75,8 +113,8 @@ jobs:
         run: |
           # Keyless signing via GitHub OIDC: no static keys to manage.
           # Produces .sig (signature) and .crt (Fulcio-issued certificate)
-          # alongside each .tar.gz.
-          find artifacts -name '*.tar.gz' -print0 | while IFS= read -r -d '' f; do
+          # alongside each archive, app zip and AppImage.
+          find artifacts \( -name '*.tar.gz' -o -name '*.zip' -o -name '*.AppImage' \) -print0 | while IFS= read -r -d '' f; do
             echo "Signing $f"
             cosign sign-blob --yes \
               --output-signature "${f}.sig" \
@@ -89,6 +127,8 @@ jobs:
         with:
           files: |
             artifacts/**/*.tar.gz
+            artifacts/**/*.zip
+            artifacts/**/*.AppImage
             artifacts/**/*.sig
             artifacts/**/*.crt
           generate_release_notes: true
@@ -99,7 +139,13 @@ jobs:
             curl -fsSL https://raw.githubusercontent.com/jondot/acidtrip/main/install.sh | sh
             ```
 
-            Or download the archive for your platform below, unpack it and put `acidtrip` on your `PATH`.
+            The installer also adds an app launcher: `Acidtrip.app` in `~/Applications` on macOS, a menu entry on Linux.
+
+            Or download for your platform below:
+
+            - **macOS app:** `Acidtrip-<target>.zip`, unzip and drag `Acidtrip.app` to Applications. It is not notarized: the first time, right-click it and choose Open (or run `xattr -dr com.apple.quarantine Acidtrip.app`).
+            - **Linux app:** `acidtrip-<target>.AppImage`, `chmod +x` it and double-click.
+            - **Command line:** `acidtrip-<target>.tar.gz`, unpack it and put `acidtrip` on your `PATH`.
 
             ## Verify a download
 

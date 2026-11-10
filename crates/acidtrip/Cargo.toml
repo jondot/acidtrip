@@ -32,6 +32,8 @@ unicode-width = "0.2"
 line_drawing.workspace = true
 libc = "0.2"
 base64 = "0.23"
+winit = "0.30"
+softbuffer = "0.4"
 
 [dev-dependencies]
 base64 = "0.23"

@@ -3,16 +3,21 @@
 #
 # Usage: curl -fsSL https://raw.githubusercontent.com/jondot/acidtrip/main/install.sh | sh
 #    or: curl -fsSL https://raw.githubusercontent.com/jondot/acidtrip/main/install.sh | sh -s -- --version v0.1.0
+#
+# Also adds an app launcher (Acidtrip.app in ~/Applications on macOS, a menu
+# entry on Linux) when the release has one; --no-app skips it.
 set -e
 
 REPO="jondot/acidtrip"
 BINARY="acidtrip"
 VERSION=""
+APP=1
 
 # Parse arguments
 while [ $# -gt 0 ]; do
   case "$1" in
     --version|-v) VERSION="$2"; shift 2 ;;
+    --no-app) APP=0; shift ;;
     *) shift ;;
   esac
 done
@@ -82,6 +87,30 @@ chmod +x "$INSTALL_DIR/$BINARY"
 echo ""
 echo "  Installed ${BINARY} ${VERSION} to ${INSTALL_DIR}/${BINARY}"
 echo ""
+
+# App launcher: start acidtrip from an icon, in its own window.
+if [ "$APP" = 1 ] && [ -d "$TMPDIR/Acidtrip.app" ]; then
+  mkdir -p "$HOME/Applications"
+  rm -rf "$HOME/Applications/Acidtrip.app"
+  mv "$TMPDIR/Acidtrip.app" "$HOME/Applications/Acidtrip.app"
+  echo "  Added Acidtrip.app to ~/Applications"
+  echo ""
+elif [ "$APP" = 1 ] && [ -d "$TMPDIR/share/applications" ]; then
+  DATA="${XDG_DATA_HOME:-$HOME/.local/share}"
+  mkdir -p "$DATA/applications"
+  # Menus don't always see ~/.local/bin on PATH: point at the binary itself.
+  sed "s|^Exec=acidtrip|Exec=${INSTALL_DIR}/${BINARY}|" "$TMPDIR/share/applications/acidtrip.desktop" \
+    > "$DATA/applications/acidtrip.desktop"
+  for d in "$TMPDIR"/share/icons/hicolor/*/apps; do
+    size=$(basename "$(dirname "$d")")
+    mkdir -p "$DATA/icons/hicolor/$size/apps"
+    cp "$d/acidtrip.png" "$DATA/icons/hicolor/$size/apps/acidtrip.png"
+  done
+  command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database -q "$DATA/applications" || true
+  command -v gtk-update-icon-cache >/dev/null 2>&1 && gtk-update-icon-cache -q -t "$DATA/icons/hicolor" || true
+  echo "  Added acidtrip to your applications menu"
+  echo ""
+fi
 
 # Remind the user if the install dir isn't in PATH
 case ":$PATH:" in
