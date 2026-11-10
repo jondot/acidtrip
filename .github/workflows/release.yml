@@ -4,6 +4,13 @@ on:
   push:
     tags:
       - 'v*'
+  # Dry run: build and package every target (nothing is published) when the
+  # packaging changes.
+  pull_request:
+    paths:
+      - '.github/workflows/release.yml'
+      - 'scripts/package.sh'
+      - 'packaging/**'
 
 jobs:
   build:
@@ -63,6 +70,22 @@ jobs:
         shell: bash
         run: scripts/package.sh ${{ matrix.target }}
 
+      - name: Smoke test
+        shell: bash
+        run: |
+          t=${{ matrix.target }}
+          tar tzf dist/acidtrip-$t.tar.gz
+          case $t in
+            *apple-darwin)
+              unzip -l dist/Acidtrip-$t.zip
+              plutil -lint packaging/macos/Info.plist ;;
+            x86_64-unknown-linux-gnu)
+              chmod +x dist/acidtrip-$t.AppImage
+              dist/acidtrip-$t.AppImage --appimage-extract-and-run --version ;;
+            *linux*)
+              test -s dist/acidtrip-$t.AppImage ;;
+          esac
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -72,6 +95,7 @@ jobs:
   release:
     name: Create Release
     needs: build
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
       contents: write
