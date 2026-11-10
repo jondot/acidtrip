@@ -30,9 +30,9 @@ This needs a clean tree on `main`. It bumps the workspace `version` in
    - `acidtrip-<target>.tar.gz`: the binary plus its launcher. That is
      `Acidtrip.app` on macOS, and `share/` (the `.desktop` file and icons) on
      Linux. `install.sh` installs both.
-   - `Acidtrip-<target>.zip` (macOS): the app bundle on its own, ad-hoc signed.
+   - `acidtrip-app-<target>.zip` (macOS): the app bundle on its own, ad-hoc signed.
      It is not notarized, so users right-click and choose Open the first time.
-   - `acidtrip-<target>.AppImage` (Linux), built with appimagetool. The aarch64
+   - `acidtrip-app-<target>.AppImage` (Linux), built with appimagetool. The aarch64
      job uses the aarch64 runtime.
 
    The bundle sources live in `packaging/`. Run

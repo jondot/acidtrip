@@ -6,8 +6,8 @@
 # Writes to dist/:
 #   acidtrip-<target>.tar.gz   the binary, plus the desktop launcher:
 #                              Acidtrip.app (macOS) or share/ (Linux .desktop + icons)
-#   Acidtrip-<target>.zip      macOS: the app bundle alone, to drag into Applications
-#   acidtrip-<target>.AppImage Linux: when APPIMAGETOOL points at appimagetool
+#   acidtrip-app-<target>.zip      macOS: the app bundle alone, to drag into Applications
+#   acidtrip-app-<target>.AppImage Linux: when APPIMAGETOOL points at appimagetool
 #                              (APPIMAGE_RUNTIME: runtime file for a cross target)
 set -euo pipefail
 
@@ -33,9 +33,9 @@ case "$target" in
   # Ad-hoc signature: Apple silicon refuses to run unsigned code at all.
   if command -v codesign >/dev/null; then codesign --force --deep --sign - "$app"; fi
   if command -v ditto >/dev/null; then
-    (cd "$stage" && ditto -c -k --keepParent Acidtrip.app "$dist/Acidtrip-$target.zip")
+    (cd "$stage" && ditto -c -k --keepParent Acidtrip.app "$dist/acidtrip-app-$target.zip")
   else
-    (cd "$stage" && zip -qry "$dist/Acidtrip-$target.zip" Acidtrip.app)
+    (cd "$stage" && zip -qry "$dist/acidtrip-app-$target.zip" Acidtrip.app)
   fi
   (cd "$stage" && tar czf "$dist/acidtrip-$target.tar.gz" acidtrip Acidtrip.app)
   ;;
@@ -65,7 +65,7 @@ RUN
     runtime=()
     if [ -n "${APPIMAGE_RUNTIME:-}" ]; then runtime=(--runtime-file "$APPIMAGE_RUNTIME"); fi
     ARCH=$arch "$APPIMAGETOOL" --appimage-extract-and-run --no-appstream "${runtime[@]}" \
-      "$appdir" "$dist/acidtrip-$target.AppImage"
+      "$appdir" "$dist/acidtrip-app-$target.AppImage"
   fi
   ;;
 *)
